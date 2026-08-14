@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+    --primary-color: #000000;
+    --secondary-color: #000000;
+    --primary-bg-color: #000000;
+    --surface-color: ##000000;
+    --surface-strong-color: #000000;
+    --border-color: #000000;
+    --primary-text-color: #000000;
+    --secondary-text-color: #000000;
+}
+
+a, button {
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: var(--primary-bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-bg-color);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--primary-color);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) var(--primary-bg-color);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 10px;
+}
+
+@keyframes toast-enter {
+  from {
+    transform: translateY(100%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-toast-enter {
+  animation: toast-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}

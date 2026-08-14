@@ -1,0 +1,36 @@
+{
+  "name": "cloudcanvas-server",
+  "version": "1.0.0",
+  "description": "CloudCanvas is a visual AWS infrastructure and deployment platform inspired by n8n. Drag and connect AWS services, GitHub repositories, and Docker images to design infrastructure visually, then deploy it automatically using the AWS SDK. AI assists with architecture, configuration, scaling, security, and troubleshooting.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuhasKanwar/CloudCanvas.git"
+  },
+  "author": "Suhas Kanwar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SuhasKanwar/CloudCanvas/issues"
+  },
+  "homepage": "https://github.com/SuhasKanwar/CloudCanvas#readme",
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.2.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
