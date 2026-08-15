@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Provider from "@/context/Provider";
 
 export const metadata: Metadata = {
   title: "CloudCanvas",
@@ -22,7 +23,9 @@ export default function RootLayout({
       className={`h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Provider>
           {children}
+        </Provider>
       </body>
     </html>
   );
