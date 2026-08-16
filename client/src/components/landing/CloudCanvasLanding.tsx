@@ -1,343 +1,175 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Boxes,
-  BrainCircuit,
-  Cloud,
-  Container,
-  Gauge,
-  GitBranch,
-  LockKeyhole,
-  PlayCircle,
-  ShieldCheck,
-  Sparkles,
-  Terminal,
-  Workflow,
-} from "lucide-react";
-import { motion, useScroll, useSpring, useTransform } from "motion/react";
+import { useState } from "react";
+import { ArrowUpRight, Box, Check, Copy, GitBranch, LockKeyhole, Server } from "lucide-react";
+import { motion, useMotionValueEvent, useSpring, useTransform, type MotionValue } from "motion/react";
+import { useScroll } from "motion/react";
+import DeploymentCore from "./DeploymentCore";
 
-const navItems = ["Canvas", "Automation", "Security", "Launch"];
+type Progress = MotionValue<number>;
 
-const stats = [
-  { value: "04", label: "deployment inputs" },
-  { value: "12x", label: "faster planning" },
-  { value: "99%", label: "repeatable topology" },
-];
-
-const cloudNodes = [
-  { label: "GitHub", icon: GitBranch, x: "12%", y: "24%", tone: "primary" },
-  { label: "Docker", icon: Container, x: "64%", y: "18%", tone: "secondary" },
-  { label: "AWS", icon: Cloud, x: "38%", y: "42%", tone: "accent" },
-  { label: "AI Ops", icon: BrainCircuit, x: "16%", y: "68%", tone: "success" },
-  { label: "Deploy", icon: PlayCircle, x: "72%", y: "66%", tone: "primary" },
-];
-
-const capabilities = [
+const chapters = [
   {
-    title: "Visual infrastructure graph",
-    description:
-      "Compose services, repositories, images, regions, secrets, and dependencies on one inspectable deployment surface.",
-    icon: Workflow,
+    range: [0.05, 0.12, 0.2],
+    marker: "01 / INGEST",
+    title: "Raw intent, given form.",
+    copy: "Connect a repository. CloudCanvas reads the runtime, maps its dependencies, and turns deployment intent into one living object.",
   },
   {
-    title: "AI-assisted architecture",
-    description:
-      "Turn rough product intent into deployment plans with guardrails for scale, cost, security, and failure recovery.",
-    icon: Sparkles,
+    range: [0.22, 0.3, 0.38],
+    marker: "02 / RESOLVE",
+    title: "Every dependency stays visible.",
+    copy: "Source, image, region, policy, and health checks move as one system. Scroll through the mechanism to inspect the release path.",
   },
   {
-    title: "Production command center",
-    description:
-      "Move from design to execution with environment checks, generated configuration, and traceable deployment steps.",
-    icon: Terminal,
+    range: [0.39, 0.46, 0.53],
+    marker: "03 / VALIDATE",
+    title: "Every gate proves itself.",
+    copy: "Permissions, health checks, dependencies, and rollback paths resolve before release.",
   },
-];
+  {
+    range: [0.55, 0.63, 0.71],
+    marker: "04 / OPEN",
+    title: "The generated plan opens up.",
+    copy: "Inspect source, build, policy, runtime, and edge resources as one readable mechanism.",
+    light: true,
+  },
+  {
+    range: [0.72, 0.8, 0.87],
+    marker: "05 / CONNECT",
+    title: "Every resource keeps its context.",
+    copy: "The live topology preserves the relationship between intent, policy, and running infrastructure.",
+    light: true,
+  },
+  {
+    range: [0.88, 0.95, 1],
+    marker: "06 / RELEASE",
+    title: "Ready when the graph is ready.",
+    copy: "One validated deployment, with the plan and proof attached.",
+    light: true,
+  },
+] as const;
 
-const workflow = [
-  {
-    step: "01",
-    title: "Drop",
-    body: "Place AWS services, Docker images, and repos directly onto the canvas.",
-  },
-  {
-    step: "02",
-    title: "Connect",
-    body: "Map traffic, dependencies, secrets, scaling policies, and deployment order.",
-  },
-  {
-    step: "03",
-    title: "Harden",
-    body: "Review AI-suggested changes for IAM, networking, observability, and rollback.",
-  },
-  {
-    step: "04",
-    title: "Ship",
-    body: "Deploy through generated SDK operations with a clear run history.",
-  },
-];
+const phaseLabels = ["Topology", "Build", "Validate", "Blueprint", "Graph", "Release"];
 
-const principles = [
-  { label: "Least-privilege paths", icon: LockKeyhole },
-  { label: "Preflighted releases", icon: ShieldCheck },
-  { label: "Observable runtime", icon: Gauge },
-  { label: "Composable modules", icon: Boxes },
-];
 
-const toneMap: Record<string, string> = {
-  primary: "var(--primary-color)",
-  secondary: "var(--secondary-color)",
-  accent: "var(--accent-color)",
-  success: "var(--success-color)",
-};
-
-function CloudObject() {
-  const { scrollYProgress } = useScroll();
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 80, damping: 24 });
-  const rotateY = useTransform(smoothProgress, [0, 1], [-18, 28]);
-  const rotateX = useTransform(smoothProgress, [0, 1], [12, -10]);
-  const y = useTransform(smoothProgress, [0, 1], [0, -80]);
-  const scale = useTransform(smoothProgress, [0, 0.55, 1], [0.96, 1.08, 0.92]);
-  const orbY = useTransform(smoothProgress, [0, 1], ["0%", "34%"]);
+function Chapter({ chapter, progress }: { chapter: (typeof chapters)[number]; progress: Progress }) {
+  const [start, peak, end] = chapter.range;
+  const hold = peak + (end - peak) * 0.62;
+  const opacity = useTransform(progress, [start, peak, hold, end], [0, 1, 1, 0]);
+  const y = useTransform(progress, [start, peak, hold, end], [28, 0, 0, -24]);
+  const light = "light" in chapter && chapter.light;
 
   return (
-    <div className="cloud-object-shell sticky top-22 mx-auto flex h-[520px] max-h-[76vh] w-full max-w-[620px] items-center justify-center">
-      <motion.div
-        className="cloud-object-core relative aspect-square w-[min(86vw,520px)]"
-        style={{ rotateX, rotateY, y, scale }}
-      >
-        <motion.div
-          className="absolute left-1/2 top-0 h-16 w-16 -translate-x-1/2 rounded-full border border-[color:var(--border-color)] bg-[color:var(--surface-strong-color)]"
-          style={{
-            y: orbY,
-            boxShadow: "0 0 54px var(--glow-color), inset 0 1px 0 rgba(255,255,255,.12)",
-          }}
-        />
-        <div className="canvas-plane absolute inset-[8%] rounded-[28px] p-8">
-          <div className="absolute inset-6 rounded-[22px] border border-dashed border-[color:var(--border-color)]" />
-          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" aria-hidden="true">
-            {[
-              "M22 30 C35 18 48 30 49 43",
-              "M68 24 C62 35 55 39 49 43",
-              "M49 43 C38 49 26 58 22 72",
-              "M49 43 C59 52 66 58 77 70",
-            ].map((path) => (
-              <path
-                className="object-connection"
-                d={path}
-                fill="none"
-                key={path}
-                stroke="var(--primary-color)"
-                strokeLinecap="round"
-                strokeWidth="0.55"
-              />
-            ))}
-          </svg>
-          {cloudNodes.map(({ label, icon: IconComponent, x, y: nodeY, tone }) => (
-            <motion.div
-              className="object-node absolute flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-2xl border border-[color:var(--border-color)] bg-[color:color-mix(in_srgb,var(--surface-strong-color)_88%,transparent)] text-xs font-medium text-[color:var(--primary-text-color)]"
-              key={label}
-              style={{ left: x, top: nodeY, color: toneMap[tone] }}
-              whileHover={{ y: -6, scale: 1.04 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            >
-              <IconComponent className="h-6 w-6" />
-              <span className="text-[color:var(--primary-text-color)]">{label}</span>
-            </motion.div>
-          ))}
-          <div className="absolute bottom-8 left-8 right-8 grid grid-cols-3 gap-2">
-            {["Plan", "Validate", "Deploy"].map((label) => (
-              <div
-                className="rounded-full border border-[color:var(--border-color)] bg-[color:var(--surface-color)] px-3 py-2 text-center text-[11px] uppercase tracking-[0.18em] text-[color:var(--secondary-text-color)]"
-                key={label}
-              >
-                {label}
-              </div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-    </div>
+    <motion.section className={`pointer-events-none absolute left-5 z-20 max-w-136 sm:left-10 lg:left-[7vw] ${light ? "bottom-[9vh] md:bottom-auto md:top-[22vh] md:max-w-92" : "bottom-[10vh]"}`} style={{ opacity, y }}>
+      <p className={`font-mono text-[11px] uppercase ${light ? "text-(--blueprint-line)" : "text-(--secondary-color)"}`}>{chapter.marker}</p>
+      <h1 className={`mt-4 max-w-lg font-(family-name:--font-display) text-4xl leading-[0.96] sm:text-6xl lg:text-7xl ${light ? "text-(--blueprint-text)" : "text-(--primary-text-color)"}`}>
+        {chapter.title}
+      </h1>
+      <p className={`mt-5 max-w-md text-sm leading-6 sm:text-base ${light ? "text-(--blueprint-line)" : "text-(--secondary-text-color)"}`}>{chapter.copy}</p>
+    </motion.section>
   );
 }
 
-function SectionHeading({
-  kicker,
-  title,
-  body,
-}: {
-  kicker: string;
-  title: string;
-  body: string;
-}) {
+function OpeningFrame({ progress }: { progress: Progress }) {
+  const opacity = useTransform(progress, [0, 0.025, 0.14], [1, 1, 0]);
+  const y = useTransform(progress, [0, 0.14], [0, -24]);
+
   return (
-    <div className="max-w-3xl">
-      <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--primary-color)]">
-        {kicker}
-      </p>
-      <h2 className="text-3xl font-semibold text-[color:var(--primary-text-color)] sm:text-5xl">
-        {title}
-      </h2>
-      <p className="mt-5 text-base leading-8 text-[color:var(--secondary-text-color)] sm:text-lg">
-        {body}
-      </p>
-    </div>
+    <motion.section className="pointer-events-none absolute inset-x-5 bottom-[8vh] z-20 sm:inset-x-10 lg:inset-x-[6vw]" style={{ opacity, y }}>
+      <div className="flex items-end justify-between gap-8">
+        <div className="max-w-176">
+          <div className="mb-5 flex items-center gap-3 font-mono text-[10px] uppercase text-(--secondary-color)">
+            <span className="h-px w-10 bg-current" /> Cloud deployment engine / 001
+          </div>
+          <h1 className="font-(family-name:--font-display) text-5xl leading-[0.88] text-(--primary-text-color) sm:text-7xl lg:text-[6.4rem]">
+            Infrastructure,<br /><span className="italic text-(--secondary-text-color)">made visible.</span>
+          </h1>
+        </div>
+        <div className="hidden w-52 border-t border-(--border-color) pt-4 font-mono text-[10px] leading-5 text-(--muted-text-color) lg:block">
+          <p>CORE CC-01</p><p>STATE / LISTENING</p><p>SCROLL TO INITIALIZE</p>
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
+function SideTelemetry({ progress }: { progress: Progress }) {
+  const opacity = useTransform(progress, [0.12, 0.22, 0.39, 0.48], [0, 1, 1, 0]);
+  const rows = [[GitBranch, "SOURCE", "github/main"], [Box, "IMAGE", "cc-api:8fd23"], [LockKeyhole, "POLICY", "verified"], [Server, "REGION", "ap-south-1"]] as const;
+
+  return (
+    <motion.aside className="absolute bottom-14 right-5 z-20 hidden w-72 rounded-md border border-(--border-color) bg-[color-mix(in_srgb,var(--surface-color)_88%,transparent)] p-4 font-mono text-[10px] shadow-2xl backdrop-blur md:block lg:right-[6vw]" style={{ opacity }}>
+      <div className="mb-4 flex items-center justify-between text-(--muted-text-color)"><span>RELEASE GRAPH</span><Copy className="h-3.5 w-3.5" /></div>
+      <div className="space-y-3">
+        {rows.map(([Icon, label, value]) => <div className="grid grid-cols-[16px_54px_1fr] items-center gap-2" key={label}><Icon className="h-3.5 w-3.5 text-(--primary-color)" /><span className="text-(--muted-text-color)">{label}</span><span>{value}</span></div>)}
+      </div>
+      <div className="mt-4 flex items-center gap-2 border-t border-(--border-color) pt-3 text-(--success-color)"><Check className="h-3.5 w-3.5" /> ALL GATES PASSED</div>
+    </motion.aside>
+  );
+}
+
+function PhaseRail({ progress }: { progress: Progress }) {
+  const [active, setActive] = useState(0);
+
+  useMotionValueEvent(progress, "change", (value) => {
+    const next = Math.min(phaseLabels.length - 1, Math.round(value * (phaseLabels.length - 1)));
+    setActive((current) => current === next ? current : next);
+  });
+
+  const jumpTo = (index: number) => {
+    const distance = document.documentElement.scrollHeight - window.innerHeight;
+    window.scrollTo({ behavior: "smooth", top: distance * (index / (phaseLabels.length - 1)) });
+  };
+
+  return (
+    <nav aria-label="Landing page phases" className="absolute bottom-5 left-1/2 z-40 hidden -translate-x-1/2 items-center gap-1 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--surface-color)_92%,transparent)] p-1 shadow-xl backdrop-blur md:flex">
+      {phaseLabels.map((label, index) => (
+        <button aria-current={active === index ? "step" : undefined} aria-label={`Jump to ${label} phase`} className={`h-8 px-3 font-mono text-[9px] uppercase transition-colors ${active === index ? "bg-(--primary-color) text-(--primary-bg-color)" : "text-(--secondary-text-color) hover:bg-white/5 hover:text-(--primary-text-color)"}`} key={label} onClick={() => jumpTo(index)} type="button">
+          {label}
+        </button>
+      ))}
+    </nav>
   );
 }
 
 export default function CloudCanvasLanding() {
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 75, damping: 25, restDelta: 0.001 });
+  const darkOpacity = useTransform(progress, [0.46, 0.58], [1, 0]);
+  const lightOpacity = useTransform(progress, [0.46, 0.58], [0, 1]);
+  const headerColor = useTransform(progress, [0.48, 0.6], ["var(--primary-text-color)", "var(--blueprint-text)"]);
+
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[color:var(--primary-bg-color)] text-[color:var(--primary-text-color)]">
-      <div className="landing-grid pointer-events-none absolute inset-0" />
-      <header className="fixed left-0 right-0 top-0 z-30 border-b border-[color:color-mix(in_srgb,var(--border-color)_70%,transparent)] bg-[color:color-mix(in_srgb,var(--primary-bg-color)_82%,transparent)] backdrop-blur-xl">
-        <nav className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 sm:px-8">
+    <main className="relative h-[2400vh] overflow-clip bg-(--primary-bg-color)">
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <motion.div className="absolute inset-0 bg-(--primary-bg-color)" style={{ opacity: darkOpacity }} />
+        <motion.div className="absolute inset-0 bg-(--blueprint-bg) bg-[linear-gradient(var(--blueprint-grid)_1px,transparent_1px),linear-gradient(90deg,var(--blueprint-grid)_1px,transparent_1px)] bg-size-[32px_32px]" style={{ opacity: lightOpacity }} />
+
+        <DeploymentCore progress={progress} />
+
+        <OpeningFrame progress={progress} />
+        {chapters.map((chapter) => <Chapter chapter={chapter} key={chapter.marker} progress={progress} />)}
+        <SideTelemetry progress={progress} />
+        <PhaseRail progress={progress} />
+
+        <motion.header className="absolute inset-x-0 top-0 z-30 flex h-20 items-center justify-between px-5 sm:px-10 lg:px-[6vw]" style={{ color: headerColor }}>
           <Link className="flex items-center gap-3" href="/">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--primary-color)] text-[color:var(--primary-bg-color)]">
-              <Cloud className="h-5 w-5" />
-            </span>
-            <span className="text-lg font-semibold">CloudCanvas</span>
+            <span className="relative h-11 w-11"><Image alt="CloudCanvas" className="object-contain" fill priority sizes="44px" src="/logo.png" /></span>
+            <span className="font-(family-name:--font-display) text-xl">CloudCanvas</span>
           </Link>
-          <div className="hidden items-center gap-8 text-sm text-[color:var(--secondary-text-color)] md:flex">
-            {navItems.map((item) => (
-              <a className="transition hover:text-[color:var(--primary-text-color)]" href={`#${item.toLowerCase()}`} key={item}>
-                {item}
-              </a>
-            ))}
-          </div>
-          <Link
-            className="inline-flex h-10 items-center gap-2 rounded-full border border-[color:var(--border-color)] px-4 text-sm font-medium transition hover:border-[color:var(--primary-color)]"
-            href="/auth/signin"
-          >
-            Sign in
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </nav>
-      </header>
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.2em] md:block">Infrastructure / In motion</span>
+          <Link className="inline-flex h-10 items-center gap-2 border-b border-current text-sm" href="/auth/signup">Open canvas <ArrowUpRight className="h-4 w-4" /></Link>
+        </motion.header>
 
-      <section className="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 gap-10 px-5 pb-24 pt-32 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:pt-40">
-        <div className="flex flex-col justify-center">
-          <p className="mb-6 w-fit rounded-full border border-[color:var(--border-color)] bg-[color:var(--surface-color)] px-4 py-2 text-sm text-[color:var(--secondary-text-color)]">
-            Visual AWS deployment workspace
-          </p>
-          <h1 className="max-w-4xl text-5xl font-semibold leading-[1.02] text-[color:var(--primary-text-color)] sm:text-7xl">
-            CloudCanvas
-          </h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-[color:var(--secondary-text-color)]">
-            Design cloud systems like a living map: connect repositories, Docker images,
-            AWS services, and AI guidance into one scrollable deployment canvas.
-          </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Link
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[color:var(--primary-color)] px-6 text-sm font-semibold text-[color:var(--primary-bg-color)] transition hover:brightness-110"
-              href="/auth/signup"
-            >
-              Start building
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[color:var(--border-color)] px-6 text-sm font-semibold transition hover:border-[color:var(--secondary-color)]"
-              href="#canvas"
-            >
-              Watch the flow
-              <PlayCircle className="h-4 w-4" />
-            </a>
-          </div>
-          <div className="mt-12 grid max-w-xl grid-cols-3 gap-3">
-            {stats.map(({ value, label }) => (
-              <div className="border-l border-[color:var(--border-color)] pl-4" key={label}>
-                <p className="text-2xl font-semibold text-[color:var(--primary-text-color)]">{value}</p>
-                <p className="mt-1 text-sm text-[color:var(--secondary-text-color)]">{label}</p>
-              </div>
-            ))}
-          </div>
+        <div className="absolute bottom-0 left-0 top-0 z-30 w-px bg-(--primary-color) opacity-40" />
+        <div className="absolute bottom-8 right-6 z-30 flex items-center gap-3 font-mono text-[9px] uppercase text-(--muted-text-color) [writing-mode:vertical-rl]">
+          <span>Scroll to inspect</span><span className="h-12 w-px bg-current" />
         </div>
-        <CloudObject />
-      </section>
-
-      <section className="relative border-y border-[color:var(--border-color)] bg-[color:color-mix(in_srgb,var(--surface-color)_62%,transparent)]" id="canvas">
-        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-28 sm:px-8 lg:grid-cols-[0.8fr_1.2fr]">
-          <SectionHeading
-            body="The interface treats infrastructure as a visual model first and an executable plan second, so non-linear systems stay readable while deployment details remain close."
-            kicker="Canvas"
-            title="A long-form build surface for complex infrastructure."
-          />
-          <div className="grid gap-4 md:grid-cols-3">
-            {capabilities.map(({ title, description, icon: IconComponent }) => (
-              <article
-                className="rounded-lg border border-[color:var(--border-color)] bg-[color:var(--surface-muted-color)] p-6"
-                key={title}
-              >
-                <IconComponent className="mb-8 h-7 w-7 text-[color:var(--primary-color)]" />
-                <h3 className="text-lg font-semibold">{title}</h3>
-                <p className="mt-4 text-sm leading-6 text-[color:var(--secondary-text-color)]">
-                  {description}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative mx-auto max-w-7xl px-5 py-28 sm:px-8" id="automation">
-        <SectionHeading
-          body="Every stage is represented as explicit data: source, runtime, cloud resource, policy, validation, and deployment event."
-          kicker="Automation"
-          title="From rough architecture to repeatable release."
-        />
-        <div className="mt-14 grid gap-4 md:grid-cols-4">
-          {workflow.map(({ step, title, body }) => (
-            <article className="border-t border-[color:var(--border-color)] pt-6" key={step}>
-              <p className="text-sm font-semibold text-[color:var(--secondary-color)]">{step}</p>
-              <h3 className="mt-5 text-2xl font-semibold">{title}</h3>
-              <p className="mt-4 text-sm leading-6 text-[color:var(--secondary-text-color)]">{body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="relative bg-[color:var(--surface-color)]" id="security">
-        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-28 sm:px-8 lg:grid-cols-2">
-          <SectionHeading
-            body="CloudCanvas keeps guardrails visible at the same level as architecture decisions, making every deployment easier to inspect before it runs."
-            kicker="Security"
-            title="Guardrails live on the canvas, not in a forgotten checklist."
-          />
-          <div className="grid gap-3 sm:grid-cols-2">
-            {principles.map(({ label, icon: IconComponent }) => (
-              <div
-                className="flex min-h-28 items-center gap-4 rounded-lg border border-[color:var(--border-color)] bg-[color:var(--primary-bg-color)] p-5"
-                key={label}
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color:var(--surface-strong-color)] text-[color:var(--primary-color)]">
-                  <IconComponent className="h-5 w-5" />
-                </span>
-                <span className="font-medium">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative mx-auto max-w-7xl px-5 py-28 sm:px-8" id="launch">
-        <div className="grid items-end gap-10 border-t border-[color:var(--border-color)] pt-14 lg:grid-cols-[1fr_auto]">
-          <div>
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--primary-color)]">
-              Launch
-            </p>
-            <h2 className="max-w-3xl text-4xl font-semibold sm:text-6xl">
-              Build the cloud system before the cloud system builds you.
-            </h2>
-          </div>
-          <Link
-            className="inline-flex h-13 items-center justify-center gap-2 rounded-full bg-[color:var(--secondary-color)] px-7 text-sm font-semibold text-[color:var(--primary-bg-color)] transition hover:brightness-110"
-            href="/auth/signup"
-          >
-            Create account
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
+        <motion.div className="absolute bottom-0 left-0 z-30 h-1 origin-left bg-(--secondary-color)" style={{ scaleX: scrollYProgress, width: "100%" }} />
+      </div>
     </main>
   );
 }

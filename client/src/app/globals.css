@@ -17,6 +17,17 @@
     --glow-color: rgba(88, 213, 201, 0.34);
     --shadow-color: rgba(0, 0, 0, 0.36);
     --grid-color: rgba(154, 166, 182, 0.1);
+    --danger-color: #FF4F57;
+    --mechanism-color: #090B0E;
+    --mechanism-edge: #1B1E24;
+    --mechanism-line: #424750;
+    --mechanism-highlight: #F5B39D;
+    --blueprint-bg: #DAD7D1;
+    --blueprint-grid: rgba(42, 48, 53, 0.08);
+    --blueprint-line: #767976;
+    --blueprint-text: #202326;
+    --font-display: Georgia, "Times New Roman", serif;
+    --font-body: Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -25,6 +36,7 @@ body {
     radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--secondary-color) 15%, transparent), transparent 24rem),
     linear-gradient(180deg, var(--primary-bg-color), #0A0D12 48%, var(--primary-bg-color));
   color: var(--primary-text-color);
+  font-family: var(--font-body);
 }
 
 a, button {
@@ -83,47 +95,11 @@ html {
   display: none !important;
 }
 
-.landing-grid {
-  background-image:
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, black, transparent 82%);
-}
-
-.cloud-object-shell {
+.scene-3d {
   transform-style: preserve-3d;
-  perspective: 1200px;
+  perspective: 1400px;
 }
 
-.cloud-object-core {
+.preserve-3d {
   transform-style: preserve-3d;
-}
-
-.canvas-plane {
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--surface-strong-color) 88%, transparent), color-mix(in srgb, var(--surface-color) 94%, transparent)),
-    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--primary-color) 18%, transparent), transparent 16rem);
-  border: 1px solid color-mix(in srgb, var(--primary-color) 18%, var(--border-color));
-  box-shadow:
-    0 34px 80px var(--shadow-color),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 80px var(--glow-color);
-}
-
-.object-node {
-  box-shadow:
-    0 18px 44px var(--shadow-color),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.object-connection {
-  stroke-dasharray: 8 12;
-  animation: connection-flow 1.8s linear infinite;
-}
-
-@keyframes connection-flow {
-  to {
-    stroke-dashoffset: -40;
-  }
 }
