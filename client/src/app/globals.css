@@ -1,14 +1,30 @@
 @import "tailwindcss";
 
 :root {
-    --primary-color: #000000;
-    --secondary-color: #000000;
-    --primary-bg-color: #000000;
-    --surface-color: ##000000;
-    --surface-strong-color: #000000;
-    --border-color: #000000;
-    --primary-text-color: #000000;
-    --secondary-text-color: #000000;
+    --primary-color: #58D5C9;
+    --secondary-color: #F7B267;
+    --accent-color: #A78BFA;
+    --success-color: #8EE6A2;
+    --warning-color: #FFD166;
+    --primary-bg-color: #080A0E;
+    --surface-color: #10141B;
+    --surface-muted-color: #151A22;
+    --surface-strong-color: #1D2530;
+    --border-color: #2A3341;
+    --primary-text-color: #F5F7FA;
+    --secondary-text-color: #9AA6B6;
+    --muted-text-color: #687386;
+    --glow-color: rgba(88, 213, 201, 0.34);
+    --shadow-color: rgba(0, 0, 0, 0.36);
+    --grid-color: rgba(154, 166, 182, 0.1);
+}
+
+body {
+  background:
+    radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--primary-color) 18%, transparent), transparent 28rem),
+    radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--secondary-color) 15%, transparent), transparent 24rem),
+    linear-gradient(180deg, var(--primary-bg-color), #0A0D12 48%, var(--primary-bg-color));
+  color: var(--primary-text-color);
 }
 
 a, button {
@@ -65,4 +81,49 @@ html {
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none !important;
+}
+
+.landing-grid {
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+.cloud-object-shell {
+  transform-style: preserve-3d;
+  perspective: 1200px;
+}
+
+.cloud-object-core {
+  transform-style: preserve-3d;
+}
+
+.canvas-plane {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-strong-color) 88%, transparent), color-mix(in srgb, var(--surface-color) 94%, transparent)),
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--primary-color) 18%, transparent), transparent 16rem);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 18%, var(--border-color));
+  box-shadow:
+    0 34px 80px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 80px var(--glow-color);
+}
+
+.object-node {
+  box-shadow:
+    0 18px 44px var(--shadow-color),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.object-connection {
+  stroke-dasharray: 8 12;
+  animation: connection-flow 1.8s linear infinite;
+}
+
+@keyframes connection-flow {
+  to {
+    stroke-dashoffset: -40;
+  }
 }

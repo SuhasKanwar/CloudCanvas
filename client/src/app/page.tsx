@@ -1,5 +1,5 @@
+import CloudCanvasLanding from "@/components/landing/CloudCanvasLanding";
+
 export default function Home() {
-  return (
-    <main></main>
-  );
+  return <CloudCanvasLanding />;
 }
