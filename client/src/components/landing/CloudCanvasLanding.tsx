@@ -112,29 +112,6 @@ function SideTelemetry({ progress }: { progress: Progress }) {
   );
 }
 
-function PhaseRail({ progress }: { progress: Progress }) {
-  const [active, setActive] = useState(0);
-
-  useMotionValueEvent(progress, "change", (value) => {
-    const next = Math.min(phaseLabels.length - 1, Math.round(value * (phaseLabels.length - 1)));
-    setActive((current) => current === next ? current : next);
-  });
-
-  const jumpTo = (index: number) => {
-    const distance = document.documentElement.scrollHeight - window.innerHeight;
-    window.scrollTo({ behavior: "smooth", top: distance * (index / (phaseLabels.length - 1)) });
-  };
-
-  return (
-    <nav aria-label="Landing page phases" className="absolute bottom-5 left-1/2 z-40 hidden -translate-x-1/2 items-center gap-1 rounded-md border border-white/10 bg-[color-mix(in_srgb,var(--surface-color)_92%,transparent)] p-1 shadow-xl backdrop-blur md:flex">
-      {phaseLabels.map((label, index) => (
-        <button aria-current={active === index ? "step" : undefined} aria-label={`Jump to ${label} phase`} className={`h-8 px-3 font-mono text-[9px] uppercase transition-colors ${active === index ? "bg-(--primary-color) text-(--primary-bg-color)" : "text-(--secondary-text-color) hover:bg-white/5 hover:text-(--primary-text-color)"}`} key={label} onClick={() => jumpTo(index)} type="button">
-          {label}
-        </button>
-      ))}
-    </nav>
-  );
-}
 
 export default function CloudCanvasLanding() {
   const { scrollYProgress } = useScroll();
@@ -143,7 +120,7 @@ export default function CloudCanvasLanding() {
   const darkOpacity = useTransform(progress, [0.46, 0.58], [1, 0]);
   const lightOpacity = useTransform(progress, [0.46, 0.58], [0, 1]);
   const headerColor = useTransform(progress, [0.48, 0.6], ["var(--primary-text-color)", "var(--blueprint-text)"]);
-  const openCanvasHref = session ? "/dashboard" : "/auth/signup";
+  const openCanvasHref = session ? "/dashboard" : "/auth/signin";
 
   return (
     <main className="relative h-[2400vh] overflow-clip bg-(--primary-bg-color)">
@@ -156,7 +133,6 @@ export default function CloudCanvasLanding() {
         <OpeningFrame progress={progress} />
         {chapters.map((chapter) => <Chapter chapter={chapter} key={chapter.marker} progress={progress} />)}
         <SideTelemetry progress={progress} />
-        <PhaseRail progress={progress} />
 
         <motion.header className="absolute inset-x-0 top-0 z-30 flex h-20 items-center justify-between px-5 sm:px-10 lg:px-[6vw]" style={{ color: headerColor }}>
           <Link className="flex items-center gap-3" href="/">

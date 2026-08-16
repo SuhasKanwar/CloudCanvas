@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { dismissToast, getToasts, pushToast, subscribe, type ToastInput, type ToastItem } from "@/lib/toast";
 
@@ -13,12 +13,16 @@ type ToastContextValue = {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
     const toasts = useSyncExternalStore(subscribe, getToasts, getToasts);
-    const canRenderPortal = typeof document !== "undefined";
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
         <>
             {children}
-            {canRenderPortal ? createPortal(<ToastViewport toasts={toasts} />, document.body) : null}
+            {mounted ? createPortal(<ToastViewport toasts={toasts} />, document.body) : null}
         </>
     );
 }
