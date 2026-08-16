@@ -26,15 +26,17 @@
     --blueprint-grid: rgba(42, 48, 53, 0.08);
     --blueprint-line: #767976;
     --blueprint-text: #202326;
-    --font-display: Georgia, "Times New Roman", serif;
-    --font-body: Arial, Helvetica, sans-serif;
+    --font-display: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
-  background:
-    radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--primary-color) 18%, transparent), transparent 28rem),
-    radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--secondary-color) 15%, transparent), transparent 24rem),
-    linear-gradient(180deg, var(--primary-bg-color), #0A0D12 48%, var(--primary-bg-color));
+  background-color: var(--primary-bg-color);
+  background-image:
+    linear-gradient(rgba(154, 166, 182, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(154, 166, 182, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at top, rgba(88, 213, 201, 0.08), transparent 30rem);
+  background-size: 36px 36px, 36px 36px, 100% 100%;
   color: var(--primary-text-color);
   font-family: var(--font-body);
 }

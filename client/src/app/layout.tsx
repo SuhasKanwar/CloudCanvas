@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Provider from "@/context/Provider";
+import { getAuthSession } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "CloudCanvas",
@@ -11,11 +12,13 @@ export const metadata: Metadata = {
   keywords: ["CloudCanvas", "AWS", "Infrastructure as Code", "Deployment", "Visual Programming", "AI Assistance", "Cloud Computing", "Serverless", "Microservices", "DevOps", "Automation", "CI/CD", "GitHub Integration", "Docker Integration"]
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getAuthSession();
+
   return (
     <html
       lang="en"
@@ -23,7 +26,7 @@ export default function RootLayout({
       className={`h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Provider>
+        <Provider session={session}>
           {children}
         </Provider>
       </body>

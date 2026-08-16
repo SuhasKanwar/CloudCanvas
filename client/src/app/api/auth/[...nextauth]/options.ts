@@ -36,14 +36,30 @@ export const authOptions: NextAuthOptions = {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
                 register: { label: "Register", type: "text" },
+                token: { label: "Token", type: "text" },
+                userId: { label: "User ID", type: "text" },
+                imageUrl: { label: "Image URL", type: "text" },
             },
             async authorize(credentials) {
                 const name = credentials?.name?.trim();
                 const email = credentials?.email?.trim();
                 const password = credentials?.password;
                 const isRegistering = credentials?.register === "true";
+                const token = credentials?.token;
+                const userId = credentials?.userId;
+                const imageUrl = credentials?.imageUrl;
 
                 if (!email || !password) {
+                    if (token && userId) {
+                        return {
+                            id: userId,
+                            name: name || undefined,
+                            email,
+                            image: imageUrl || undefined,
+                            accessToken: token,
+                        };
+                    }
+
                     throw new Error("Email and password are required.");
                 }
 

@@ -1,5 +1,13 @@
-export default function SignUpPage() {
-    return (
-        <main></main>
-    );
+import { redirect } from "next/navigation";
+import AuthPanel from "@/components/auth/AuthPanel";
+import { getAuthSession } from "@/lib/session";
+
+export default async function SignUpPage() {
+    const session = await getAuthSession();
+
+    if (session) {
+        redirect("/dashboard");
+    }
+
+    return <AuthPanel mode="signup" />;
 }

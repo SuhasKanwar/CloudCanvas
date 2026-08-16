@@ -6,6 +6,7 @@ import logger from './middlewares/logger.js';
 import authRouter from './routes/authRouter.js';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import authenticate from "./middlewares/authenticate.js";
 
 dotenv.config();
 

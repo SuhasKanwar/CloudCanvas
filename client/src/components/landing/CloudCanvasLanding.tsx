@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { ArrowUpRight, Box, Check, Copy, GitBranch, LockKeyhole, Server } from "lucide-react";
 import { motion, useMotionValueEvent, useSpring, useTransform, type MotionValue } from "motion/react";
 import { useScroll } from "motion/react";
@@ -137,10 +138,12 @@ function PhaseRail({ progress }: { progress: Progress }) {
 
 export default function CloudCanvasLanding() {
   const { scrollYProgress } = useScroll();
+  const { data: session } = useSession();
   const progress = useSpring(scrollYProgress, { stiffness: 75, damping: 25, restDelta: 0.001 });
   const darkOpacity = useTransform(progress, [0.46, 0.58], [1, 0]);
   const lightOpacity = useTransform(progress, [0.46, 0.58], [0, 1]);
   const headerColor = useTransform(progress, [0.48, 0.6], ["var(--primary-text-color)", "var(--blueprint-text)"]);
+  const openCanvasHref = session ? "/dashboard" : "/auth/signup";
 
   return (
     <main className="relative h-[2400vh] overflow-clip bg-(--primary-bg-color)">
@@ -161,7 +164,7 @@ export default function CloudCanvasLanding() {
             <span className="font-(family-name:--font-display) text-xl">CloudCanvas</span>
           </Link>
           <span className="hidden font-mono text-[10px] uppercase tracking-[0.2em] md:block">Infrastructure / In motion</span>
-          <Link className="inline-flex h-10 items-center gap-2 border-b border-current text-sm" href="/auth/signup">Open canvas <ArrowUpRight className="h-4 w-4" /></Link>
+          <Link className="inline-flex h-10 items-center gap-2 border-b border-current text-sm" href={openCanvasHref}>Open canvas <ArrowUpRight className="h-4 w-4" /></Link>
         </motion.header>
 
         <div className="absolute bottom-0 left-0 top-0 z-30 w-px bg-(--primary-color) opacity-40" />
