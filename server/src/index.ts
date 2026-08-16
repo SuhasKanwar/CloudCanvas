@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from 'express';
 import type { ApiResponse } from './types/response.js';
-import { PORT } from './lib/config.js';
+import { ALLOWED_ORIGINS, PORT } from './lib/config.js';
 import cors from 'cors';
 import logger from './middlewares/logger.js';
 import authRouter from './routes/authRouter.js';
@@ -13,7 +13,8 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-    origin: '*'
+    origin: ALLOWED_ORIGINS,
+    credentials: true
 }));
 app.use(express.json());
 app.use(cookieParser());
@@ -37,7 +38,7 @@ app.get("/health", (_req: Request, res: Response<ApiResponse>) => {
 app.use("/api/auth", authRouter);
 
 app.listen(PORT, (err) => {
-    if(err) {
+    if (err) {
         console.error("Error starting server ->", err);
     } else {
         console.log(`Server is running on port -> ${PORT}`);
