@@ -7,6 +7,7 @@ import authRouter from './routes/authRouter.js';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authenticate from "./middlewares/authenticate.js";
+import awsRouter from './routes/awsRouter.js';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.get("/health", (_req: Request, res: Response<ApiResponse>) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/aws", authenticate, awsRouter);
 
 app.listen(PORT, (err) => {
     if (err) {
