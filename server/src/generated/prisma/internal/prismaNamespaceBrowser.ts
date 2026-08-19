@@ -51,7 +51,13 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  User: 'User'
+  User: 'User',
+  Sketch: 'Sketch',
+  SketchNode: 'SketchNode',
+  SketchEdge: 'SketchEdge',
+  AwsConnection: 'AwsConnection',
+  AwsResource: 'AwsResource',
+  Deployment: 'Deployment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -84,12 +90,120 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const SketchScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  description: 'description',
+  status: 'status',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SketchScalarFieldEnum = (typeof SketchScalarFieldEnum)[keyof typeof SketchScalarFieldEnum]
+
+
+export const SketchNodeScalarFieldEnum = {
+  id: 'id',
+  sketchId: 'sketchId',
+  type: 'type',
+  label: 'label',
+  positionX: 'positionX',
+  positionY: 'positionY',
+  config: 'config'
+} as const
+
+export type SketchNodeScalarFieldEnum = (typeof SketchNodeScalarFieldEnum)[keyof typeof SketchNodeScalarFieldEnum]
+
+
+export const SketchEdgeScalarFieldEnum = {
+  id: 'id',
+  sketchId: 'sketchId',
+  sourceNodeId: 'sourceNodeId',
+  targetNodeId: 'targetNodeId',
+  sourceHandle: 'sourceHandle',
+  targetHandle: 'targetHandle'
+} as const
+
+export type SketchEdgeScalarFieldEnum = (typeof SketchEdgeScalarFieldEnum)[keyof typeof SketchEdgeScalarFieldEnum]
+
+
+export const AwsConnectionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  region: 'region',
+  accessKeyIdEncrypted: 'accessKeyIdEncrypted',
+  secretAccessKeyEncrypted: 'secretAccessKeyEncrypted',
+  sessionTokenEncrypted: 'sessionTokenEncrypted',
+  encryptionKeyVersion: 'encryptionKeyVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AwsConnectionScalarFieldEnum = (typeof AwsConnectionScalarFieldEnum)[keyof typeof AwsConnectionScalarFieldEnum]
+
+
+export const AwsResourceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sketchId: 'sketchId',
+  nodeId: 'nodeId',
+  connectionId: 'connectionId',
+  service: 'service',
+  externalId: 'externalId',
+  name: 'name',
+  region: 'region',
+  status: 'status',
+  desiredConfig: 'desiredConfig',
+  actualState: 'actualState',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AwsResourceScalarFieldEnum = (typeof AwsResourceScalarFieldEnum)[keyof typeof AwsResourceScalarFieldEnum]
+
+
+export const DeploymentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sketchId: 'sketchId',
+  connectionId: 'connectionId',
+  status: 'status',
+  request: 'request',
+  response: 'response',
+  errorMessage: 'errorMessage',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type DeploymentScalarFieldEnum = (typeof DeploymentScalarFieldEnum)[keyof typeof DeploymentScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -106,4 +220,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

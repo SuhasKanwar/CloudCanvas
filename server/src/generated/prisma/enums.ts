@@ -15,3 +15,31 @@ export const AuthProvider = {
 } as const
 
 export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]
+
+
+export const SketchStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type SketchStatus = (typeof SketchStatus)[keyof typeof SketchStatus]
+
+
+export const AwsResourceStatus = {
+  DESIRED: 'DESIRED',
+  PROVISIONING: 'PROVISIONING',
+  RUNNING: 'RUNNING',
+  FAILED: 'FAILED'
+} as const
+
+export type AwsResourceStatus = (typeof AwsResourceStatus)[keyof typeof AwsResourceStatus]
+
+
+export const DeploymentStatus = {
+  PENDING: 'PENDING',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED'
+} as const
+
+export type DeploymentStatus = (typeof DeploymentStatus)[keyof typeof DeploymentStatus]

@@ -397,7 +397,13 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  User: 'User'
+  User: 'User',
+  Sketch: 'Sketch',
+  SketchNode: 'SketchNode',
+  SketchEdge: 'SketchEdge',
+  AwsConnection: 'AwsConnection',
+  AwsResource: 'AwsResource',
+  Deployment: 'Deployment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user"
+    modelProps: "user" | "sketch" | "sketchNode" | "sketchEdge" | "awsConnection" | "awsResource" | "deployment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -491,6 +497,450 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Sketch: {
+      payload: Prisma.$SketchPayload<ExtArgs>
+      fields: Prisma.SketchFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SketchFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SketchFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>
+        }
+        findFirst: {
+          args: Prisma.SketchFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SketchFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>
+        }
+        findMany: {
+          args: Prisma.SketchFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>[]
+        }
+        create: {
+          args: Prisma.SketchCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>
+        }
+        createMany: {
+          args: Prisma.SketchCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SketchCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>[]
+        }
+        delete: {
+          args: Prisma.SketchDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>
+        }
+        update: {
+          args: Prisma.SketchUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>
+        }
+        deleteMany: {
+          args: Prisma.SketchDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SketchUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SketchUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>[]
+        }
+        upsert: {
+          args: Prisma.SketchUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchPayload>
+        }
+        aggregate: {
+          args: Prisma.SketchAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSketch>
+        }
+        groupBy: {
+          args: Prisma.SketchGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SketchGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SketchCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SketchCountAggregateOutputType> | number
+        }
+      }
+    }
+    SketchNode: {
+      payload: Prisma.$SketchNodePayload<ExtArgs>
+      fields: Prisma.SketchNodeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SketchNodeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SketchNodeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>
+        }
+        findFirst: {
+          args: Prisma.SketchNodeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SketchNodeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>
+        }
+        findMany: {
+          args: Prisma.SketchNodeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>[]
+        }
+        create: {
+          args: Prisma.SketchNodeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>
+        }
+        createMany: {
+          args: Prisma.SketchNodeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SketchNodeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>[]
+        }
+        delete: {
+          args: Prisma.SketchNodeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>
+        }
+        update: {
+          args: Prisma.SketchNodeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>
+        }
+        deleteMany: {
+          args: Prisma.SketchNodeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SketchNodeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SketchNodeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>[]
+        }
+        upsert: {
+          args: Prisma.SketchNodeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchNodePayload>
+        }
+        aggregate: {
+          args: Prisma.SketchNodeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSketchNode>
+        }
+        groupBy: {
+          args: Prisma.SketchNodeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SketchNodeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SketchNodeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SketchNodeCountAggregateOutputType> | number
+        }
+      }
+    }
+    SketchEdge: {
+      payload: Prisma.$SketchEdgePayload<ExtArgs>
+      fields: Prisma.SketchEdgeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SketchEdgeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SketchEdgeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>
+        }
+        findFirst: {
+          args: Prisma.SketchEdgeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SketchEdgeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>
+        }
+        findMany: {
+          args: Prisma.SketchEdgeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>[]
+        }
+        create: {
+          args: Prisma.SketchEdgeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>
+        }
+        createMany: {
+          args: Prisma.SketchEdgeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SketchEdgeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>[]
+        }
+        delete: {
+          args: Prisma.SketchEdgeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>
+        }
+        update: {
+          args: Prisma.SketchEdgeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>
+        }
+        deleteMany: {
+          args: Prisma.SketchEdgeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SketchEdgeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SketchEdgeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>[]
+        }
+        upsert: {
+          args: Prisma.SketchEdgeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SketchEdgePayload>
+        }
+        aggregate: {
+          args: Prisma.SketchEdgeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSketchEdge>
+        }
+        groupBy: {
+          args: Prisma.SketchEdgeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SketchEdgeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SketchEdgeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SketchEdgeCountAggregateOutputType> | number
+        }
+      }
+    }
+    AwsConnection: {
+      payload: Prisma.$AwsConnectionPayload<ExtArgs>
+      fields: Prisma.AwsConnectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AwsConnectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AwsConnectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>
+        }
+        findFirst: {
+          args: Prisma.AwsConnectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AwsConnectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>
+        }
+        findMany: {
+          args: Prisma.AwsConnectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>[]
+        }
+        create: {
+          args: Prisma.AwsConnectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>
+        }
+        createMany: {
+          args: Prisma.AwsConnectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AwsConnectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>[]
+        }
+        delete: {
+          args: Prisma.AwsConnectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>
+        }
+        update: {
+          args: Prisma.AwsConnectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.AwsConnectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AwsConnectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AwsConnectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.AwsConnectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsConnectionPayload>
+        }
+        aggregate: {
+          args: Prisma.AwsConnectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAwsConnection>
+        }
+        groupBy: {
+          args: Prisma.AwsConnectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AwsConnectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AwsConnectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AwsConnectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    AwsResource: {
+      payload: Prisma.$AwsResourcePayload<ExtArgs>
+      fields: Prisma.AwsResourceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AwsResourceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AwsResourceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>
+        }
+        findFirst: {
+          args: Prisma.AwsResourceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AwsResourceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>
+        }
+        findMany: {
+          args: Prisma.AwsResourceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>[]
+        }
+        create: {
+          args: Prisma.AwsResourceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>
+        }
+        createMany: {
+          args: Prisma.AwsResourceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AwsResourceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>[]
+        }
+        delete: {
+          args: Prisma.AwsResourceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>
+        }
+        update: {
+          args: Prisma.AwsResourceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>
+        }
+        deleteMany: {
+          args: Prisma.AwsResourceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AwsResourceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AwsResourceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>[]
+        }
+        upsert: {
+          args: Prisma.AwsResourceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AwsResourcePayload>
+        }
+        aggregate: {
+          args: Prisma.AwsResourceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAwsResource>
+        }
+        groupBy: {
+          args: Prisma.AwsResourceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AwsResourceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AwsResourceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AwsResourceCountAggregateOutputType> | number
+        }
+      }
+    }
+    Deployment: {
+      payload: Prisma.$DeploymentPayload<ExtArgs>
+      fields: Prisma.DeploymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeploymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeploymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        findFirst: {
+          args: Prisma.DeploymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeploymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        findMany: {
+          args: Prisma.DeploymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>[]
+        }
+        create: {
+          args: Prisma.DeploymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        createMany: {
+          args: Prisma.DeploymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeploymentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>[]
+        }
+        delete: {
+          args: Prisma.DeploymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        update: {
+          args: Prisma.DeploymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeploymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeploymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeploymentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeploymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeploymentPayload>
+        }
+        aggregate: {
+          args: Prisma.DeploymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeployment>
+        }
+        groupBy: {
+          args: Prisma.DeploymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeploymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeploymentCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -544,12 +994,120 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const SketchScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  description: 'description',
+  status: 'status',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SketchScalarFieldEnum = (typeof SketchScalarFieldEnum)[keyof typeof SketchScalarFieldEnum]
+
+
+export const SketchNodeScalarFieldEnum = {
+  id: 'id',
+  sketchId: 'sketchId',
+  type: 'type',
+  label: 'label',
+  positionX: 'positionX',
+  positionY: 'positionY',
+  config: 'config'
+} as const
+
+export type SketchNodeScalarFieldEnum = (typeof SketchNodeScalarFieldEnum)[keyof typeof SketchNodeScalarFieldEnum]
+
+
+export const SketchEdgeScalarFieldEnum = {
+  id: 'id',
+  sketchId: 'sketchId',
+  sourceNodeId: 'sourceNodeId',
+  targetNodeId: 'targetNodeId',
+  sourceHandle: 'sourceHandle',
+  targetHandle: 'targetHandle'
+} as const
+
+export type SketchEdgeScalarFieldEnum = (typeof SketchEdgeScalarFieldEnum)[keyof typeof SketchEdgeScalarFieldEnum]
+
+
+export const AwsConnectionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  region: 'region',
+  accessKeyIdEncrypted: 'accessKeyIdEncrypted',
+  secretAccessKeyEncrypted: 'secretAccessKeyEncrypted',
+  sessionTokenEncrypted: 'sessionTokenEncrypted',
+  encryptionKeyVersion: 'encryptionKeyVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AwsConnectionScalarFieldEnum = (typeof AwsConnectionScalarFieldEnum)[keyof typeof AwsConnectionScalarFieldEnum]
+
+
+export const AwsResourceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sketchId: 'sketchId',
+  nodeId: 'nodeId',
+  connectionId: 'connectionId',
+  service: 'service',
+  externalId: 'externalId',
+  name: 'name',
+  region: 'region',
+  status: 'status',
+  desiredConfig: 'desiredConfig',
+  actualState: 'actualState',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AwsResourceScalarFieldEnum = (typeof AwsResourceScalarFieldEnum)[keyof typeof AwsResourceScalarFieldEnum]
+
+
+export const DeploymentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sketchId: 'sketchId',
+  connectionId: 'connectionId',
+  status: 'status',
+  request: 'request',
+  response: 'response',
+  errorMessage: 'errorMessage',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type DeploymentScalarFieldEnum = (typeof DeploymentScalarFieldEnum)[keyof typeof DeploymentScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -566,6 +1124,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -617,6 +1184,20 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
+ * Reference to a field of type 'SketchStatus'
+ */
+export type EnumSketchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SketchStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SketchStatus[]'
+ */
+export type ListEnumSketchStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SketchStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -627,6 +1208,62 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'AwsResourceStatus'
+ */
+export type EnumAwsResourceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AwsResourceStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AwsResourceStatus[]'
+ */
+export type ListEnumAwsResourceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AwsResourceStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentStatus'
+ */
+export type EnumDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DeploymentStatus[]'
+ */
+export type ListEnumDeploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeploymentStatus[]'>
     
 
 /**
@@ -781,6 +1418,12 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  sketch?: Prisma.SketchOmit
+  sketchNode?: Prisma.SketchNodeOmit
+  sketchEdge?: Prisma.SketchEdgeOmit
+  awsConnection?: Prisma.AwsConnectionOmit
+  awsResource?: Prisma.AwsResourceOmit
+  deployment?: Prisma.DeploymentOmit
 }
 
 /* Types for Logging */

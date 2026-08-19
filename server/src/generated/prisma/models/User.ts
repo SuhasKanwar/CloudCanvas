@@ -206,6 +206,10 @@ export type UserWhereInput = {
   provider?: Prisma.EnumAuthProviderFilter<"User"> | $Enums.AuthProvider
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  sketches?: Prisma.SketchListRelationFilter
+  awsConnections?: Prisma.AwsConnectionListRelationFilter
+  awsResources?: Prisma.AwsResourceListRelationFilter
+  deployments?: Prisma.DeploymentListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -217,6 +221,10 @@ export type UserOrderByWithRelationInput = {
   provider?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  sketches?: Prisma.SketchOrderByRelationAggregateInput
+  awsConnections?: Prisma.AwsConnectionOrderByRelationAggregateInput
+  awsResources?: Prisma.AwsResourceOrderByRelationAggregateInput
+  deployments?: Prisma.DeploymentOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -231,6 +239,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   provider?: Prisma.EnumAuthProviderFilter<"User"> | $Enums.AuthProvider
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
+  sketches?: Prisma.SketchListRelationFilter
+  awsConnections?: Prisma.AwsConnectionListRelationFilter
+  awsResources?: Prisma.AwsResourceListRelationFilter
+  deployments?: Prisma.DeploymentListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -270,6 +282,10 @@ export type UserCreateInput = {
   provider: $Enums.AuthProvider
   createdAt?: Date | string
   updatedAt?: Date | string
+  sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -281,6 +297,10 @@ export type UserUncheckedCreateInput = {
   provider: $Enums.AuthProvider
   createdAt?: Date | string
   updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -292,6 +312,10 @@ export type UserUpdateInput = {
   provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -303,6 +327,10 @@ export type UserUncheckedUpdateInput = {
   provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -371,6 +399,11 @@ export type UserMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -387,6 +420,406 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
+export type UserCreateNestedOneWithoutSketchesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSketchesInput, Prisma.UserUncheckedCreateWithoutSketchesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSketchesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSketchesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSketchesInput, Prisma.UserUncheckedCreateWithoutSketchesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSketchesInput
+  upsert?: Prisma.UserUpsertWithoutSketchesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSketchesInput, Prisma.UserUpdateWithoutSketchesInput>, Prisma.UserUncheckedUpdateWithoutSketchesInput>
+}
+
+export type UserCreateNestedOneWithoutAwsConnectionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAwsConnectionsInput, Prisma.UserUncheckedCreateWithoutAwsConnectionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAwsConnectionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutAwsConnectionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAwsConnectionsInput, Prisma.UserUncheckedCreateWithoutAwsConnectionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAwsConnectionsInput
+  upsert?: Prisma.UserUpsertWithoutAwsConnectionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAwsConnectionsInput, Prisma.UserUpdateWithoutAwsConnectionsInput>, Prisma.UserUncheckedUpdateWithoutAwsConnectionsInput>
+}
+
+export type UserCreateNestedOneWithoutAwsResourcesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAwsResourcesInput, Prisma.UserUncheckedCreateWithoutAwsResourcesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAwsResourcesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutAwsResourcesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAwsResourcesInput, Prisma.UserUncheckedCreateWithoutAwsResourcesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAwsResourcesInput
+  upsert?: Prisma.UserUpsertWithoutAwsResourcesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAwsResourcesInput, Prisma.UserUpdateWithoutAwsResourcesInput>, Prisma.UserUncheckedUpdateWithoutAwsResourcesInput>
+}
+
+export type UserCreateNestedOneWithoutDeploymentsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDeploymentsInput, Prisma.UserUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDeploymentsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutDeploymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutDeploymentsInput, Prisma.UserUncheckedCreateWithoutDeploymentsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutDeploymentsInput
+  upsert?: Prisma.UserUpsertWithoutDeploymentsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.UserUpdateWithoutDeploymentsInput>, Prisma.UserUncheckedUpdateWithoutDeploymentsInput>
+}
+
+export type UserCreateWithoutSketchesInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutSketchesInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutSketchesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSketchesInput, Prisma.UserUncheckedCreateWithoutSketchesInput>
+}
+
+export type UserUpsertWithoutSketchesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSketchesInput, Prisma.UserUncheckedUpdateWithoutSketchesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSketchesInput, Prisma.UserUncheckedCreateWithoutSketchesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSketchesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSketchesInput, Prisma.UserUncheckedUpdateWithoutSketchesInput>
+}
+
+export type UserUpdateWithoutSketchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSketchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutAwsConnectionsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutAwsConnectionsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutAwsConnectionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAwsConnectionsInput, Prisma.UserUncheckedCreateWithoutAwsConnectionsInput>
+}
+
+export type UserUpsertWithoutAwsConnectionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAwsConnectionsInput, Prisma.UserUncheckedUpdateWithoutAwsConnectionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAwsConnectionsInput, Prisma.UserUncheckedCreateWithoutAwsConnectionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAwsConnectionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAwsConnectionsInput, Prisma.UserUncheckedUpdateWithoutAwsConnectionsInput>
+}
+
+export type UserUpdateWithoutAwsConnectionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAwsConnectionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutAwsResourcesInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutAwsResourcesInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutAwsResourcesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAwsResourcesInput, Prisma.UserUncheckedCreateWithoutAwsResourcesInput>
+}
+
+export type UserUpsertWithoutAwsResourcesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAwsResourcesInput, Prisma.UserUncheckedUpdateWithoutAwsResourcesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAwsResourcesInput, Prisma.UserUncheckedCreateWithoutAwsResourcesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAwsResourcesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAwsResourcesInput, Prisma.UserUncheckedUpdateWithoutAwsResourcesInput>
+}
+
+export type UserUpdateWithoutAwsResourcesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAwsResourcesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutDeploymentsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutDeploymentsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutDeploymentsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutDeploymentsInput, Prisma.UserUncheckedCreateWithoutDeploymentsInput>
+}
+
+export type UserUpsertWithoutDeploymentsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutDeploymentsInput, Prisma.UserUncheckedUpdateWithoutDeploymentsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutDeploymentsInput, Prisma.UserUncheckedCreateWithoutDeploymentsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutDeploymentsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutDeploymentsInput, Prisma.UserUncheckedUpdateWithoutDeploymentsInput>
+}
+
+export type UserUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutDeploymentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
+}
+
+
+/**
+ * Count Type UserCountOutputType
+ */
+
+export type UserCountOutputType = {
+  sketches: number
+  awsConnections: number
+  awsResources: number
+  deployments: number
+}
+
+export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sketches?: boolean | UserCountOutputTypeCountSketchesArgs
+  awsConnections?: boolean | UserCountOutputTypeCountAwsConnectionsArgs
+  awsResources?: boolean | UserCountOutputTypeCountAwsResourcesArgs
+  deployments?: boolean | UserCountOutputTypeCountDeploymentsArgs
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserCountOutputType
+   */
+  select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSketchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SketchWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAwsConnectionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AwsConnectionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAwsResourcesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AwsResourceWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountDeploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeploymentWhereInput
+}
 
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -398,6 +831,11 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   provider?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  sketches?: boolean | Prisma.User$sketchesArgs<ExtArgs>
+  awsConnections?: boolean | Prisma.User$awsConnectionsArgs<ExtArgs>
+  awsResources?: boolean | Prisma.User$awsResourcesArgs<ExtArgs>
+  deployments?: boolean | Prisma.User$deploymentsArgs<ExtArgs>
+  _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -434,10 +872,24 @@ export type UserSelectScalar = {
 }
 
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "imageUrl" | "password" | "provider" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sketches?: boolean | Prisma.User$sketchesArgs<ExtArgs>
+  awsConnections?: boolean | Prisma.User$awsConnectionsArgs<ExtArgs>
+  awsResources?: boolean | Prisma.User$awsResourcesArgs<ExtArgs>
+  deployments?: boolean | Prisma.User$deploymentsArgs<ExtArgs>
+  _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "User"
-  objects: {}
+  objects: {
+    sketches: Prisma.$SketchPayload<ExtArgs>[]
+    awsConnections: Prisma.$AwsConnectionPayload<ExtArgs>[]
+    awsResources: Prisma.$AwsResourcePayload<ExtArgs>[]
+    deployments: Prisma.$DeploymentPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     email: string
@@ -841,6 +1293,10 @@ readonly fields: UserFieldRefs;
  */
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  sketches<T extends Prisma.User$sketchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sketchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SketchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  awsConnections<T extends Prisma.User$awsConnectionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$awsConnectionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AwsConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  awsResources<T extends Prisma.User$awsResourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$awsResourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AwsResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deployments<T extends Prisma.User$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -895,6 +1351,10 @@ export type UserFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * Filter, which User to fetch.
    */
   where: Prisma.UserWhereUniqueInput
@@ -913,6 +1373,10 @@ export type UserFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * Filter, which User to fetch.
    */
   where: Prisma.UserWhereUniqueInput
@@ -930,6 +1394,10 @@ export type UserFindFirstArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
   /**
    * Filter, which User to fetch.
    */
@@ -979,6 +1447,10 @@ export type UserFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * Filter, which User to fetch.
    */
   where?: Prisma.UserWhereInput
@@ -1026,6 +1498,10 @@ export type UserFindManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
   /**
    * Filter, which Users to fetch.
    */
@@ -1075,6 +1551,10 @@ export type UserCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * The data needed to create a User.
    */
   data: Prisma.XOR<Prisma.UserCreateInput, Prisma.UserUncheckedCreateInput>
@@ -1122,6 +1602,10 @@ export type UserUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
   /**
    * The data needed to update a User.
    */
@@ -1189,6 +1673,10 @@ export type UserUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * The filter to search for the User to update in case it exists.
    */
   where: Prisma.UserWhereUniqueInput
@@ -1215,6 +1703,10 @@ export type UserDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  /**
    * Filter which User to delete.
    */
   where: Prisma.UserWhereUniqueInput
@@ -1235,6 +1727,102 @@ export type UserDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 /**
+ * User.sketches
+ */
+export type User$sketchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Sketch
+   */
+  select?: Prisma.SketchSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Sketch
+   */
+  omit?: Prisma.SketchOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SketchInclude<ExtArgs> | null
+  where?: Prisma.SketchWhereInput
+  orderBy?: Prisma.SketchOrderByWithRelationInput | Prisma.SketchOrderByWithRelationInput[]
+  cursor?: Prisma.SketchWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SketchScalarFieldEnum | Prisma.SketchScalarFieldEnum[]
+}
+
+/**
+ * User.awsConnections
+ */
+export type User$awsConnectionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AwsConnection
+   */
+  select?: Prisma.AwsConnectionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AwsConnection
+   */
+  omit?: Prisma.AwsConnectionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AwsConnectionInclude<ExtArgs> | null
+  where?: Prisma.AwsConnectionWhereInput
+  orderBy?: Prisma.AwsConnectionOrderByWithRelationInput | Prisma.AwsConnectionOrderByWithRelationInput[]
+  cursor?: Prisma.AwsConnectionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AwsConnectionScalarFieldEnum | Prisma.AwsConnectionScalarFieldEnum[]
+}
+
+/**
+ * User.awsResources
+ */
+export type User$awsResourcesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AwsResource
+   */
+  select?: Prisma.AwsResourceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AwsResource
+   */
+  omit?: Prisma.AwsResourceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AwsResourceInclude<ExtArgs> | null
+  where?: Prisma.AwsResourceWhereInput
+  orderBy?: Prisma.AwsResourceOrderByWithRelationInput | Prisma.AwsResourceOrderByWithRelationInput[]
+  cursor?: Prisma.AwsResourceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AwsResourceScalarFieldEnum | Prisma.AwsResourceScalarFieldEnum[]
+}
+
+/**
+ * User.deployments
+ */
+export type User$deploymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Deployment
+   */
+  select?: Prisma.DeploymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Deployment
+   */
+  omit?: Prisma.DeploymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeploymentInclude<ExtArgs> | null
+  where?: Prisma.DeploymentWhereInput
+  orderBy?: Prisma.DeploymentOrderByWithRelationInput | Prisma.DeploymentOrderByWithRelationInput[]
+  cursor?: Prisma.DeploymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeploymentScalarFieldEnum | Prisma.DeploymentScalarFieldEnum[]
+}
+
+/**
  * User without action
  */
 export type UserDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1246,4 +1834,8 @@ export type UserDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    * Omit specific fields from the User
    */
   omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
 }

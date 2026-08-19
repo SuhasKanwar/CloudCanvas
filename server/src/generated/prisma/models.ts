@@ -9,4 +9,10 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User.js'
+export type * from './models/Sketch.js'
+export type * from './models/SketchNode.js'
+export type * from './models/SketchEdge.js'
+export type * from './models/AwsConnection.js'
+export type * from './models/AwsResource.js'
+export type * from './models/Deployment.js'
 export type * from './commonInputTypes.js'

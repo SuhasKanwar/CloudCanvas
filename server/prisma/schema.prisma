@@ -12,17 +12,163 @@ enum AuthProvider {
   CREDENTIALS
 }
 
+enum SketchStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum AwsResourceStatus {
+  DESIRED
+  PROVISIONING
+  RUNNING
+  FAILED
+}
+
+enum DeploymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  imageUrl  String?
-  password  String?
-  provider  AuthProvider
-  
+  id       String       @id @default(cuid())
+  email    String       @unique
+  name     String?
+  imageUrl String?
+  password String?
+  provider AuthProvider
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  sketches       Sketch[]
+  awsConnections AwsConnection[]
+  awsResources   AwsResource[]
+  deployments    Deployment[]
+
   @@index([email])
   @@index([createdAt])
+}
+
+model Sketch {
+  id          String       @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  status      SketchStatus @default(DRAFT)
+  version     Int          @default(1)
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodes       SketchNode[]
+  edges       SketchEdge[]
+  resources   AwsResource[]
+  deployments Deployment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+model SketchNode {
+  id        String  @id @default(cuid())
+  sketchId  String
+  type      String
+  label     String?
+  positionX Float   @default(0)
+  positionY Float   @default(0)
+  config    Json
+
+  sketch        Sketch       @relation(fields: [sketchId], references: [id], onDelete: Cascade)
+  resource      AwsResource?
+  outgoingEdges SketchEdge[] @relation("EdgeSource")
+  incomingEdges SketchEdge[] @relation("EdgeTarget")
+
+  @@index([sketchId])
+}
+
+model SketchEdge {
+  id           String  @id @default(cuid())
+  sketchId     String
+  sourceNodeId String
+  targetNodeId String
+  sourceHandle String?
+  targetHandle String?
+
+  sketch     Sketch     @relation(fields: [sketchId], references: [id], onDelete: Cascade)
+  sourceNode SketchNode @relation("EdgeSource", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode SketchNode @relation("EdgeTarget", fields: [targetNodeId], references: [id], onDelete: Cascade)
+
+  @@index([sketchId])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+}
+
+model AwsConnection {
+  id                       String  @id @default(cuid())
+  userId                   String
+  name                     String
+  region                   String
+  accessKeyIdEncrypted     String
+  secretAccessKeyEncrypted String
+  sessionTokenEncrypted    String?
+  encryptionKeyVersion     Int     @default(1)
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resources   AwsResource[]
+  deployments Deployment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+model AwsResource {
+  id            String            @id @default(cuid())
+  userId        String
+  sketchId      String
+  nodeId        String?           @unique
+  connectionId  String
+  service       String
+  externalId    String?
+  name          String?
+  region        String
+  status        AwsResourceStatus @default(DESIRED)
+  desiredConfig Json
+  actualState   Json?
+  lastError     String?
+
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sketch     Sketch        @relation(fields: [sketchId], references: [id], onDelete: Cascade)
+  node       SketchNode?   @relation(fields: [nodeId], references: [id], onDelete: SetNull)
+  connection AwsConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, sketchId])
+  @@index([connectionId])
+  @@index([externalId])
+}
+
+model Deployment {
+  id           String           @id @default(cuid())
+  userId       String
+  sketchId     String
+  connectionId String
+  status       DeploymentStatus @default(PENDING)
+  request      Json
+  response     Json?
+  errorMessage String?
+  startedAt    DateTime         @default(now())
+  finishedAt   DateTime?
+
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sketch     Sketch        @relation(fields: [sketchId], references: [id], onDelete: Cascade)
+  connection AwsConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+  createdAt  DateTime      @default(now())
+
+  @@index([userId, sketchId, createdAt])
 }

@@ -46,3 +46,33 @@ export { Prisma }
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Sketch
+ * 
+ */
+export type Sketch = Prisma.SketchModel
+/**
+ * Model SketchNode
+ * 
+ */
+export type SketchNode = Prisma.SketchNodeModel
+/**
+ * Model SketchEdge
+ * 
+ */
+export type SketchEdge = Prisma.SketchEdgeModel
+/**
+ * Model AwsConnection
+ * 
+ */
+export type AwsConnection = Prisma.AwsConnectionModel
+/**
+ * Model AwsResource
+ * 
+ */
+export type AwsResource = Prisma.AwsResourceModel
+/**
+ * Model Deployment
+ * 
+ */
+export type Deployment = Prisma.DeploymentModel
