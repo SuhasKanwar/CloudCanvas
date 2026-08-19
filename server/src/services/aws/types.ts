@@ -11,6 +11,8 @@ export type AwsCredentials = {
     sessionToken?: string;
 };
 
+export type AwsServiceType = "EC2_INSTANCE" | "ECR_REPOSITORY" | "S3_BUCKET" | "IAM_ROLE";
+
 export type Ec2InstanceRequest = {
     imageId: string;
     instanceType?: string;
@@ -50,4 +52,25 @@ export type Ec2TerminationResult = {
 export type Ec2CommandSender = {
     run: (command: RunInstancesCommand) => Promise<RunInstancesCommandOutput>;
     terminate: (command: TerminateInstancesCommand) => Promise<TerminateInstancesCommandOutput>;
+};
+
+export type AwsResourceCreateRequest =
+    | { service: "EC2_INSTANCE"; config: Ec2InstanceRequest }
+    | { service: "ECR_REPOSITORY"; config: import("./ecr.js").EcrRepositoryRequest }
+    | { service: "S3_BUCKET"; config: import("./s3.js").S3BucketRequest }
+    | { service: "IAM_ROLE"; config: import("./iam.js").IamRoleRequest };
+
+export type AwsResourceResult = {
+    service: AwsServiceType;
+    region: string;
+    name: string;
+    externalId: string;
+    data: unknown;
+};
+
+export type AwsResourceDeleteResult = {
+    service: AwsServiceType;
+    region: string;
+    externalId: string;
+    data: unknown;
 };

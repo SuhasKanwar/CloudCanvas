@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsc --watch",
-    "test": "npm run build && node dist/services/aws/aws.test.js",
+    "test": "npm run build && node dist/services/aws/aws.test.js && node dist/services/aws/other-services.test.js",
     "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",
     "db:push": "npx prisma db push",
@@ -39,6 +39,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.1112.0",
+    "@aws-sdk/client-ecr": "^3.1113.0",
+    "@aws-sdk/client-iam": "^3.1113.0",
+    "@aws-sdk/client-s3": "^3.1113.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "axios": "^1.19.0",
