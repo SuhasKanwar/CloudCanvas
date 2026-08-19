@@ -7,7 +7,8 @@ import {
     awsResourceManager,
     decryptAwsSecret,
     encryptAwsSecret,
-    type Ec2InstanceRequest,
+    type AwsResourceCreateRequest,
+    type AwsServiceType,
 } from "../services/aws/index.js";
 import type { ApiResponse } from "../types/response.js";
 
@@ -37,6 +38,63 @@ function errorMessage(error: unknown) {
 function param(req: Request, name: string) {
     const value = req.params[name];
     return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+function buildResourceRequest(type: string, config: Record<string, unknown>): AwsResourceCreateRequest {
+    if (type === "EC2_INSTANCE") {
+        if (typeof config.imageId !== "string" || !config.imageId) throw new Error("EC2 node config must include imageId.");
+        return {
+            service: type,
+            config: {
+                imageId: config.imageId,
+                ...(typeof config.instanceType === "string" && { instanceType: config.instanceType }),
+                ...(typeof config.keyName === "string" && { keyName: config.keyName }),
+                ...(Array.isArray(config.securityGroupIds) && { securityGroupIds: config.securityGroupIds.filter((value): value is string => typeof value === "string") }),
+                ...(typeof config.subnetId === "string" && { subnetId: config.subnetId }),
+                ...(typeof config.name === "string" && { name: config.name }),
+                ...(typeof config.userData === "string" && { userData: config.userData }),
+                ...(config.dryRun === true && { dryRun: true }),
+            },
+        };
+    }
+    if (type === "ECR_REPOSITORY") {
+        if (typeof config.repositoryName !== "string" || !config.repositoryName) throw new Error("ECR node config must include repositoryName.");
+        if (config.imageTagMutability !== undefined && config.imageTagMutability !== "MUTABLE" && config.imageTagMutability !== "IMMUTABLE") {
+            throw new Error("imageTagMutability must be MUTABLE or IMMUTABLE.");
+        }
+        return {
+            service: type,
+            config: {
+                repositoryName: config.repositoryName,
+                ...(config.imageTagMutability && { imageTagMutability: config.imageTagMutability }),
+                ...(typeof config.scanOnPush === "boolean" && { scanOnPush: config.scanOnPush }),
+            },
+        };
+    }
+    if (type === "S3_BUCKET") {
+        if (typeof config.bucketName !== "string" || !config.bucketName) throw new Error("S3 node config must include bucketName.");
+        return { service: type, config: { bucketName: config.bucketName } };
+    }
+    if (type === "IAM_ROLE") {
+        if (typeof config.roleName !== "string" || !config.roleName) throw new Error("IAM node config must include roleName.");
+        if (typeof config.assumeRolePolicyDocument !== "string" || !config.assumeRolePolicyDocument) {
+            throw new Error("IAM node config must include assumeRolePolicyDocument.");
+        }
+        return {
+            service: type,
+            config: {
+                roleName: config.roleName,
+                assumeRolePolicyDocument: config.assumeRolePolicyDocument,
+                ...(typeof config.description === "string" && { description: config.description }),
+                ...(typeof config.path === "string" && { path: config.path }),
+            },
+        };
+    }
+    throw new Error("Supported services are EC2_INSTANCE, ECR_REPOSITORY, S3_BUCKET, and IAM_ROLE.");
+}
+
+function isSupportedService(type: string): type is AwsServiceType {
+    return ["EC2_INSTANCE", "ECR_REPOSITORY", "S3_BUCKET", "IAM_ROLE"].includes(type);
 }
 
 export async function createSketch(req: Request, res: Response<ApiResponse>) {
@@ -235,33 +293,24 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
     const connection = await prisma.awsConnection.findFirst({ where: { id: connectionId, userId } });
     if (!connection) return res.status(404).json({ success: false, message: "AWS connection not found." });
     const node = sketch.nodes[0];
-    if (!node || sketch.nodes.length !== 1 || node.type !== "EC2_INSTANCE") {
-        return res.status(400).json({ success: false, message: "v1 deployment supports exactly one EC2_INSTANCE node." });
+    if (!node || sketch.nodes.length !== 1) {
+        return res.status(400).json({ success: false, message: "v1 deployment supports exactly one AWS resource node." });
     }
-
-    const config = node.config as Record<string, unknown>;
-    if (!config || typeof config.imageId !== "string" || !config.imageId) {
-        return res.status(400).json({ success: false, message: "EC2 node config must include imageId." });
+    let resourceRequest: AwsResourceCreateRequest;
+    try {
+        resourceRequest = buildResourceRequest(node.type, node.config as Record<string, unknown>);
+    } catch (error) {
+        return res.status(400).json({ success: false, message: errorMessage(error) });
     }
     if (!AWS_ENCRYPTION_KEY) return res.status(500).json({ success: false, message: "AWS credential encryption is not configured." });
 
-    const request: Ec2InstanceRequest = {
-        imageId: config.imageId,
-        ...(typeof config.instanceType === "string" && { instanceType: config.instanceType }),
-        ...(typeof config.keyName === "string" && { keyName: config.keyName }),
-        ...(Array.isArray(config.securityGroupIds) && { securityGroupIds: config.securityGroupIds.filter((value): value is string => typeof value === "string") }),
-        ...(typeof config.subnetId === "string" && { subnetId: config.subnetId }),
-        ...(typeof config.name === "string" && { name: config.name }),
-        ...(typeof config.userData === "string" && { userData: config.userData }),
-        ...(config.dryRun === true && { dryRun: true }),
-    };
     const deployment = await prisma.deployment.create({
-        data: { userId, sketchId, connectionId, request: jsonValue({ connectionId, nodeId: node.id, request }) },
+        data: { userId, sketchId, connectionId, request: jsonValue({ connectionId, nodeId: node.id, request: resourceRequest }) },
     });
     const resource = await prisma.awsResource.upsert({
         where: { nodeId: node.id },
-        create: { userId, sketchId, nodeId: node.id, connectionId, service: "EC2_INSTANCE", name: request.name ?? null, region: connection.region, status: AwsResourceStatus.PROVISIONING, desiredConfig: jsonValue(request) },
-        update: { connectionId, name: request.name ?? null, region: connection.region, status: AwsResourceStatus.PROVISIONING, desiredConfig: jsonValue(request), lastError: null },
+        create: { userId, sketchId, nodeId: node.id, connectionId, service: resourceRequest.service, name: null, region: connection.region, status: AwsResourceStatus.PROVISIONING, desiredConfig: jsonValue(resourceRequest.config) },
+        update: { connectionId, region: connection.region, status: AwsResourceStatus.PROVISIONING, desiredConfig: jsonValue(resourceRequest.config), lastError: null },
     });
 
     try {
@@ -270,14 +319,13 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
             secretAccessKey: decryptAwsSecret(connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
             ...(connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
         };
-        const result = await awsResourceManager.createEc2Instance(request, credentials, connection.region);
-        const instanceId = result.instances[0]?.instanceId ?? null;
+        const result = await awsResourceManager.createResource(resourceRequest, credentials, connection.region);
         const updatedResource = await prisma.awsResource.update({
             where: { id: resource.id },
-            data: { externalId: instanceId, status: AwsResourceStatus.RUNNING, actualState: jsonValue(result), lastError: null },
+            data: { externalId: result.externalId, name: result.name, status: AwsResourceStatus.RUNNING, actualState: jsonValue(result.data), lastError: null },
         });
-        await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result), finishedAt: new Date() } });
-        return res.status(201).json({ success: true, message: "EC2 deployment completed successfully.", data: { deploymentId: deployment.id, resource: updatedResource, result } });
+        await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result.data), finishedAt: new Date() } });
+        return res.status(201).json({ success: true, message: `${resourceRequest.service} deployment completed successfully.`, data: { deploymentId: deployment.id, resource: updatedResource, result } });
     } catch (error) {
         const message = errorMessage(error);
         await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.FAILED, lastError: message } });
@@ -294,8 +342,8 @@ export async function deleteAwsResource(req: Request, res: Response<ApiResponse>
         include: { connection: true },
     });
     if (!resource) return res.status(404).json({ success: false, message: "AWS resource not found." });
-    if (resource.service !== "EC2_INSTANCE") {
-        return res.status(400).json({ success: false, message: "Only EC2 resource deletion is supported right now." });
+    if (!isSupportedService(resource.service)) {
+        return res.status(400).json({ success: false, message: "This AWS resource type is not supported yet." });
     }
     if (resource.status === AwsResourceStatus.TERMINATED) {
         return res.json({ success: true, message: "EC2 resource is already terminated.", data: resource });
@@ -323,17 +371,17 @@ export async function deleteAwsResource(req: Request, res: Response<ApiResponse>
             secretAccessKey: decryptAwsSecret(resource.connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
             ...(resource.connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(resource.connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
         };
-        const result = await awsResourceManager.terminateEc2Instances([resource.externalId], credentials, resource.region);
+        const result = await awsResourceManager.deleteResource(resource.service, resource.externalId, credentials, resource.region);
         const updatedResource = await prisma.awsResource.update({
             where: { id: resource.id },
-            data: { status: AwsResourceStatus.TERMINATED, actualState: jsonValue(result), lastError: null },
+            data: { status: AwsResourceStatus.TERMINATED, actualState: jsonValue(result.data), lastError: null },
         });
-        await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result), finishedAt: new Date() } });
-        return res.json({ success: true, message: "EC2 resource terminated successfully.", data: { deploymentId: deployment.id, resource: updatedResource, result } });
+        await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result.data), finishedAt: new Date() } });
+        return res.json({ success: true, message: `${resource.service} resource deleted successfully.`, data: { deploymentId: deployment.id, resource: updatedResource, result } });
     } catch (error) {
         const message = errorMessage(error);
         await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.FAILED, lastError: message } });
         await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.FAILED, errorMessage: message, finishedAt: new Date() } });
-        return res.status(502).json({ success: false, message: "EC2 resource termination failed.", error: message, data: { deploymentId: deployment.id } });
+        return res.status(502).json({ success: false, message: `${resource.service} resource deletion failed.`, error: message, data: { deploymentId: deployment.id } });
     }
 }
