@@ -1,4 +1,6 @@
 import type { Request, Response } from "express";
+import type { AttributeDefinition, BillingMode, KeySchemaElement } from "@aws-sdk/client-dynamodb";
+import type { Runtime } from "@aws-sdk/client-lambda";
 import { Prisma } from "../generated/prisma/client.js";
 import { AwsResourceStatus, DeploymentStatus, SketchStatus } from "../generated/prisma/enums.js";
 import prisma from "../lib/prisma.js";
@@ -7,6 +9,7 @@ import {
     awsResourceManager,
     decryptAwsSecret,
     encryptAwsSecret,
+    AwsService,
     type AwsResourceCreateRequest,
     type AwsServiceType,
 } from "../services/aws/index.js";
@@ -44,7 +47,7 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
     if (type === "EC2_INSTANCE") {
         if (typeof config.imageId !== "string" || !config.imageId) throw new Error("EC2 node config must include imageId.");
         return {
-            service: type,
+            service: AwsService.EC2_INSTANCE,
             config: {
                 imageId: config.imageId,
                 ...(typeof config.instanceType === "string" && { instanceType: config.instanceType }),
@@ -63,7 +66,7 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
             throw new Error("imageTagMutability must be MUTABLE or IMMUTABLE.");
         }
         return {
-            service: type,
+            service: AwsService.ECR_REPOSITORY,
             config: {
                 repositoryName: config.repositoryName,
                 ...(config.imageTagMutability && { imageTagMutability: config.imageTagMutability }),
@@ -73,7 +76,7 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
     }
     if (type === "S3_BUCKET") {
         if (typeof config.bucketName !== "string" || !config.bucketName) throw new Error("S3 node config must include bucketName.");
-        return { service: type, config: { bucketName: config.bucketName } };
+        return { service: AwsService.S3_BUCKET, config: { bucketName: config.bucketName } };
     }
     if (type === "IAM_ROLE") {
         if (typeof config.roleName !== "string" || !config.roleName) throw new Error("IAM node config must include roleName.");
@@ -81,7 +84,7 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
             throw new Error("IAM node config must include assumeRolePolicyDocument.");
         }
         return {
-            service: type,
+            service: AwsService.IAM_ROLE,
             config: {
                 roleName: config.roleName,
                 assumeRolePolicyDocument: config.assumeRolePolicyDocument,
@@ -90,11 +93,64 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
             },
         };
     }
-    throw new Error("Supported services are EC2_INSTANCE, ECR_REPOSITORY, S3_BUCKET, and IAM_ROLE.");
+    if (type === "LAMBDA_FUNCTION") {
+        const required = ["functionName", "roleArn", "handler", "runtime", "codeZipBase64"];
+        if (required.some((key) => typeof config[key] !== "string" || !config[key])) {
+            throw new Error("Lambda node config must include functionName, roleArn, handler, runtime, and codeZipBase64.");
+        }
+        return {
+            service: AwsService.LAMBDA_FUNCTION,
+            config: {
+                functionName: config.functionName as string,
+                roleArn: config.roleArn as string,
+                handler: config.handler as string,
+                runtime: config.runtime as Runtime,
+                codeZipBase64: config.codeZipBase64 as string,
+                ...(typeof config.description === "string" && { description: config.description }),
+                ...(typeof config.memorySize === "number" && { memorySize: config.memorySize }),
+                ...(typeof config.timeout === "number" && { timeout: config.timeout }),
+            },
+        };
+    }
+    if (type === "DYNAMODB_TABLE") {
+        if (typeof config.tableName !== "string" || !config.tableName || !Array.isArray(config.keySchema) || !Array.isArray(config.attributeDefinitions)) {
+            throw new Error("DynamoDB node config must include tableName, keySchema, and attributeDefinitions arrays.");
+        }
+        if (config.billingMode !== undefined && config.billingMode !== "PAY_PER_REQUEST" && config.billingMode !== "PROVISIONED") {
+            throw new Error("DynamoDB billingMode must be PAY_PER_REQUEST or PROVISIONED.");
+        }
+        return {
+            service: AwsService.DYNAMODB_TABLE,
+            config: {
+                tableName: config.tableName,
+                keySchema: config.keySchema as KeySchemaElement[],
+                attributeDefinitions: config.attributeDefinitions as AttributeDefinition[],
+                ...(config.billingMode && { billingMode: config.billingMode as BillingMode }),
+                ...(typeof config.readCapacityUnits === "number" && { readCapacityUnits: config.readCapacityUnits }),
+                ...(typeof config.writeCapacityUnits === "number" && { writeCapacityUnits: config.writeCapacityUnits }),
+            },
+        };
+    }
+    if (type === "SQS_QUEUE") {
+        if (typeof config.queueName !== "string" || !config.queueName) throw new Error("SQS node config must include queueName.");
+        return {
+            service: AwsService.SQS_QUEUE,
+            config: {
+                queueName: config.queueName,
+                ...(typeof config.visibilityTimeoutSeconds === "number" && { visibilityTimeoutSeconds: config.visibilityTimeoutSeconds }),
+                ...(typeof config.messageRetentionPeriodSeconds === "number" && { messageRetentionPeriodSeconds: config.messageRetentionPeriodSeconds }),
+            },
+        };
+    }
+    if (type === "SNS_TOPIC") {
+        if (typeof config.topicName !== "string" || !config.topicName) throw new Error("SNS node config must include topicName.");
+        return { service: AwsService.SNS_TOPIC, config: { topicName: config.topicName, ...(config.fifoTopic === true && { fifoTopic: true }) } };
+    }
+    throw new Error("Supported services are EC2_INSTANCE, ECR_REPOSITORY, S3_BUCKET, IAM_ROLE, LAMBDA_FUNCTION, DYNAMODB_TABLE, SQS_QUEUE, and SNS_TOPIC.");
 }
 
 function isSupportedService(type: string): type is AwsServiceType {
-    return ["EC2_INSTANCE", "ECR_REPOSITORY", "S3_BUCKET", "IAM_ROLE"].includes(type);
+    return Object.values(AwsService).includes(type as AwsService);
 }
 
 export async function createSketch(req: Request, res: Response<ApiResponse>) {
