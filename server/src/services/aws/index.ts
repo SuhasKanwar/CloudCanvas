@@ -7,14 +7,14 @@ import { LambdaClient } from "@aws-sdk/client-lambda";
 import { SNSClient } from "@aws-sdk/client-sns";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { AWS_REGION } from "../../lib/config.js";
-import { Ec2Service } from "./ec2.js";
-import { EcrService } from "./ecr.js";
-import { IamService } from "./iam.js";
-import { LambdaService } from "./lambda.js";
-import { DynamoDbService } from "./dynamodb.js";
-import { S3Service } from "./s3.js";
-import { SnsService } from "./sns.js";
-import { SqsService } from "./sqs.js";
+import { Ec2Service } from "./resources/ec2.js";
+import { EcrService } from "./resources/ecr.js";
+import { IamService } from "./resources/iam.js";
+import { LambdaService } from "./resources/lambda.js";
+import { DynamoDbService } from "./resources/dynamodb.js";
+import { S3Service } from "./resources/s3.js";
+import { SnsService } from "./resources/sns.js";
+import { SqsService } from "./resources/sqs.js";
 import { AwsService } from "./types.js";
 import type {
     AwsCredentials,
@@ -172,14 +172,14 @@ export class AWSResourceManager {
 
 export const awsResourceManager = new AWSResourceManager();
 export { decryptAwsSecret, encryptAwsSecret } from "./crypto.js";
-export { Ec2Service } from "./ec2.js";
-export { EcrService } from "./ecr.js";
-export { IamService } from "./iam.js";
-export { LambdaService } from "./lambda.js";
-export { DynamoDbService } from "./dynamodb.js";
-export { S3Service } from "./s3.js";
-export { SnsService } from "./sns.js";
-export { SqsService } from "./sqs.js";
+export { Ec2Service } from "./resources/ec2.js";
+export { EcrService } from "./resources/ecr.js";
+export { IamService } from "./resources/iam.js";
+export { LambdaService } from "./resources/lambda.js";
+export { DynamoDbService } from "./resources/dynamodb.js";
+export { S3Service } from "./resources/s3.js";
+export { SnsService } from "./resources/sns.js";
+export { SqsService } from "./resources/sqs.js";
 export { AwsService } from "./types.js";
 export type {
     AwsCredentials,
@@ -192,10 +192,10 @@ export type {
     Ec2TerminationRequest,
     Ec2TerminationResult,
 } from "./types.js";
-export type { EcrDeleteResult, EcrRepositoryRequest, EcrRepositoryResult } from "./ecr.js";
-export type { IamDeleteResult, IamRoleRequest, IamRoleResult } from "./iam.js";
-export type { S3BucketRequest, S3BucketResult, S3DeleteResult } from "./s3.js";
-export type { LambdaDeleteResult, LambdaFunctionRequest, LambdaFunctionResult } from "./lambda.js";
-export type { DynamoDbDeleteResult, DynamoDbTableRequest, DynamoDbTableResult } from "./dynamodb.js";
-export type { SnsDeleteResult, SnsTopicRequest, SnsTopicResult } from "./sns.js";
-export type { SqsDeleteResult, SqsQueueRequest, SqsQueueResult } from "./sqs.js";
+export type { EcrDeleteResult, EcrRepositoryRequest, EcrRepositoryResult } from "./resources/ecr.js";
+export type { IamDeleteResult, IamRoleRequest, IamRoleResult } from "./resources/iam.js";
+export type { S3BucketRequest, S3BucketResult, S3DeleteResult } from "./resources/s3.js";
+export type { LambdaDeleteResult, LambdaFunctionRequest, LambdaFunctionResult } from "./resources/lambda.js";
+export type { DynamoDbDeleteResult, DynamoDbTableRequest, DynamoDbTableResult } from "./resources/dynamodb.js";
+export type { SnsDeleteResult, SnsTopicRequest, SnsTopicResult } from "./resources/sns.js";
+export type { SqsDeleteResult, SqsQueueRequest, SqsQueueResult } from "./resources/sqs.js";

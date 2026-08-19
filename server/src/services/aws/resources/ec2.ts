@@ -12,7 +12,7 @@ import type {
     Ec2InstanceResult,
     Ec2TerminationRequest,
     Ec2TerminationResult,
-} from "./types.js";
+} from "../types.js";
 
 export class Ec2Service {
     constructor(private readonly send: Ec2CommandSender, private readonly region: string) {}

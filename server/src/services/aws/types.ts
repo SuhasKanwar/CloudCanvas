@@ -67,13 +67,13 @@ export type Ec2CommandSender = {
 
 export type AwsResourceCreateRequest =
     | { service: AwsService.EC2_INSTANCE; config: Ec2InstanceRequest }
-    | { service: AwsService.ECR_REPOSITORY; config: import("./ecr.js").EcrRepositoryRequest }
-    | { service: AwsService.S3_BUCKET; config: import("./s3.js").S3BucketRequest }
-    | { service: AwsService.IAM_ROLE; config: import("./iam.js").IamRoleRequest }
-    | { service: AwsService.LAMBDA_FUNCTION; config: import("./lambda.js").LambdaFunctionRequest }
-    | { service: AwsService.DYNAMODB_TABLE; config: import("./dynamodb.js").DynamoDbTableRequest }
-    | { service: AwsService.SQS_QUEUE; config: import("./sqs.js").SqsQueueRequest }
-    | { service: AwsService.SNS_TOPIC; config: import("./sns.js").SnsTopicRequest };
+    | { service: AwsService.ECR_REPOSITORY; config: import("./resources/ecr.js").EcrRepositoryRequest }
+    | { service: AwsService.S3_BUCKET; config: import("./resources/s3.js").S3BucketRequest }
+    | { service: AwsService.IAM_ROLE; config: import("./resources/iam.js").IamRoleRequest }
+    | { service: AwsService.LAMBDA_FUNCTION; config: import("./resources/lambda.js").LambdaFunctionRequest }
+    | { service: AwsService.DYNAMODB_TABLE; config: import("./resources/dynamodb.js").DynamoDbTableRequest }
+    | { service: AwsService.SQS_QUEUE; config: import("./resources/sqs.js").SqsQueueRequest }
+    | { service: AwsService.SNS_TOPIC; config: import("./resources/sns.js").SnsTopicRequest };
 
 export type AwsResourceResult = {
     service: AwsServiceType;
