@@ -4,6 +4,7 @@ export const DATABASE_URL: string = process.env.DATABASE_URL || "postgresql://po
 export const MICROSERVICE_BASE_URL: string = process.env.MICROSERVICE_BASE_URL || "http://localhost:8000";
 export const JWT_SECRET: string = process.env.JWT_SECRET || "secret";
 export const AWS_REGION: string = process.env.AWS_REGION || "us-east-1";
+export const AWS_ENCRYPTION_KEY: string = process.env.AWS_ENCRYPTION_KEY || "";
 
 export const LOGS_DIRECTORY: string = "logs";
 

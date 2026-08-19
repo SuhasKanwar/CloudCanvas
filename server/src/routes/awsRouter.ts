@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { publishAWSServices } from '../controllers/awsController.js';
+import { createAwsConnection, deleteAwsConnection, listAwsConnections } from '../controllers/infrastructureController.js';
 
 const awsRouter = Router();
 
-awsRouter.post("/publish", publishAWSServices);
+awsRouter.post("/connections", createAwsConnection);
+awsRouter.get("/connections", listAwsConnections);
+awsRouter.delete("/connections/:connectionId", deleteAwsConnection);
 
 export default awsRouter;

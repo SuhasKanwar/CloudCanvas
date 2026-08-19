@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import authenticate from "./middlewares/authenticate.js";
 import awsRouter from './routes/awsRouter.js';
+import sketchRouter from './routes/sketchRouter.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.get("/health", (_req: Request, res: Response<ApiResponse>) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/aws", authenticate, awsRouter);
+app.use("/api/sketches", authenticate, sketchRouter);
 
 app.listen(PORT, (err) => {
     if (err) {
