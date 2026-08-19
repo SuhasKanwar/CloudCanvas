@@ -21,7 +21,9 @@ enum SketchStatus {
 enum AwsResourceStatus {
   DESIRED
   PROVISIONING
+  DELETING
   RUNNING
+  TERMINATED
   FAILED
 }
 

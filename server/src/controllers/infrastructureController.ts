@@ -285,3 +285,55 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
         return res.status(502).json({ success: false, message: "EC2 deployment failed.", error: message, data: { deploymentId: deployment.id } });
     }
 }
+
+export async function deleteAwsResource(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    const resource = await prisma.awsResource.findFirst({
+        where: { id: param(req, "resourceId"), sketchId: param(req, "sketchId"), userId },
+        include: { connection: true },
+    });
+    if (!resource) return res.status(404).json({ success: false, message: "AWS resource not found." });
+    if (resource.service !== "EC2_INSTANCE") {
+        return res.status(400).json({ success: false, message: "Only EC2 resource deletion is supported right now." });
+    }
+    if (resource.status === AwsResourceStatus.TERMINATED) {
+        return res.json({ success: true, message: "EC2 resource is already terminated.", data: resource });
+    }
+    if (!resource.externalId) {
+        return res.status(409).json({ success: false, message: "EC2 resource has no AWS instance ID to terminate." });
+    }
+    if (!AWS_ENCRYPTION_KEY) {
+        return res.status(500).json({ success: false, message: "AWS credential encryption is not configured." });
+    }
+
+    const deployment = await prisma.deployment.create({
+        data: {
+            userId,
+            sketchId: resource.sketchId,
+            connectionId: resource.connectionId,
+            request: jsonValue({ operation: "terminate", resourceId: resource.id, instanceId: resource.externalId }),
+        },
+    });
+    await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.DELETING, lastError: null } });
+
+    try {
+        const credentials = {
+            accessKeyId: decryptAwsSecret(resource.connection.accessKeyIdEncrypted, AWS_ENCRYPTION_KEY),
+            secretAccessKey: decryptAwsSecret(resource.connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
+            ...(resource.connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(resource.connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
+        };
+        const result = await awsResourceManager.terminateEc2Instances([resource.externalId], credentials, resource.region);
+        const updatedResource = await prisma.awsResource.update({
+            where: { id: resource.id },
+            data: { status: AwsResourceStatus.TERMINATED, actualState: jsonValue(result), lastError: null },
+        });
+        await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result), finishedAt: new Date() } });
+        return res.json({ success: true, message: "EC2 resource terminated successfully.", data: { deploymentId: deployment.id, resource: updatedResource, result } });
+    } catch (error) {
+        const message = errorMessage(error);
+        await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.FAILED, lastError: message } });
+        await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.FAILED, errorMessage: message, finishedAt: new Date() } });
+        return res.status(502).json({ success: false, message: "EC2 resource termination failed.", error: message, data: { deploymentId: deployment.id } });
+    }
+}

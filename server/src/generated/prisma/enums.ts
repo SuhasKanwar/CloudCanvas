@@ -29,7 +29,9 @@ export type SketchStatus = (typeof SketchStatus)[keyof typeof SketchStatus]
 export const AwsResourceStatus = {
   DESIRED: 'DESIRED',
   PROVISIONING: 'PROVISIONING',
+  DELETING: 'DELETING',
   RUNNING: 'RUNNING',
+  TERMINATED: 'TERMINATED',
   FAILED: 'FAILED'
 } as const
 

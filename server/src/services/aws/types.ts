@@ -1,4 +1,9 @@
-import type { RunInstancesCommand, RunInstancesCommandOutput } from "@aws-sdk/client-ec2";
+import type {
+    RunInstancesCommand,
+    RunInstancesCommandOutput,
+    TerminateInstancesCommand,
+    TerminateInstancesCommandOutput,
+} from "@aws-sdk/client-ec2";
 
 export type AwsCredentials = {
     accessKeyId: string;
@@ -29,4 +34,20 @@ export type Ec2InstanceResult = {
     }>;
 };
 
-export type Ec2CommandSender = (command: RunInstancesCommand) => Promise<RunInstancesCommandOutput>;
+export type Ec2TerminationRequest = {
+    instanceIds: string[];
+};
+
+export type Ec2TerminationResult = {
+    region: string;
+    instances: Array<{
+        instanceId: string | undefined;
+        previousState: string | undefined;
+        currentState: string | undefined;
+    }>;
+};
+
+export type Ec2CommandSender = {
+    run: (command: RunInstancesCommand) => Promise<RunInstancesCommandOutput>;
+    terminate: (command: TerminateInstancesCommand) => Promise<TerminateInstancesCommandOutput>;
+};
