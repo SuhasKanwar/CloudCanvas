@@ -11,7 +11,18 @@ export type AwsCredentials = {
     sessionToken?: string;
 };
 
-export type AwsServiceType = "EC2_INSTANCE" | "ECR_REPOSITORY" | "S3_BUCKET" | "IAM_ROLE";
+export enum AwsService {
+    EC2_INSTANCE = "EC2_INSTANCE",
+    ECR_REPOSITORY = "ECR_REPOSITORY",
+    S3_BUCKET = "S3_BUCKET",
+    IAM_ROLE = "IAM_ROLE",
+    LAMBDA_FUNCTION = "LAMBDA_FUNCTION",
+    DYNAMODB_TABLE = "DYNAMODB_TABLE",
+    SQS_QUEUE = "SQS_QUEUE",
+    SNS_TOPIC = "SNS_TOPIC",
+}
+
+export type AwsServiceType = AwsService;
 
 export type Ec2InstanceRequest = {
     imageId: string;
@@ -55,10 +66,14 @@ export type Ec2CommandSender = {
 };
 
 export type AwsResourceCreateRequest =
-    | { service: "EC2_INSTANCE"; config: Ec2InstanceRequest }
-    | { service: "ECR_REPOSITORY"; config: import("./ecr.js").EcrRepositoryRequest }
-    | { service: "S3_BUCKET"; config: import("./s3.js").S3BucketRequest }
-    | { service: "IAM_ROLE"; config: import("./iam.js").IamRoleRequest };
+    | { service: AwsService.EC2_INSTANCE; config: Ec2InstanceRequest }
+    | { service: AwsService.ECR_REPOSITORY; config: import("./ecr.js").EcrRepositoryRequest }
+    | { service: AwsService.S3_BUCKET; config: import("./s3.js").S3BucketRequest }
+    | { service: AwsService.IAM_ROLE; config: import("./iam.js").IamRoleRequest }
+    | { service: AwsService.LAMBDA_FUNCTION; config: import("./lambda.js").LambdaFunctionRequest }
+    | { service: AwsService.DYNAMODB_TABLE; config: import("./dynamodb.js").DynamoDbTableRequest }
+    | { service: AwsService.SQS_QUEUE; config: import("./sqs.js").SqsQueueRequest }
+    | { service: AwsService.SNS_TOPIC; config: import("./sns.js").SnsTopicRequest };
 
 export type AwsResourceResult = {
     service: AwsServiceType;
