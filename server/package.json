@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsc --watch",
+    "test": "npm run build && node dist/services/aws/aws.test.js",
     "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",
     "db:push": "npx prisma db push",
