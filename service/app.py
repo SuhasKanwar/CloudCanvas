@@ -1,47 +1,48 @@
-import os, sys
+import logging
 
-from fastapi import FastAPI
 import uvicorn
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from utils.logger import logger
-from utils.exception import CloudCanvasException
-
-from config import PORT, ALLOWED_ORIGINS
-from dotenv import load_dotenv
+from config import ALLOWED_ORIGINS, HOST, PORT
+from models.llama import Llama
+from schemas.response import AgentResponse, QueryRequest
 
 load_dotenv()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(title="CloudCanvas AI Service")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
+llama: Llama | None = None
+
+
 @app.get("/", tags=["Root"])
-def root() -> dict:
-    return {
-        "success": True,
-        "message": "Welcome to CloudCanvas AI Service. Visit /docs for API documentation."
-    }
+def root() -> dict[str, bool | str]:
+    return {"success": True, "message": "CloudCanvas AI Service is running."}
 
 @app.get("/health", tags=["Health"])
-def health() -> dict:
-    return {
-        "success": True,
-        "message": "CloudCanvas AI Service is healthy and running successfully."
-    }
+def health() -> dict[str, bool | str]:
+    return {"success": True, "message": "CloudCanvas AI Service is healthy."}
 
-@app.exception_handler(CloudCanvasException)
-def CloudCanvas_exception_handler(request, exc: CloudCanvasException):
-    logger.error(f"Error occurred in script: {exc.file_name} at line: {exc.line_number} with message: {exc.error_message}")
-    return {
-        "success": False,
-        "message": f"Error occurred in script: {exc.file_name} at line: {exc.line_number} with message: {exc.error_message}"
-    }
+
+@app.post("/api/agent/query", response_model=AgentResponse, tags=["Agent"])
+def query(request: QueryRequest) -> AgentResponse:
+    global llama
+    try:
+        llama = llama or Llama()
+        return llama.generate_response(request.query, request.session_history)
+    except Exception as error:
+        logger.exception("Llama request failed")
+        raise HTTPException(status_code=502, detail=str(error)) from error
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=PORT)
+    uvicorn.run(app, host=HOST, port=PORT)
