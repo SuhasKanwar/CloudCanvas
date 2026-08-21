@@ -11,9 +11,9 @@ import {
     encryptAwsSecret,
     AwsService,
     type AwsResourceCreateRequest,
-    type AwsServiceType,
 } from "../services/aws/index.js";
 import type { ApiResponse } from "../types/response.js";
+import { isAwsService } from "../utils/aws.js";
 
 const sketchInclude = {
     nodes: true,
@@ -147,10 +147,6 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
         return { service: AwsService.SNS_TOPIC, config: { topicName: config.topicName, ...(config.fifoTopic === true && { fifoTopic: true }) } };
     }
     throw new Error("Supported services are EC2_INSTANCE, ECR_REPOSITORY, S3_BUCKET, IAM_ROLE, LAMBDA_FUNCTION, DYNAMODB_TABLE, SQS_QUEUE, and SNS_TOPIC.");
-}
-
-function isSupportedService(type: string): type is AwsServiceType {
-    return Object.values(AwsService).includes(type as AwsService);
 }
 
 export async function createSketch(req: Request, res: Response<ApiResponse>) {
@@ -398,7 +394,7 @@ export async function deleteAwsResource(req: Request, res: Response<ApiResponse>
         include: { connection: true },
     });
     if (!resource) return res.status(404).json({ success: false, message: "AWS resource not found." });
-    if (!isSupportedService(resource.service)) {
+    if (!isAwsService(resource.service)) {
         return res.status(400).json({ success: false, message: "This AWS resource type is not supported yet." });
     }
     if (resource.status === AwsResourceStatus.TERMINATED) {

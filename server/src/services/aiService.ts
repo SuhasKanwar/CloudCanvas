@@ -2,6 +2,8 @@ import axios, { type AxiosInstance } from "axios";
 
 import { microserviceApi } from "../lib/api.js";
 import { AI_SERVICE_TIMEOUT_MS } from "../lib/config.js";
+import { isAwsService } from "../utils/aws.js";
+import { isFiniteNumber, isNullableStringField, isRecord, isString } from "../utils/validation.js";
 import { AwsService, type AwsResourceCreateRequest } from "./aws/index.js";
 
 export const AI_QUERY_PATH = "/api/agent/query";
@@ -85,14 +87,6 @@ export class AIServiceError extends Error {
     }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isString(value: unknown): value is string {
-    return typeof value === "string";
-}
-
 function isMessageRole(value: unknown): value is AiMessageRole {
     return value === "system" || value === "user" || value === "assistant" || value === "tool";
 }
@@ -101,22 +95,10 @@ function isAiChatMessage(value: unknown): value is AiChatMessage {
     return isRecord(value) && isMessageRole(value.role) && isString(value.content);
 }
 
-function isFiniteNumber(value: unknown): value is number {
-    return typeof value === "number" && Number.isFinite(value);
-}
-
-function isSupportedAwsService(value: unknown): value is AwsService {
-    return isString(value) && Object.values(AwsService).includes(value as AwsService);
-}
-
-function isNullableStringField(value: Record<string, unknown>, field: string): boolean {
-    return value[field] === undefined || value[field] === null || isString(value[field]);
-}
-
 function isAiSketchNode(value: unknown): value is AiSketchNode {
     if (!isRecord(value)) return false;
     return (
-        isSupportedAwsService(value.type) &&
+        isAwsService(value.type) &&
         isString(value.id) &&
         isNullableStringField(value, "label") &&
         isFiniteNumber(value.positionX) &&
@@ -247,7 +229,3 @@ export class AIService {
 }
 
 export const aiService = new AIService();
-
-export function queryAi(request: AiQueryRequest): Promise<AiQuerySuccess> {
-    return aiService.query(request);
-}
