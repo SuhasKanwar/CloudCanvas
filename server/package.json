@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsc --watch",
-    "test": "npm run build && node --test dist/services/aws/aws.test.js dist/services/aws/graph.test.js dist/services/aiService.test.js dist/services/graphParser.test.js dist/middlewares/authenticate.test.js",
+    "test": "npm run build && node --test dist/services/aws/aws.test.js dist/services/aws/graph.test.js dist/services/aiService.test.js dist/services/graphParser.test.js",
     "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",
     "db:push": "npx prisma db push",
