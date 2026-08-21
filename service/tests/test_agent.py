@@ -1,0 +1,45 @@
+import unittest
+
+from agents.graph import agent_app
+from config.models import AWS_ROUTER_MODEL, ROUTER_MODEL
+from schemas.agent import AwsService, BuildResponse
+
+
+class AgentShapeTests(unittest.TestCase):
+    def test_graph_and_router_schemas_are_wired(self):
+        self.assertTrue({"router", "aws_router", "llama", "tools"}.issubset(agent_app.get_graph().nodes))
+        self.assertEqual(
+            {service.value for service in AwsService},
+            {
+                "EC2_INSTANCE",
+                "ECR_REPOSITORY",
+                "S3_BUCKET",
+                "IAM_ROLE",
+                "LAMBDA_FUNCTION",
+                "DYNAMODB_TABLE",
+                "SQS_QUEUE",
+                "SNS_TOPIC",
+            },
+        )
+        self.assertEqual(ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "RouteDecision")
+        self.assertEqual(AWS_ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "BuildResponse")
+
+    def test_build_response_matches_server_node_shape(self):
+        response = BuildResponse.model_validate({
+            "type": "build",
+            "message": "Create an S3 bucket.",
+            "build": {
+                "name": "assets",
+                "nodes": [{
+                    "type": AwsService.S3_BUCKET,
+                    "id": "node-1",
+                    "config": {"bucketName": "cloudcanvas-assets"},
+                }],
+                "edges": [],
+            },
+        })
+        self.assertEqual(response.build.nodes[0].type, AwsService.S3_BUCKET)
+
+
+if __name__ == "__main__":
+    unittest.main()

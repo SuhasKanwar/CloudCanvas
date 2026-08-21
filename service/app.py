@@ -1,17 +1,9 @@
-import logging
-
+from fastapi import FastAPI
 import uvicorn
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import ALLOWED_ORIGINS, HOST, PORT
-from models.llama import Llama
-from schemas.response import AgentResponse, QueryRequest
-
-load_dotenv()
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from routers import agent
 
 app = FastAPI(title="CloudCanvas AI Service")
 app.add_middleware(
@@ -22,27 +14,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-llama: Llama | None = None
-
+app.include_router(agent.router)
 
 @app.get("/", tags=["Root"])
-def root() -> dict[str, bool | str]:
-    return {"success": True, "message": "CloudCanvas AI Service is running."}
+def root() -> dict:
+    return {
+        "success": True,
+        "message": "Welcome to CloudCanvas AI Service. Visit /docs for API documentation."
+    }
 
 @app.get("/health", tags=["Health"])
-def health() -> dict[str, bool | str]:
-    return {"success": True, "message": "CloudCanvas AI Service is healthy."}
-
-
-@app.post("/api/agent/query", response_model=AgentResponse, tags=["Agent"])
-def query(request: QueryRequest) -> AgentResponse:
-    global llama
-    try:
-        llama = llama or Llama()
-        return llama.generate_response(request.query, request.session_history)
-    except Exception as error:
-        logger.exception("Llama request failed")
-        raise HTTPException(status_code=502, detail=str(error)) from error
+def health() -> dict:
+    return {
+        "success": True,
+        "message": "CloudCanvas AI Service is healthy and running successfully."
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host=HOST, port=PORT)
