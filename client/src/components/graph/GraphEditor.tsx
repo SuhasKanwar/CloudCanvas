@@ -8,6 +8,8 @@ import { Check, ChevronLeft, Code2, Save, Settings2 } from "lucide-react";
 import { stringify } from "yaml";
 import type { AwsService, GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
+import type { Sketch } from "@/lib/sketches";
+import AiComposer from "./AiComposer";
 import { awsServiceOptions, defaultResourceConfig, ResourceNode, type ResourceNodeData } from "./resourceNode";
 
 type ResourceFlowNode = Node<ResourceNodeData, "resource">;
@@ -83,6 +85,24 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         }
     };
 
+    const loadSketch = (sketch: Sketch) => {
+        setSketchId(sketch.id);
+        setName(sketch.name);
+        setNodes((sketch.nodes ?? []).map((node) => ({
+            id: node.id,
+            type: "resource",
+            position: { x: node.positionX, y: node.positionY },
+            data: { service: node.type, label: node.label ?? node.type, config: node.config },
+        })));
+        setEdges((sketch.edges ?? []).map((edge) => ({
+            id: edge.id,
+            source: edge.sourceNodeId,
+            target: edge.targetNodeId,
+            type: "smoothstep",
+        })));
+        setSelectedNodeId(null);
+    };
+
     return <div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[#101218] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)_19rem]">
         <aside className="border-r border-white/10 px-3 py-4">
             <p className="px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-(--secondary-text-color)">AWS services</p>
@@ -101,6 +121,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
                 <input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} />
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
+                <AiComposer onBuild={loadSketch} />
                 <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
             </div>
             <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={onEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange}>
