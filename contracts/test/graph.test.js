@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { GraphValidationError, parseGraphYaml, validateGraphObject } from "../index.js";
+import { GraphValidationError, parseGraphYaml, validateGraphObject } from "../dist/index.js";
 
 test("parses a valid YAML graph", () => {
     const graph = parseGraphYaml(`schemaVersion: 1

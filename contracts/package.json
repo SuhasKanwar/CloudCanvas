@@ -4,15 +4,24 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "import": "./index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "graph.schema.json"
+  ],
   "dependencies": {
     "ajv": "^8.17.1",
     "yaml": "^2.8.1"
   },
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "test": "npm run build && node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }
