@@ -11,6 +11,7 @@ import {
 } from "@/lib/aws";
 
 const defaultForm = { name: "", region: "ap-south-1", accessKeyId: "", secretAccessKey: "", sessionToken: "" };
+const regions = ["ap-south-1", "us-east-1", "us-east-2", "us-west-2", "eu-west-1", "eu-central-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1"];
 
 export default function AwsConnectionsPanel() {
     const { data: session, status } = useSession();
@@ -97,7 +98,7 @@ export default function AwsConnectionsPanel() {
                     <div className="flex items-center gap-2 text-sm font-medium text-(--primary-text-color)"><KeyRound className="h-4 w-4" />Add account</div>
                     <div className="mt-5 space-y-4">
                         <Field label="Connection name" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} />
-                        <Field label="Region" value={form.region} onChange={(region) => setForm((current) => ({ ...current, region }))} />
+                        <label className="block text-xs text-(--secondary-text-color)"><span>Region</span><select className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-2 text-sm text-(--primary-text-color) outline-none focus:border-(--primary-color)" onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))} value={form.region}>{regions.map((region) => <option className="bg-[#151821]" key={region} value={region}>{region}</option>)}</select></label>
                         <Field label="Access key ID" value={form.accessKeyId} onChange={(accessKeyId) => setForm((current) => ({ ...current, accessKeyId }))} />
                         <Field label="Secret access key" secret value={form.secretAccessKey} onChange={(secretAccessKey) => setForm((current) => ({ ...current, secretAccessKey }))} />
                         <Field label="Session token (optional)" secret value={form.sessionToken} onChange={(sessionToken) => setForm((current) => ({ ...current, sessionToken }))} required={false} />

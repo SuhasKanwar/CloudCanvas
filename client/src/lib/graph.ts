@@ -5,7 +5,7 @@ import {
     type GraphDiagnostic,
 } from "@cloudcanvas/graph-contract";
 
-import api from "./api";
+import api, { authenticatedRequest } from "./api";
 
 export type { GraphDefinition, GraphDiagnostic };
 
@@ -17,7 +17,7 @@ export function graphDiagnostics(error: unknown): GraphDiagnostic[] {
     return error instanceof GraphValidationError ? error.diagnostics : [];
 }
 
-export async function importGraph(definition: string) {
+export async function importGraph(accessToken: string, definition: string) {
     validateGraphYaml(definition);
-    return api.post("/api/sketches/import", { definition });
+    return api.post("/api/sketches/import", { definition }, authenticatedRequest(accessToken));
 }

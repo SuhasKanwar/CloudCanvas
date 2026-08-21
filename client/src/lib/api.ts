@@ -7,6 +7,10 @@ const api = axios.create({
     withCredentials: true,
 });
 
+export function authenticatedRequest(accessToken: string) {
+    return { headers: { Authorization: `Bearer ${accessToken}` } };
+}
+
 let interceptorsInstalled = false;
 
 if (!interceptorsInstalled) {
