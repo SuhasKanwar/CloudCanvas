@@ -17,7 +17,11 @@ export function graphDiagnostics(error: unknown): GraphDiagnostic[] {
     return error instanceof GraphValidationError ? error.diagnostics : [];
 }
 
-export async function importGraph(accessToken: string, definition: string) {
+export async function importGraph(accessToken: string, definition: string, sketchId?: string): Promise<{ id: string }> {
     validateGraphYaml(definition);
-    return api.post("/api/sketches/import", { definition }, authenticatedRequest(accessToken));
+    const request = authenticatedRequest(accessToken);
+    const response = sketchId
+        ? await api.put<{ data: { id: string } }>(`/api/sketches/${sketchId}/import`, { definition }, request)
+        : await api.post<{ data: { id: string } }>("/api/sketches/import", { definition }, request);
+    return response.data.data;
 }

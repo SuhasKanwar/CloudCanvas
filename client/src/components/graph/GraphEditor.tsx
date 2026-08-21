@@ -20,6 +20,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [name, setName] = useState("Untitled infrastructure");
+    const [sketchId, setSketchId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [configError, setConfigError] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
@@ -73,7 +74,8 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             setSaveError(null);
             const definition = stringify(graph);
             validateGraphYaml(definition);
-            await importGraph(session.accessToken, definition);
+            const sketch = await importGraph(session.accessToken, definition, sketchId ?? undefined);
+            setSketchId(sketch.id);
         } catch (error) {
             setSaveError(error instanceof Error ? error.message : "Unable to save this graph.");
         } finally {
@@ -99,7 +101,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
                 <input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} />
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
-                <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}Save</button>
+                <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
             </div>
             <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={onEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange}>
                 <Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} />

@@ -3,6 +3,7 @@ import {
     createSketch,
     createAiSketch,
     importSketchGraph,
+    replaceSketchGraph,
     createSketchEdge,
     createSketchNode,
     deleteSketch,
@@ -22,6 +23,7 @@ const sketchRouter = Router();
 sketchRouter.post("/", createSketch);
 sketchRouter.post("/ai", createAiSketch);
 sketchRouter.post("/import", graphParser, importSketchGraph);
+sketchRouter.put("/:sketchId/import", graphParser, replaceSketchGraph);
 sketchRouter.get("/", listSketches);
 sketchRouter.get("/:sketchId", getSketch);
 sketchRouter.patch("/:sketchId", updateSketch);

@@ -183,48 +183,54 @@ function prepareGraph(graph: GraphDefinition) {
     return nodes;
 }
 
+type PreparedGraphNode = ReturnType<typeof prepareGraph>[number];
+
+async function persistPreparedGraph(tx: Prisma.TransactionClient, sketchId: string, graph: GraphDefinition, prepared: PreparedGraphNode[]) {
+    const nodeIds = new Map<string, string>();
+    for (const node of prepared) {
+        const created = await tx.sketchNode.create({
+            data: {
+                sketchId,
+                type: node.type,
+                label: node.label,
+                positionX: node.positionX,
+                positionY: node.positionY,
+                config: jsonValue(node.config),
+            },
+        });
+        nodeIds.set(node.sourceId, created.id);
+    }
+    for (const node of prepared) {
+        const nodeId = nodeIds.get(node.sourceId);
+        if (!nodeId) throw new Error(`Graph node ${node.sourceId} was not persisted.`);
+        await tx.sketchNode.update({
+            where: { id: nodeId },
+            data: { config: jsonValue(remapConfigReferences(node.config, nodeIds)) },
+        });
+    }
+    for (const edge of graph.edges) {
+        const sourceNodeId = nodeIds.get(edge.sourceNodeId);
+        const targetNodeId = nodeIds.get(edge.targetNodeId);
+        if (!sourceNodeId || !targetNodeId) throw new Error("Graph edge references an unknown node.");
+        await tx.sketchEdge.create({
+            data: {
+                sketchId,
+                sourceNodeId,
+                targetNodeId,
+                sourceHandle: edge.sourceHandle ?? null,
+                targetHandle: edge.targetHandle ?? null,
+            },
+        });
+    }
+}
+
 async function persistGraph(userId: string, graph: GraphDefinition) {
     const prepared = prepareGraph(graph);
     return prisma.$transaction(async (tx) => {
         const sketch = await tx.sketch.create({
             data: { userId, name: graph.name.trim(), description: graph.description ?? null },
         });
-        const nodeIds = new Map<string, string>();
-        for (const node of prepared) {
-            const created = await tx.sketchNode.create({
-                data: {
-                    sketchId: sketch.id,
-                    type: node.type,
-                    label: node.label,
-                    positionX: node.positionX,
-                    positionY: node.positionY,
-                    config: jsonValue(node.config),
-                },
-            });
-            nodeIds.set(node.sourceId, created.id);
-        }
-        for (const node of prepared) {
-            const nodeId = nodeIds.get(node.sourceId);
-            if (!nodeId) throw new Error(`Graph node ${node.sourceId} was not persisted.`);
-            await tx.sketchNode.update({
-                where: { id: nodeId },
-                data: { config: jsonValue(remapConfigReferences(node.config, nodeIds)) },
-            });
-        }
-        for (const edge of graph.edges) {
-            const sourceNodeId = nodeIds.get(edge.sourceNodeId);
-            const targetNodeId = nodeIds.get(edge.targetNodeId);
-            if (!sourceNodeId || !targetNodeId) throw new Error("Graph edge references an unknown node.");
-            await tx.sketchEdge.create({
-                data: {
-                    sketchId: sketch.id,
-                    sourceNodeId,
-                    targetNodeId,
-                    sourceHandle: edge.sourceHandle ?? null,
-                    targetHandle: edge.targetHandle ?? null,
-                },
-            });
-        }
+        await persistPreparedGraph(tx, sketch.id, graph, prepared);
         return tx.sketch.findUniqueOrThrow({ where: { id: sketch.id }, include: sketchInclude });
     });
 }
@@ -306,6 +312,37 @@ export async function importSketchGraph(req: Request, res: Response<ApiResponse>
         return res.status(201).json({ success: true, message: "Graph imported successfully.", data: sketch });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Graph could not be saved.", error: errorMessage(error) });
+    }
+}
+
+export async function replaceSketchGraph(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    if (!req.graph) return res.status(400).json({ success: false, message: "A graph definition is required." });
+    const sketchId = param(req, "sketchId");
+    const existing = await prisma.sketch.findFirst({
+        where: { id: sketchId, userId },
+        include: { resources: { select: { status: true } } },
+    });
+    if (!existing) return res.status(404).json({ success: false, message: "Sketch not found." });
+    if (existing.resources.some((resource) => resource.status !== AwsResourceStatus.TERMINATED)) {
+        return res.status(409).json({ success: false, message: "Delete deployed AWS resources before replacing this sketch graph." });
+    }
+    try {
+        const prepared = prepareGraph(req.graph);
+        const sketch = await prisma.$transaction(async (tx) => {
+            await tx.sketchEdge.deleteMany({ where: { sketchId } });
+            await tx.sketchNode.deleteMany({ where: { sketchId } });
+            await tx.sketch.update({
+                where: { id: sketchId },
+                data: { name: req.graph!.name.trim(), description: req.graph!.description ?? null, version: { increment: 1 } },
+            });
+            await persistPreparedGraph(tx, sketchId, req.graph!, prepared);
+            return tx.sketch.findUniqueOrThrow({ where: { id: sketchId }, include: sketchInclude });
+        });
+        return res.json({ success: true, message: "Graph updated successfully.", data: sketch });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Graph could not be updated.", error: errorMessage(error) });
     }
 }
 
