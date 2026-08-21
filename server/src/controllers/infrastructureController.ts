@@ -13,7 +13,9 @@ import {
     type AwsResourceCreateRequest,
 } from "../services/aws/index.js";
 import { createGraphPlan, remapConfigReferences, resolveConfigReferences } from "../services/aws/graph.js";
-import { AIServiceError, aiService, type AiBuildResponse, type AiChatMessage } from "../services/aiService.js";
+import { AIServiceError, aiService, type AiChatMessage } from "../services/aiService.js";
+import { validateGraphDefinition } from "../services/graphParser.js";
+import type { GraphDefinition } from "@cloudcanvas/graph-contract";
 import type { ApiResponse } from "../types/response.js";
 import { isAwsService } from "../utils/aws.js";
 import { isRecord } from "../utils/validation.js";
@@ -165,12 +167,9 @@ function isChatHistory(value: unknown): value is AiChatMessage[] {
     ));
 }
 
-function prepareAiBuild(build: AiBuildResponse["build"]) {
-    if (!build.name.trim()) throw new Error("An AI build must include a sketch name.");
-    if (!build.nodes.length) throw new Error("An AI build must contain at least one AWS node.");
-    const graph = createGraphPlan(build.nodes, build.edges);
-    const nodes = build.nodes.map((node) => {
-        if (!isRecord(node.config)) throw new Error(`Invalid config for AI node ${node.id}.`);
+function prepareGraph(graph: GraphDefinition) {
+    const nodes = graph.nodes.map((node) => {
+        if (!isRecord(node.config)) throw new Error(`Invalid config for graph node ${node.id}.`);
         const request = buildResourceRequest(node.type, node.config);
         return {
             sourceId: node.id,
@@ -181,17 +180,17 @@ function prepareAiBuild(build: AiBuildResponse["build"]) {
             config: request.config,
         };
     });
-    return { graph, nodes };
+    return nodes;
 }
 
-async function persistAiBuild(userId: string, build: AiBuildResponse["build"]) {
-    const prepared = prepareAiBuild(build);
+async function persistGraph(userId: string, graph: GraphDefinition) {
+    const prepared = prepareGraph(graph);
     return prisma.$transaction(async (tx) => {
         const sketch = await tx.sketch.create({
-            data: { userId, name: build.name.trim(), description: build.description ?? null },
+            data: { userId, name: graph.name.trim(), description: graph.description ?? null },
         });
         const nodeIds = new Map<string, string>();
-        for (const node of prepared.nodes) {
+        for (const node of prepared) {
             const created = await tx.sketchNode.create({
                 data: {
                     sketchId: sketch.id,
@@ -204,18 +203,18 @@ async function persistAiBuild(userId: string, build: AiBuildResponse["build"]) {
             });
             nodeIds.set(node.sourceId, created.id);
         }
-        for (const node of prepared.nodes) {
+        for (const node of prepared) {
             const nodeId = nodeIds.get(node.sourceId);
-            if (!nodeId) throw new Error(`AI node ${node.sourceId} was not persisted.`);
+            if (!nodeId) throw new Error(`Graph node ${node.sourceId} was not persisted.`);
             await tx.sketchNode.update({
                 where: { id: nodeId },
                 data: { config: jsonValue(remapConfigReferences(node.config, nodeIds)) },
             });
         }
-        for (const edge of build.edges) {
+        for (const edge of graph.edges) {
             const sourceNodeId = nodeIds.get(edge.sourceNodeId);
             const targetNodeId = nodeIds.get(edge.targetNodeId);
-            if (!sourceNodeId || !targetNodeId) throw new Error("AI edge references an unknown node.");
+            if (!sourceNodeId || !targetNodeId) throw new Error("Graph edge references an unknown node.");
             await tx.sketchEdge.create({
                 data: {
                     sketchId: sketch.id,
@@ -279,17 +278,35 @@ export async function createAiSketch(req: Request, res: Response<ApiResponse>) {
         return res.json({ success: true, message: aiResponse.message, data: aiResponse.data });
     }
 
-    let sketch;
+    let graph: GraphDefinition;
     try {
-        sketch = await persistAiBuild(userId, aiResponse.data.build);
+        graph = validateGraphDefinition({ schemaVersion: 1, ...aiResponse.data.build });
     } catch (error) {
         return res.status(400).json({ success: false, message: errorMessage(error) });
+    }
+    let sketch;
+    try {
+        sketch = await persistGraph(userId, graph);
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "AI sketch could not be saved.", error: errorMessage(error) });
     }
     return res.status(201).json({
         success: true,
         message: aiResponse.message,
         data: { type: "build", message: aiResponse.data.message, sketch },
     });
+}
+
+export async function importSketchGraph(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    if (!req.graph) return res.status(400).json({ success: false, message: "A graph definition is required." });
+    try {
+        const sketch = await persistGraph(userId, req.graph);
+        return res.status(201).json({ success: true, message: "Graph imported successfully.", data: sketch });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Graph could not be saved.", error: errorMessage(error) });
+    }
 }
 
 export async function listSketches(req: Request, res: Response<ApiResponse>) {

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
     createSketch,
     createAiSketch,
+    importSketchGraph,
     createSketchEdge,
     createSketchNode,
     deleteSketch,
@@ -14,11 +15,13 @@ import {
     updateSketch,
     updateSketchNode,
 } from "../controllers/infrastructureController.js";
+import { graphParser } from "../services/graphParser.js";
 
 const sketchRouter = Router();
 
 sketchRouter.post("/", createSketch);
 sketchRouter.post("/ai", createAiSketch);
+sketchRouter.post("/import", graphParser, importSketchGraph);
 sketchRouter.get("/", listSketches);
 sketchRouter.get("/:sketchId", getSketch);
 sketchRouter.patch("/:sketchId", updateSketch);
