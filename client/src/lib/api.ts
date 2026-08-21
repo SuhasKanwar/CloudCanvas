@@ -16,7 +16,7 @@ if (!interceptorsInstalled) {
         (response) => {
             const message = response.data?.message;
 
-            if (typeof message === "string" && message.trim()) {
+            if (response.config.method !== "get" && typeof message === "string" && message.trim()) {
                 pushToast({ message, variant: "success" });
             }
 

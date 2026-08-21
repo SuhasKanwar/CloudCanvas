@@ -5,7 +5,10 @@ import type { ApiResponse } from "../types/response.js";
 
 export default function authenticate(req: Request, res: Response<ApiResponse>, next: NextFunction) {
     try {
-        const token = req.cookies["Authorization"];
+        const authorization = req.get("Authorization");
+        const token = authorization?.startsWith("Bearer ")
+            ? authorization.slice("Bearer ".length)
+            : req.cookies["Authorization"];
         if (!token) {
             return res.status(401).json({
                 success: false,
