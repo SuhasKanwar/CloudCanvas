@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
     createSketch,
+    createAiSketch,
     createSketchEdge,
     createSketchNode,
     deleteSketch,
@@ -17,6 +18,7 @@ import {
 const sketchRouter = Router();
 
 sketchRouter.post("/", createSketch);
+sketchRouter.post("/ai", createAiSketch);
 sketchRouter.get("/", listSketches);
 sketchRouter.get("/:sketchId", getSketch);
 sketchRouter.patch("/:sketchId", updateSketch);
