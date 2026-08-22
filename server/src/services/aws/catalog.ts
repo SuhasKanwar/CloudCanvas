@@ -31,7 +31,7 @@ export type AwsResourceCatalog = {
     instances: Array<{ id: string; name: string; state: string; instanceType: string; vpcId: string; subnetId: string }>;
     instanceTypes: string[];
     keyPairs: Array<{ id: string; name: string; fingerprint: string }>;
-    images: Array<{ id: string; label: string; description: string; rootDeviceName: string }>;
+    images: Array<{ id: string; category: "amazon-linux" | "windows"; title: string; architecture: string; release: string; label: string; description: string; rootDeviceName: string }>;
 };
 
 export type AwsCatalogSender = {
@@ -50,15 +50,13 @@ function name(tags: Array<{ Key?: string | undefined; Value?: string | undefined
     return tags?.find((tag) => tag.Key === "Name")?.Value ?? fallback;
 }
 
-function imageLabel(image: { ImageId?: string | undefined; Name?: string | undefined; Architecture?: string | undefined; CreationDate?: string | undefined }) {
+function imageDetails(image: { ImageId?: string | undefined; Name?: string | undefined; Architecture?: string | undefined; CreationDate?: string | undefined }, category: "amazon-linux" | "windows") {
     const name = image.Name ?? image.ImageId ?? "Custom AMI";
     const release = image.CreationDate?.slice(0, 10) ?? "unknown release";
     const architecture = image.Architecture ?? "x86_64";
-    const os = name.startsWith("al2023") ? "Amazon Linux 2023"
-        : name.startsWith("amzn2") ? "Amazon Linux 2"
-            : name.startsWith("Windows_Server-2022-") ? "Windows Server 2022"
-                : name;
-    return `${os} | ${architecture} | ${release} | ${image.ImageId ?? ""}`;
+    const title = category === "amazon-linux" ? (name.startsWith("amzn2") ? "Amazon Linux 2" : "Amazon Linux 2023")
+        : `Microsoft Windows Server ${name.match(/Windows_Server-(\d{4})/)?.[1] ?? ""}`.trim();
+    return { architecture, release, title, label: `${title} | ${architecture} | ${release} | ${image.ImageId ?? ""}` };
 }
 
 export class AwsCatalogService {
@@ -87,7 +85,7 @@ export class AwsCatalogService {
             this.send.keyPairs(new DescribeKeyPairsCommand({})),
             this.send.images(new DescribeImagesCommand({ Owners: ["amazon"], Filters: [{ Name: "name", Values: ["al2023-ami-2023.*-kernel-6.1-x86_64"] }, { Name: "state", Values: ["available"] }] })),
             this.send.images(new DescribeImagesCommand({ Owners: ["amazon"], Filters: [{ Name: "name", Values: ["amzn2-ami-hvm-*-x86_64-gp2"] }, { Name: "state", Values: ["available"] }] })),
-            this.send.images(new DescribeImagesCommand({ Owners: ["amazon"], Filters: [{ Name: "name", Values: ["Windows_Server-2022-English-Full-Base-*"] }, { Name: "state", Values: ["available"] }] })),
+            this.send.images(new DescribeImagesCommand({ Owners: ["amazon"], Filters: [{ Name: "name", Values: ["Windows_Server-*-English-Full-Base-*"] }, { Name: "state", Values: ["available"] }] })),
         ]);
         const warnings: string[] = [];
         const page = <T>(result: PromiseSettledResult<T>, label: string, action?: string) => {
@@ -103,10 +101,12 @@ export class AwsCatalogService {
         const instanceTypes = page(instanceTypeResult, "EC2 instance types", "ec2:DescribeInstanceTypes") ?? [];
         const profilePage = page(profileResult, "Instance profiles");
         const keyPairPage = page(keyPairResult, "Key pairs", "ec2:DescribeKeyPairs");
-        const images = [page(al2023Result, "Amazon Linux 2023 images", "ec2:DescribeImages"), page(amzn2Result, "Amazon Linux 2 images", "ec2:DescribeImages"), page(windowsResult, "Windows Server 2022 images", "ec2:DescribeImages")]
-            .flatMap((result) => result?.Images ?? [])
-            .filter((image, index, list) => image.ImageId && list.findIndex((entry) => entry.ImageId === image.ImageId) === index)
-            .sort((left, right) => (right.CreationDate ?? "").localeCompare(left.CreationDate ?? ""));
+        const images = [
+            ...(page(al2023Result, "Amazon Linux 2023 images", "ec2:DescribeImages")?.Images ?? []).map((image) => ({ category: "amazon-linux" as const, image })),
+            ...(page(amzn2Result, "Amazon Linux 2 images", "ec2:DescribeImages")?.Images ?? []).map((image) => ({ category: "amazon-linux" as const, image })),
+            ...(page(windowsResult, "Windows Server images", "ec2:DescribeImages")?.Images ?? []).map((image) => ({ category: "windows" as const, image })),
+        ].filter((entry, index, list) => entry.image.ImageId && list.findIndex((candidate) => candidate.image.ImageId === entry.image.ImageId) === index)
+            .sort((left, right) => (right.image.CreationDate ?? "").localeCompare(left.image.CreationDate ?? ""));
         return {
             warnings,
             vpcs: (vpcPage?.Vpcs ?? []).flatMap((vpc) => vpc.VpcId ? [{ id: vpc.VpcId, name: name(vpc.Tags, vpc.VpcId), cidrBlock: vpc.CidrBlock ?? "" }] : []),
@@ -117,7 +117,10 @@ export class AwsCatalogService {
             instances: (instancePage?.Reservations ?? []).flatMap((reservation) => (reservation.Instances ?? []).flatMap((instance) => instance.InstanceId ? [{ id: instance.InstanceId, name: name(instance.Tags, instance.InstanceId), state: instance.State?.Name ?? "unknown", instanceType: instance.InstanceType ?? "", vpcId: instance.VpcId ?? "", subnetId: instance.SubnetId ?? "" }] : [])),
             instanceTypes,
             keyPairs: (keyPairPage?.KeyPairs ?? []).flatMap((keyPair) => keyPair.KeyName ? [{ id: keyPair.KeyPairId ?? keyPair.KeyName, name: keyPair.KeyName, fingerprint: keyPair.KeyFingerprint ?? "" }] : []),
-            images: images.flatMap((image) => image.ImageId ? [{ id: image.ImageId, label: imageLabel(image), description: image.Description ?? "", rootDeviceName: image.RootDeviceName ?? "/dev/xvda" }] : []),
+            images: images.flatMap(({ category, image }) => {
+                if (!image.ImageId) return [];
+                return [{ id: image.ImageId, category, ...imageDetails(image, category), description: image.Description ?? "", rootDeviceName: image.RootDeviceName ?? "/dev/xvda" }];
+            }),
         };
     }
 }

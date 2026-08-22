@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Code2, Link2, Plus, Tag, Trash2 } from "lucide-react";
+import { Check, Code2, Link2, Monitor, Plus, Tag, Terminal, Trash2 } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import { getAwsResourceCatalog, listAwsConnections, type AwsResourceCatalog } from "@/lib/aws";
 import type { ResourceNodeData } from "./resourceNode";
@@ -22,10 +22,24 @@ function InstanceTypeField({ options, value, onChange }: { options: string[]; va
 }
 
 function AmiField({ images, value, onChange }: { images: AwsResourceCatalog["images"]; value: string; onChange: (image: AwsResourceCatalog["images"][number] | null) => void }) {
-    const selected = images.find((image) => image.id === value);
-    const [query, setQuery] = useState(selected?.label ?? "");
-    useEffect(() => setQuery(selected?.label ?? ""), [selected?.label]);
-    return <label className="block"><span className="text-xs text-(--secondary-text-color)">Operating system / AMI</span><input className={inputClass} list="ec2-os-images" onChange={(event) => { const next = event.target.value; setQuery(next); const image = images.find((entry) => entry.label === next || entry.id === next); if (image || !next) onChange(image ?? null); }} placeholder="Search Amazon Linux or Windows" value={query} /><datalist id="ec2-os-images">{images.map((image) => <option key={image.id} value={image.label} />)}</datalist></label>;
+    const [category, setCategory] = useState<"amazon-linux" | "windows">("amazon-linux");
+    const options = images.filter((image) => image.category === category);
+    return <div>
+        <span className="text-xs text-(--secondary-text-color)">Application and OS image</span>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+            <button className={`flex min-h-16 items-center gap-2 border p-3 text-left text-xs ${category === "amazon-linux" ? "border-(--secondary-color) bg-(--secondary-color)/10 text-(--primary-text-color)" : "border-white/10 text-(--secondary-text-color) hover:bg-white/6"}`} onClick={() => setCategory("amazon-linux")} type="button"><Terminal className="h-4 w-4 shrink-0 text-amber-300" /><span>Amazon Linux</span></button>
+            <button className={`flex min-h-16 items-center gap-2 border p-3 text-left text-xs ${category === "windows" ? "border-(--secondary-color) bg-(--secondary-color)/10 text-(--primary-text-color)" : "border-white/10 text-(--secondary-text-color) hover:bg-white/6"}`} onClick={() => setCategory("windows")} type="button"><Monitor className="h-4 w-4 shrink-0 text-sky-300" /><span>Windows Server</span></button>
+        </div>
+        <div className="mt-2 max-h-72 overflow-auto border border-white/10 bg-black/20">
+            {options.length ? options.map((image) => {
+                const selected = image.id === value;
+                return <button className={`flex w-full items-start gap-3 border-b border-white/8 px-3 py-3 text-left last:border-0 hover:bg-white/6 ${selected ? "bg-(--secondary-color)/10" : ""}`} key={image.id} onClick={() => onChange(image)} type="button">
+                    <span className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center border ${selected ? "border-(--secondary-color) bg-(--secondary-color) text-black" : "border-white/30"}`}>{selected ? <Check className="h-3 w-3" /> : null}</span>
+                    <span className="min-w-0 flex-1"><span className="block font-medium text-(--primary-text-color)">{image.title}</span><span className="mt-1 block font-mono text-[10px] text-(--muted-text-color)">{image.id}</span><span className="mt-1 block text-[11px] text-(--secondary-text-color)">{[image.architecture, `Released ${image.release}`, `EBS root: ${image.rootDeviceName || "/dev/xvda"}`].filter(Boolean).join(" · ")}</span></span>
+                </button>;
+            }) : <p className="px-3 py-4 text-xs text-(--secondary-text-color)">No AMIs are available.</p>}
+        </div>
+    </div>;
 }
 
 function Select({ label, onChange, options, value }: { label: string; onChange: (value: string) => void; options: ReadonlyArray<ReadonlyArray<string>>; value: string }) {

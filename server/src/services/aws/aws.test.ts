@@ -241,7 +241,12 @@ test("lists catalog metadata required by resource forms", async () => {
         launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [{ LaunchTemplateId: "lt-1", LaunchTemplateName: "app-template" }] }),
         instances: async () => ({ $metadata: {}, Reservations: [{ Instances: [{ InstanceId: "i-1", InstanceType: "t3.micro", State: { Name: "running" } }] }] }),
         instanceTypes: async () => (++instanceTypeCalls === 1 ? { $metadata: {}, InstanceTypes: [{ InstanceType: "t3.micro" }], NextToken: "next" } : { $metadata: {}, InstanceTypes: [{ InstanceType: "m7i.large" }] }),
-        images: async () => ({ $metadata: {}, Images: [{ ImageId: "ami-1", Name: "al2023", RootDeviceName: "/dev/xvda", CreationDate: "2026-01-01T00:00:00.000Z" }] }),
+        images: async (command) => ({
+            $metadata: {},
+            Images: command.input.Filters?.[0]?.Values?.[0]?.startsWith("Windows")
+                ? [{ ImageId: "ami-windows", Name: "Windows_Server-2025-English-Full-Base-2026.01.01", RootDeviceName: "/dev/sda1", CreationDate: "2026-01-01T00:00:00.000Z" }]
+                : [{ ImageId: "ami-amazon-linux", Name: "al2023", RootDeviceName: "/dev/xvda", CreationDate: "2026-01-01T00:00:00.000Z" }],
+        }),
         keyPairs: async () => ({ $metadata: {}, KeyPairs: [{ KeyName: "deploy", KeyPairId: "key-1", KeyFingerprint: "fingerprint" }] }),
         instanceProfiles: async () => ({ $metadata: {}, InstanceProfiles: [{ Arn: "arn:aws:iam::123:instance-profile/app", InstanceProfileName: "app", Path: "/", InstanceProfileId: "profile-id", CreateDate: new Date(), Roles: [] }] }),
     }).list();
@@ -250,7 +255,8 @@ test("lists catalog metadata required by resource forms", async () => {
     assert.equal(catalog.instances[0]?.id, "i-1");
     assert.deepEqual(catalog.instanceTypes, ["m7i.large", "t3.micro"]);
     assert.equal(catalog.keyPairs[0]?.name, "deploy");
-    assert.equal(catalog.images[0]?.label.includes("Amazon Linux 2023"), true);
+    assert.equal(catalog.images.find((image) => image.category === "amazon-linux")?.title, "Amazon Linux 2023");
+    assert.equal(catalog.images.find((image) => image.category === "windows")?.title, "Microsoft Windows Server 2025");
 });
 
 test("keeps the EC2 catalog usable when key-pair permission is unavailable", async () => {
