@@ -68,6 +68,10 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
             service: AwsService.EC2_INSTANCE,
             config: {
                 ...(typeof config.imageId === "string" && config.imageId && { imageId: config.imageId }),
+                ...(typeof config.rootDeviceName === "string" && config.rootDeviceName && { rootDeviceName: config.rootDeviceName }),
+                ...(typeof config.rootVolumeSizeGiB === "number" && { rootVolumeSizeGiB: config.rootVolumeSizeGiB }),
+                ...(config.rootVolumeType === "gp3" || config.rootVolumeType === "gp2" ? { rootVolumeType: config.rootVolumeType } : {}),
+                ...(typeof config.deleteRootVolumeOnTermination === "boolean" && { deleteRootVolumeOnTermination: config.deleteRootVolumeOnTermination }),
                 ...(typeof config.launchTemplateId === "string" && config.launchTemplateId && { launchTemplateId: config.launchTemplateId }),
                 ...(typeof config.instanceType === "string" && { instanceType: config.instanceType }),
                 ...(typeof config.instanceCount === "number" && { instanceCount: config.instanceCount }),

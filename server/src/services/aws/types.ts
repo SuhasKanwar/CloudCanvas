@@ -29,6 +29,10 @@ export type AwsServiceType = AwsService;
 export type Ec2InstanceRequest = {
     mode?: "create" | "existing";
     imageId?: string;
+    rootDeviceName?: string;
+    rootVolumeSizeGiB?: number;
+    rootVolumeType?: "gp3" | "gp2";
+    deleteRootVolumeOnTermination?: boolean;
     launchTemplateId?: string;
     instanceId?: string;
     instanceType?: string;

@@ -23,6 +23,9 @@ export class Ec2Service {
         if (request.instanceCount !== undefined && (!Number.isInteger(request.instanceCount) || request.instanceCount < 1)) {
             throw new Error("instanceCount must be a positive whole number.");
         }
+        if (request.rootVolumeSizeGiB !== undefined && (!Number.isInteger(request.rootVolumeSizeGiB) || request.rootVolumeSizeGiB < 1)) {
+            throw new Error("Root volume size must be a positive whole number of GiB.");
+        }
 
         const input: RunInstancesCommandInput = {
             ...(request.imageId && { ImageId: request.imageId }),
@@ -40,6 +43,16 @@ export class Ec2Service {
             ...(request.disableApiTermination !== undefined && { DisableApiTermination: request.disableApiTermination }),
             ...(request.shutdownBehavior && { InstanceInitiatedShutdownBehavior: request.shutdownBehavior }),
             ...(request.metadataHttpTokens && { MetadataOptions: { HttpTokens: request.metadataHttpTokens } }),
+            ...(request.rootVolumeSizeGiB && {
+                BlockDeviceMappings: [{
+                    DeviceName: request.rootDeviceName || "/dev/xvda",
+                    Ebs: {
+                        VolumeSize: request.rootVolumeSizeGiB,
+                        VolumeType: request.rootVolumeType ?? "gp3",
+                        DeleteOnTermination: request.deleteRootVolumeOnTermination ?? true,
+                    },
+                }],
+            }),
             ...(request.dryRun && { DryRun: true }),
             ...(request.name && {
                 TagSpecifications: [{

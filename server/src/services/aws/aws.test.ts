@@ -37,6 +37,10 @@ test("maps EC2 configuration into a RunInstances command", async () => {
 
     const result = await service.createInstance({
         imageId: "ami-0abc1234",
+        rootDeviceName: "/dev/xvda",
+        rootVolumeSizeGiB: 30,
+        rootVolumeType: "gp3",
+        deleteRootVolumeOnTermination: false,
         instanceType: "t3.micro",
         instanceCount: 2,
         iamInstanceProfile: "cloudcanvas-profile",
@@ -52,6 +56,9 @@ test("maps EC2 configuration into a RunInstances command", async () => {
     assert.equal(command?.input.IamInstanceProfile?.Name, "cloudcanvas-profile");
     assert.equal(command?.input.Monitoring?.Enabled, true);
     assert.equal(command?.input.MetadataOptions?.HttpTokens, "required");
+    assert.equal(command?.input.BlockDeviceMappings?.[0]?.Ebs?.VolumeSize, 30);
+    assert.equal(command?.input.BlockDeviceMappings?.[0]?.Ebs?.VolumeType, "gp3");
+    assert.equal(command?.input.BlockDeviceMappings?.[0]?.Ebs?.DeleteOnTermination, false);
     assert.equal(command?.input.TagSpecifications?.[0]?.Tags?.[0]?.Value, "test-instance");
     assert.equal(typeof command?.input.UserData, "string");
     assert.equal(result.instances[0]?.instanceId, "i-test");
@@ -227,6 +234,7 @@ test("lists catalog metadata required by resource forms", async () => {
         securityGroups: async () => ({ $metadata: {}, SecurityGroups: [{ GroupId: "sg-1", GroupName: "web", Description: "web traffic", VpcId: "vpc-1" }] }),
         launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [{ LaunchTemplateId: "lt-1", LaunchTemplateName: "app-template" }] }),
         instances: async () => ({ $metadata: {}, Reservations: [{ Instances: [{ InstanceId: "i-1", InstanceType: "t3.micro", State: { Name: "running" } }] }] }),
+        images: async () => ({ $metadata: {}, Images: [{ ImageId: "ami-1", Name: "al2023", RootDeviceName: "/dev/xvda", CreationDate: "2026-01-01T00:00:00.000Z" }] }),
         keyPairs: async () => ({ $metadata: {}, KeyPairs: [{ KeyName: "deploy", KeyPairId: "key-1", KeyFingerprint: "fingerprint" }] }),
         instanceProfiles: async () => ({ $metadata: {}, InstanceProfiles: [{ Arn: "arn:aws:iam::123:instance-profile/app", InstanceProfileName: "app", Path: "/", InstanceProfileId: "profile-id", CreateDate: new Date(), Roles: [] }] }),
     }).list();
@@ -234,6 +242,23 @@ test("lists catalog metadata required by resource forms", async () => {
     assert.equal(catalog.instanceProfiles[0]?.name, "app");
     assert.equal(catalog.instances[0]?.id, "i-1");
     assert.equal(catalog.keyPairs[0]?.name, "deploy");
+    assert.equal(catalog.images[0]?.id, "ami-1");
+});
+
+test("keeps the EC2 catalog usable when key-pair permission is unavailable", async () => {
+    const catalog = await new AwsCatalogService({
+        vpcs: async () => ({ $metadata: {}, Vpcs: [{ VpcId: "vpc-1" }] }),
+        subnets: async () => ({ $metadata: {}, Subnets: [] }),
+        securityGroups: async () => ({ $metadata: {}, SecurityGroups: [] }),
+        launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [] }),
+        instances: async () => ({ $metadata: {}, Reservations: [] }),
+        images: async () => ({ $metadata: {}, Images: [] }),
+        keyPairs: async () => { throw new Error("UnauthorizedOperation"); },
+        instanceProfiles: async () => ({ $metadata: {}, InstanceProfiles: [] }),
+    }).list();
+    assert.equal(catalog.vpcs[0]?.id, "vpc-1");
+    assert.equal(catalog.keyPairs.length, 0);
+    assert.equal(catalog.warnings.some((warning) => warning.startsWith("Key pairs could not be listed.")), true);
 });
 
 test("imports an EC2 key pair or adopts an existing one", async () => {
