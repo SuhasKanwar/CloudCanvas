@@ -1,5 +1,6 @@
 import {
     DescribeInstancesCommand,
+    DescribeInstanceTypesCommand,
     DescribeImagesCommand,
     DescribeKeyPairsCommand,
     DescribeLaunchTemplatesCommand,
@@ -7,6 +8,7 @@ import {
     DescribeSubnetsCommand,
     DescribeVpcsCommand,
     type DescribeInstancesCommandOutput,
+    type DescribeInstanceTypesCommandOutput,
     type DescribeImagesCommandOutput,
     type DescribeKeyPairsCommandOutput,
     type DescribeLaunchTemplatesCommandOutput,
@@ -27,8 +29,9 @@ export type AwsResourceCatalog = {
     instanceProfiles: Array<{ arn: string; name: string }>;
     launchTemplates: Array<{ id: string; name: string }>;
     instances: Array<{ id: string; name: string; state: string; instanceType: string; vpcId: string; subnetId: string }>;
+    instanceTypes: string[];
     keyPairs: Array<{ id: string; name: string; fingerprint: string }>;
-    images: Array<{ id: string; name: string; description: string; rootDeviceName: string }>;
+    images: Array<{ id: string; label: string; description: string; rootDeviceName: string }>;
 };
 
 export type AwsCatalogSender = {
@@ -37,6 +40,7 @@ export type AwsCatalogSender = {
     subnets: (command: DescribeSubnetsCommand) => Promise<DescribeSubnetsCommandOutput>;
     launchTemplates: (command: DescribeLaunchTemplatesCommand) => Promise<DescribeLaunchTemplatesCommandOutput>;
     instances: (command: DescribeInstancesCommand) => Promise<DescribeInstancesCommandOutput>;
+    instanceTypes: (command: DescribeInstanceTypesCommand) => Promise<DescribeInstanceTypesCommandOutput>;
     images: (command: DescribeImagesCommand) => Promise<DescribeImagesCommandOutput>;
     keyPairs: (command: DescribeKeyPairsCommand) => Promise<DescribeKeyPairsCommandOutput>;
     instanceProfiles: (command: ListInstanceProfilesCommand) => Promise<ListInstanceProfilesCommandOutput>;
@@ -46,16 +50,39 @@ function name(tags: Array<{ Key?: string | undefined; Value?: string | undefined
     return tags?.find((tag) => tag.Key === "Name")?.Value ?? fallback;
 }
 
+function imageLabel(image: { ImageId?: string | undefined; Name?: string | undefined; Architecture?: string | undefined; CreationDate?: string | undefined }) {
+    const name = image.Name ?? image.ImageId ?? "Custom AMI";
+    const release = image.CreationDate?.slice(0, 10) ?? "unknown release";
+    const architecture = image.Architecture ?? "x86_64";
+    const os = name.startsWith("al2023") ? "Amazon Linux 2023"
+        : name.startsWith("amzn2") ? "Amazon Linux 2"
+            : name.startsWith("Windows_Server-2022-") ? "Windows Server 2022"
+                : name;
+    return `${os} | ${architecture} | ${release} | ${image.ImageId ?? ""}`;
+}
+
 export class AwsCatalogService {
     constructor(private readonly send: AwsCatalogSender) {}
 
+    private async listInstanceTypes() {
+        const instanceTypes: string[] = [];
+        let nextToken: string | undefined;
+        do {
+            const page = await this.send.instanceTypes(new DescribeInstanceTypesCommand({ MaxResults: 100, NextToken: nextToken }));
+            instanceTypes.push(...(page.InstanceTypes ?? []).flatMap((instanceType) => instanceType.InstanceType ? [instanceType.InstanceType] : []));
+            nextToken = page.NextToken;
+        } while (nextToken);
+        return instanceTypes.sort();
+    }
+
     async list(): Promise<AwsResourceCatalog> {
-        const [vpcResult, subnetResult, securityGroupResult, templateResult, instanceResult, profileResult, keyPairResult, al2023Result, amzn2Result, windowsResult] = await Promise.allSettled([
+        const [vpcResult, subnetResult, securityGroupResult, templateResult, instanceResult, instanceTypeResult, profileResult, keyPairResult, al2023Result, amzn2Result, windowsResult] = await Promise.allSettled([
             this.send.vpcs(new DescribeVpcsCommand({})),
             this.send.subnets(new DescribeSubnetsCommand({})),
             this.send.securityGroups(new DescribeSecurityGroupsCommand({})),
             this.send.launchTemplates(new DescribeLaunchTemplatesCommand({})),
             this.send.instances(new DescribeInstancesCommand({})),
+            this.listInstanceTypes(),
             this.send.instanceProfiles(new ListInstanceProfilesCommand({})),
             this.send.keyPairs(new DescribeKeyPairsCommand({})),
             this.send.images(new DescribeImagesCommand({ Owners: ["amazon"], Filters: [{ Name: "name", Values: ["al2023-ami-2023.*-kernel-6.1-x86_64"] }, { Name: "state", Values: ["available"] }] })),
@@ -73,6 +100,7 @@ export class AwsCatalogService {
         const securityGroupPage = page(securityGroupResult, "Security groups");
         const templatePage = page(templateResult, "Launch templates");
         const instancePage = page(instanceResult, "EC2 instances");
+        const instanceTypes = page(instanceTypeResult, "EC2 instance types", "ec2:DescribeInstanceTypes") ?? [];
         const profilePage = page(profileResult, "Instance profiles");
         const keyPairPage = page(keyPairResult, "Key pairs", "ec2:DescribeKeyPairs");
         const images = [page(al2023Result, "Amazon Linux 2023 images", "ec2:DescribeImages"), page(amzn2Result, "Amazon Linux 2 images", "ec2:DescribeImages"), page(windowsResult, "Windows Server 2022 images", "ec2:DescribeImages")]
@@ -87,8 +115,9 @@ export class AwsCatalogService {
             instanceProfiles: (profilePage?.InstanceProfiles ?? []).flatMap((profile) => profile.Arn && profile.InstanceProfileName ? [{ arn: profile.Arn, name: profile.InstanceProfileName }] : []),
             launchTemplates: (templatePage?.LaunchTemplates ?? []).flatMap((template) => template.LaunchTemplateId && template.LaunchTemplateName ? [{ id: template.LaunchTemplateId, name: template.LaunchTemplateName }] : []),
             instances: (instancePage?.Reservations ?? []).flatMap((reservation) => (reservation.Instances ?? []).flatMap((instance) => instance.InstanceId ? [{ id: instance.InstanceId, name: name(instance.Tags, instance.InstanceId), state: instance.State?.Name ?? "unknown", instanceType: instance.InstanceType ?? "", vpcId: instance.VpcId ?? "", subnetId: instance.SubnetId ?? "" }] : [])),
+            instanceTypes,
             keyPairs: (keyPairPage?.KeyPairs ?? []).flatMap((keyPair) => keyPair.KeyName ? [{ id: keyPair.KeyPairId ?? keyPair.KeyName, name: keyPair.KeyName, fingerprint: keyPair.KeyFingerprint ?? "" }] : []),
-            images: images.flatMap((image) => image.ImageId ? [{ id: image.ImageId, name: image.Name ?? image.ImageId, description: image.Description ?? "", rootDeviceName: image.RootDeviceName ?? "/dev/xvda" }] : []),
+            images: images.flatMap((image) => image.ImageId ? [{ id: image.ImageId, label: imageLabel(image), description: image.Description ?? "", rootDeviceName: image.RootDeviceName ?? "/dev/xvda" }] : []),
         };
     }
 }

@@ -17,6 +17,10 @@ function Field({ label, value, onChange, type = "text" }: FieldProps) {
     return <label className="block"><span className="text-xs text-(--secondary-text-color)">{label}</span><input className={inputClass} min={type === "number" ? 0 : undefined} onChange={(event) => onChange(event.target.value)} type={type} value={value} /></label>;
 }
 
+function InstanceTypeField({ options, value, onChange }: { options: string[]; value: string; onChange: (value: string) => void }) {
+    return <label className="block"><span className="text-xs text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option} value={option} />)}</datalist></label>;
+}
+
 function Select({ label, onChange, options, value }: { label: string; onChange: (value: string) => void; options: ReadonlyArray<ReadonlyArray<string>>; value: string }) {
     return <label className="block"><span className="text-xs text-(--secondary-text-color)">{label}</span><select className={inputClass} onChange={(event) => onChange(event.target.value)} value={value}>{options.map(([option = "", title = ""]) => <option className="bg-[#151821]" key={option} value={option}>{title}</option>)}</select></label>;
 }
@@ -42,10 +46,10 @@ function Ec2Form({ bindings, catalog, config, update }: { bindings?: Ec2Bindings
     if (mode === "existing") return <><Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} /><Select label="Existing EC2 instance" onChange={(value) => update("instanceId", value)} options={[["", "Select instance"], ...(catalog?.instances ?? []).map((instance) => [instance.id, `${instance.name} (${instance.state})`])]} value={String(config.instanceId ?? "")} /></>;
     return <>
         <Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} />
-        <Select label="Operating system / AMI" onChange={(value) => { const image = catalog?.images.find((entry) => entry.id === value); update("__all__", { ...config, imageId: value, ...(image && { rootDeviceName: image.rootDeviceName }) }); }} options={[["", "Choose an OS image"], ...(catalog?.images ?? []).map((image) => [image.id, image.name])]} value={String(config.imageId ?? "")} />
+        <Select label="Operating system / AMI" onChange={(value) => { const image = catalog?.images.find((entry) => entry.id === value); update("__all__", { ...config, imageId: value, ...(image && { rootDeviceName: image.rootDeviceName }) }); }} options={[["", "Choose an OS image"], ...(catalog?.images ?? []).map((image) => [image.id, image.label])]} value={String(config.imageId ?? "")} />
         <Field label="Custom AMI ID" onChange={(value) => update("imageId", value)} value={String(config.imageId ?? "")} />
         <Select label="Launch template" onChange={(value) => update("launchTemplateId", value)} options={[["", "No launch template"], ...(catalog?.launchTemplates ?? []).map((template) => [template.id, template.name])]} value={String(config.launchTemplateId ?? "")} />
-        <Select label="Instance type" onChange={(value) => update("instanceType", value)} options={[["t3.micro", "t3.micro"], ["t3.small", "t3.small"], ["t3.medium", "t3.medium"], ["t3.large", "t3.large"], ["m5.large", "m5.large"], ["c5.large", "c5.large"]]} value={String(config.instanceType ?? "t3.micro")} />
+        <InstanceTypeField onChange={(value) => update("instanceType", value)} options={catalog?.instanceTypes ?? []} value={String(config.instanceType ?? "t3.micro")} />
         <Field label="Instance count" onChange={(value) => update("instanceCount", Number(value) || 1)} type="number" value={Number(config.instanceCount ?? 1)} />
         <Field label="Instance name" onChange={(value) => update("name", value)} value={String(config.name ?? "")} />
         {bindings?.keyPair ? <div className="border border-(--secondary-color)/30 bg-(--secondary-color)/8 p-3 text-xs text-(--secondary-color)"><span className="flex items-center gap-2"><Link2 className="h-3.5 w-3.5" />Linked key pair</span><p className="mt-1 truncate font-medium text-(--primary-text-color)">{bindings.keyPair}</p></div> : <Field label="Key pair name" onChange={(value) => update("keyName", value)} value={String(config.keyName ?? "")} />}

@@ -26,8 +26,9 @@ export type AwsResourceCatalog = {
     instanceProfiles: Array<{ arn: string; name: string }>;
     launchTemplates: Array<{ id: string; name: string }>;
     instances: Array<{ id: string; name: string; state: string; instanceType: string; vpcId: string; subnetId: string }>;
+    instanceTypes: string[];
     keyPairs: Array<{ id: string; name: string; fingerprint: string }>;
-    images: Array<{ id: string; name: string; description: string; rootDeviceName: string }>;
+    images: Array<{ id: string; label: string; description: string; rootDeviceName: string }>;
 };
 
 type ApiEnvelope<T> = { data: T };

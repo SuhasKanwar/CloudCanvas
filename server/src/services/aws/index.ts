@@ -57,6 +57,7 @@ export class AWSResourceManager {
             subnets: (command) => ec2.send(command),
             launchTemplates: (command) => ec2.send(command),
             instances: (command) => ec2.send(command),
+            instanceTypes: (command) => ec2.send(command),
             images: (command) => ec2.send(command),
             keyPairs: (command) => ec2.send(command),
             instanceProfiles: (command) => iam.send(command),

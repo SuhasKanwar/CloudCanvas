@@ -233,12 +233,14 @@ test("maps SNS topic create and delete", async () => {
 });
 
 test("lists catalog metadata required by resource forms", async () => {
+    let instanceTypeCalls = 0;
     const catalog = await new AwsCatalogService({
         vpcs: async () => ({ $metadata: {}, Vpcs: [{ VpcId: "vpc-1", CidrBlock: "10.0.0.0/16", Tags: [{ Key: "Name", Value: "app" }] }] }),
         subnets: async () => ({ $metadata: {}, Subnets: [{ SubnetId: "subnet-1", VpcId: "vpc-1", AvailabilityZone: "ap-south-1a" }] }),
         securityGroups: async () => ({ $metadata: {}, SecurityGroups: [{ GroupId: "sg-1", GroupName: "web", Description: "web traffic", VpcId: "vpc-1" }] }),
         launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [{ LaunchTemplateId: "lt-1", LaunchTemplateName: "app-template" }] }),
         instances: async () => ({ $metadata: {}, Reservations: [{ Instances: [{ InstanceId: "i-1", InstanceType: "t3.micro", State: { Name: "running" } }] }] }),
+        instanceTypes: async () => (++instanceTypeCalls === 1 ? { $metadata: {}, InstanceTypes: [{ InstanceType: "t3.micro" }], NextToken: "next" } : { $metadata: {}, InstanceTypes: [{ InstanceType: "m7i.large" }] }),
         images: async () => ({ $metadata: {}, Images: [{ ImageId: "ami-1", Name: "al2023", RootDeviceName: "/dev/xvda", CreationDate: "2026-01-01T00:00:00.000Z" }] }),
         keyPairs: async () => ({ $metadata: {}, KeyPairs: [{ KeyName: "deploy", KeyPairId: "key-1", KeyFingerprint: "fingerprint" }] }),
         instanceProfiles: async () => ({ $metadata: {}, InstanceProfiles: [{ Arn: "arn:aws:iam::123:instance-profile/app", InstanceProfileName: "app", Path: "/", InstanceProfileId: "profile-id", CreateDate: new Date(), Roles: [] }] }),
@@ -246,8 +248,9 @@ test("lists catalog metadata required by resource forms", async () => {
     assert.equal(catalog.securityGroups[0]?.id, "sg-1");
     assert.equal(catalog.instanceProfiles[0]?.name, "app");
     assert.equal(catalog.instances[0]?.id, "i-1");
+    assert.deepEqual(catalog.instanceTypes, ["m7i.large", "t3.micro"]);
     assert.equal(catalog.keyPairs[0]?.name, "deploy");
-    assert.equal(catalog.images[0]?.id, "ami-1");
+    assert.equal(catalog.images[0]?.label.includes("Amazon Linux 2023"), true);
 });
 
 test("keeps the EC2 catalog usable when key-pair permission is unavailable", async () => {
@@ -257,6 +260,7 @@ test("keeps the EC2 catalog usable when key-pair permission is unavailable", asy
         securityGroups: async () => ({ $metadata: {}, SecurityGroups: [] }),
         launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [] }),
         instances: async () => ({ $metadata: {}, Reservations: [] }),
+        instanceTypes: async () => ({ $metadata: {}, InstanceTypes: [] }),
         images: async () => ({ $metadata: {}, Images: [] }),
         keyPairs: async () => { throw new Error("UnauthorizedOperation"); },
         instanceProfiles: async () => ({ $metadata: {}, InstanceProfiles: [] }),
