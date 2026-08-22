@@ -105,3 +105,24 @@ html {
 .preserve-3d {
   transform-style: preserve-3d;
 }
+
+.react-flow__controls {
+  overflow: hidden;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 4px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+.react-flow__controls-button {
+  background: var(--surface-muted-color) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--primary-text-color) !important;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--surface-strong-color) !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor;
+}

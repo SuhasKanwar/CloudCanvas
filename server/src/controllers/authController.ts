@@ -123,6 +123,10 @@ export async function signInHandler(req: Request, res: Response<ApiResponse>) {
 
 export async function signOutHandler(req: Request, res: Response<ApiResponse>) {
     try {
+        res.clearCookie("Authorization", {
+            secure: NODE_ENV === "production",
+            sameSite: "lax",
+        });
         return res.status(200).json({
             success: true,
             message: "User signed out successfully.",

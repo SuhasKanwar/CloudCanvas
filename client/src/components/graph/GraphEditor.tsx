@@ -4,13 +4,15 @@ import { useCallback, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { addEdge, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Check, ChevronLeft, Code2, Save, Settings2 } from "lucide-react";
+import { Check, Pencil, Plus, Save, Settings2 } from "lucide-react";
 import { stringify } from "yaml";
 import type { AwsService, GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
 import type { Sketch } from "@/lib/sketches";
 import AiComposer from "./AiComposer";
 import SketchLibrary from "./SketchLibrary";
+import PublishSketchButton from "./PublishSketchButton";
+import ResourceInspector from "./ResourceInspector";
 import { awsServiceOptions, defaultResourceConfig, ResourceNode, type ResourceNodeData } from "./resourceNode";
 
 type ResourceFlowNode = Node<ResourceNodeData, "resource">;
@@ -25,7 +27,6 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
     const [name, setName] = useState("Untitled infrastructure");
     const [sketchId, setSketchId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
-    const [configError, setConfigError] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
 
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
@@ -45,16 +46,9 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
 
     const onConnect = useCallback((connection: Connection) => setEdges((current) => addEdge({ ...connection, type: "smoothstep" }, current)), [setEdges]);
 
-    const updateSelectedConfig = (value: string) => {
+    const updateSelectedResource = (label: string, config: Record<string, unknown>) => {
         if (!selectedNode) return;
-        try {
-            const config = JSON.parse(value) as Record<string, unknown>;
-            if (!config || Array.isArray(config)) throw new Error();
-            setNodes((current) => current.map((node) => node.id === selectedNode.id ? { ...node, data: { ...node.data, config } } : node));
-            setConfigError(null);
-        } catch {
-            setConfigError("Configuration must be a JSON object.");
-        }
+        setNodes((current) => current.map((node) => node.id === selectedNode.id ? { ...node, data: { ...node.data, label, config } } : node));
     };
 
     const saveGraph = async () => {
@@ -129,25 +123,21 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
 
         <div className="relative min-w-0">
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
-                <input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} />
+                <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
-                <button className="hidden px-2 py-2 text-sm text-(--secondary-text-color) hover:text-(--primary-text-color) md:block" onClick={newSketch} type="button">New</button>
+                <button aria-label="Create a new sketch" className="hidden p-2 text-(--secondary-text-color) hover:text-(--primary-text-color) md:block" onClick={newSketch} title="New sketch" type="button"><Plus className="h-4 w-4" /></button>
                 <SketchLibrary onLoad={loadSketch} />
                 <AiComposer onBuild={loadSketch} />
+                <PublishSketchButton sketchId={sketchId} />
                 <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
             </div>
-            <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={onEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange}>
+            <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={onEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
                 <Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} />
             </ReactFlow>
         </div>
 
         <aside className="hidden border-l border-white/10 xl:block">
-            {selectedNode ? <div className="h-full overflow-auto p-4">
-                <div className="flex items-center gap-2 text-sm font-medium"><Code2 className="h-4 w-4 text-(--secondary-color)" />{selectedNode.data.label}</div>
-                <p className="mt-2 text-xs leading-5 text-(--secondary-text-color)">Resource configuration</p>
-                <textarea className="mt-4 min-h-80 w-full resize-y border border-white/10 bg-black/20 p-3 font-mono text-xs leading-5 outline-none focus:border-(--primary-color)" defaultValue={JSON.stringify(selectedNode.data.config, null, 2)} key={selectedNode.id} onChange={(event) => updateSelectedConfig(event.target.value)} spellCheck={false} />
-                {configError ? <p className="mt-2 text-xs text-(--danger-color)">{configError}</p> : null}
-            </div> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to edit its configuration.</div>}
+            {selectedNode ? <ResourceInspector node={selectedNode} onChange={updateSelectedResource} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
         </aside>
     </div>;
 }

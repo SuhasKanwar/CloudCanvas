@@ -60,3 +60,7 @@ export async function createAiSketch(accessToken: string, query: string, session
     );
     return response.data.data;
 }
+
+export async function publishSketch(accessToken: string, sketchId: string, connectionId: string): Promise<void> {
+    await api.post(`/api/sketches/${sketchId}/deploy`, { connectionId }, authenticatedRequest(accessToken));
+}
