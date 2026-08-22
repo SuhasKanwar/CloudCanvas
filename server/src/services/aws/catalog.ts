@@ -1,10 +1,12 @@
 import {
     DescribeInstancesCommand,
+    DescribeKeyPairsCommand,
     DescribeLaunchTemplatesCommand,
     DescribeSecurityGroupsCommand,
     DescribeSubnetsCommand,
     DescribeVpcsCommand,
     type DescribeInstancesCommandOutput,
+    type DescribeKeyPairsCommandOutput,
     type DescribeLaunchTemplatesCommandOutput,
     type DescribeSecurityGroupsCommandOutput,
     type DescribeSubnetsCommandOutput,
@@ -22,6 +24,7 @@ export type AwsResourceCatalog = {
     instanceProfiles: Array<{ arn: string; name: string }>;
     launchTemplates: Array<{ id: string; name: string }>;
     instances: Array<{ id: string; name: string; state: string; instanceType: string; vpcId: string; subnetId: string }>;
+    keyPairs: Array<{ id: string; name: string; fingerprint: string }>;
 };
 
 export type AwsCatalogSender = {
@@ -30,6 +33,7 @@ export type AwsCatalogSender = {
     subnets: (command: DescribeSubnetsCommand) => Promise<DescribeSubnetsCommandOutput>;
     launchTemplates: (command: DescribeLaunchTemplatesCommand) => Promise<DescribeLaunchTemplatesCommandOutput>;
     instances: (command: DescribeInstancesCommand) => Promise<DescribeInstancesCommandOutput>;
+    keyPairs: (command: DescribeKeyPairsCommand) => Promise<DescribeKeyPairsCommandOutput>;
     instanceProfiles: (command: ListInstanceProfilesCommand) => Promise<ListInstanceProfilesCommandOutput>;
 };
 
@@ -41,13 +45,14 @@ export class AwsCatalogService {
     constructor(private readonly send: AwsCatalogSender) {}
 
     async list(): Promise<AwsResourceCatalog> {
-        const [vpcPage, subnetPage, securityGroupPage, templatePage, instancePage, profilePage] = await Promise.all([
+        const [vpcPage, subnetPage, securityGroupPage, templatePage, instancePage, profilePage, keyPairPage] = await Promise.all([
             this.send.vpcs(new DescribeVpcsCommand({})),
             this.send.subnets(new DescribeSubnetsCommand({})),
             this.send.securityGroups(new DescribeSecurityGroupsCommand({})),
             this.send.launchTemplates(new DescribeLaunchTemplatesCommand({})),
             this.send.instances(new DescribeInstancesCommand({})),
             this.send.instanceProfiles(new ListInstanceProfilesCommand({})),
+            this.send.keyPairs(new DescribeKeyPairsCommand({})),
         ]);
         return {
             vpcs: (vpcPage.Vpcs ?? []).flatMap((vpc) => vpc.VpcId ? [{ id: vpc.VpcId, name: name(vpc.Tags, vpc.VpcId), cidrBlock: vpc.CidrBlock ?? "" }] : []),
@@ -56,6 +61,7 @@ export class AwsCatalogService {
             instanceProfiles: (profilePage.InstanceProfiles ?? []).flatMap((profile) => profile.Arn && profile.InstanceProfileName ? [{ arn: profile.Arn, name: profile.InstanceProfileName }] : []),
             launchTemplates: (templatePage.LaunchTemplates ?? []).flatMap((template) => template.LaunchTemplateId && template.LaunchTemplateName ? [{ id: template.LaunchTemplateId, name: template.LaunchTemplateName }] : []),
             instances: (instancePage.Reservations ?? []).flatMap((reservation) => (reservation.Instances ?? []).flatMap((instance) => instance.InstanceId ? [{ id: instance.InstanceId, name: name(instance.Tags, instance.InstanceId), state: instance.State?.Name ?? "unknown", instanceType: instance.InstanceType ?? "", vpcId: instance.VpcId ?? "", subnetId: instance.SubnetId ?? "" }] : [])),
+            keyPairs: (keyPairPage.KeyPairs ?? []).flatMap((keyPair) => keyPair.KeyName ? [{ id: keyPair.KeyPairId ?? keyPair.KeyName, name: keyPair.KeyName, fingerprint: keyPair.KeyFingerprint ?? "" }] : []),
         };
     }
 }

@@ -13,6 +13,7 @@ export type AwsCredentials = {
 
 export enum AwsService {
     EC2_INSTANCE = "EC2_INSTANCE",
+    KEY_PAIR = "KEY_PAIR",
     SECURITY_GROUP = "SECURITY_GROUP",
     ECR_REPOSITORY = "ECR_REPOSITORY",
     S3_BUCKET = "S3_BUCKET",
@@ -78,6 +79,7 @@ export type Ec2CommandSender = {
 
 export type AwsResourceCreateRequest =
     | { service: AwsService.EC2_INSTANCE; config: Ec2InstanceRequest }
+    | { service: AwsService.KEY_PAIR; config: import("./resources/keyPair.js").KeyPairRequest }
     | { service: AwsService.SECURITY_GROUP; config: import("./resources/securityGroup.js").SecurityGroupRequest }
     | { service: AwsService.ECR_REPOSITORY; config: import("./resources/ecr.js").EcrRepositoryRequest }
     | { service: AwsService.S3_BUCKET; config: import("./resources/s3.js").S3BucketRequest }

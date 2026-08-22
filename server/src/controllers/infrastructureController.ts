@@ -54,7 +54,7 @@ function stringArray(value: unknown) {
 }
 
 function isAdoptedResource(request: AwsResourceCreateRequest) {
-    return (request.service === AwsService.EC2_INSTANCE || request.service === AwsService.SECURITY_GROUP) && request.config.mode === "existing";
+    return (request.service === AwsService.EC2_INSTANCE || request.service === AwsService.SECURITY_GROUP || request.service === AwsService.KEY_PAIR) && request.config.mode === "existing";
 }
 
 function buildResourceRequest(type: string, config: Record<string, unknown>): AwsResourceCreateRequest {
@@ -85,6 +85,12 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
                 ...(config.dryRun === true && { dryRun: true }),
             },
         };
+    }
+    if (type === "KEY_PAIR") {
+        if (typeof config.keyName !== "string" || !config.keyName) throw new Error("Key pair node config must include keyName.");
+        if (config.mode === "existing") return { service: AwsService.KEY_PAIR, config: { mode: "existing", keyName: config.keyName } };
+        if (typeof config.publicKeyMaterial !== "string" || !config.publicKeyMaterial) throw new Error("Importing a key pair requires public key material.");
+        return { service: AwsService.KEY_PAIR, config: { mode: "import", keyName: config.keyName, publicKeyMaterial: config.publicKeyMaterial } };
     }
     if (type === "SECURITY_GROUP") {
         if (config.mode === "existing") {
@@ -190,7 +196,7 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
         if (typeof config.topicName !== "string" || !config.topicName) throw new Error("SNS node config must include topicName.");
         return { service: AwsService.SNS_TOPIC, config: { topicName: config.topicName, ...(config.fifoTopic === true && { fifoTopic: true }) } };
     }
-    throw new Error("Supported services are EC2_INSTANCE, ECR_REPOSITORY, S3_BUCKET, IAM_ROLE, LAMBDA_FUNCTION, DYNAMODB_TABLE, SQS_QUEUE, and SNS_TOPIC.");
+    throw new Error("Supported services are EC2_INSTANCE, KEY_PAIR, SECURITY_GROUP, ECR_REPOSITORY, S3_BUCKET, IAM_ROLE, LAMBDA_FUNCTION, DYNAMODB_TABLE, SQS_QUEUE, and SNS_TOPIC.");
 }
 
 function touchSketch(sketchId: string) {

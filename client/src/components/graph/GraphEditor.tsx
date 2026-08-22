@@ -45,7 +45,20 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         setSelectedNodeId(id);
     };
 
-    const onConnect = useCallback((connection: Connection) => setEdges((current) => addEdge({ ...connection, type: "smoothstep" }, current)), [setEdges]);
+    const onConnect = useCallback((connection: Connection) => {
+        if (!connection.source || !connection.target) return;
+        const source = nodes.find((node) => node.id === connection.source);
+        const target = nodes.find((node) => node.id === connection.target);
+        if (target?.data.service === "EC2_INSTANCE" && source?.data.service === "SECURITY_GROUP") {
+            const reference = `\${${source.id}.securityGroupId}`;
+            const current = Array.isArray(target.data.config.securityGroupIds) ? target.data.config.securityGroupIds.filter((value): value is string => typeof value === "string") : [];
+            if (!current.includes(reference)) setNodes((items) => items.map((node) => node.id === target.id ? { ...node, data: { ...node.data, config: { ...node.data.config, securityGroupIds: [...current, reference] } } } : node));
+        }
+        if (target?.data.service === "EC2_INSTANCE" && source?.data.service === "KEY_PAIR") {
+            setNodes((items) => items.map((node) => node.id === target.id ? { ...node, data: { ...node.data, config: { ...node.data.config, keyName: `\${${source.id}.keyName}` } } } : node));
+        }
+        setEdges((current) => addEdge({ ...connection, type: "smoothstep" }, current));
+    }, [nodes, setEdges, setNodes]);
 
     const updateSelectedResource = (label: string, config: Record<string, unknown>) => {
         if (!selectedNode) return;

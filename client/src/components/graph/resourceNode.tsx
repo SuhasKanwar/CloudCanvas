@@ -1,7 +1,7 @@
 "use client";
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Archive, Box, Database, FunctionSquare, HardDrive, KeyRound, Network, Send, Server } from "lucide-react";
+import { Archive, Box, Database, FunctionSquare, HardDrive, KeyRound, KeySquare, Network, Send, Server } from "lucide-react";
 import type { AwsService } from "@cloudcanvas/graph-contract";
 
 export type ResourceNodeData = {
@@ -12,6 +12,7 @@ export type ResourceNodeData = {
 
 const serviceAppearance: Record<AwsService, { accent: string; icon: typeof Server; title: string }> = {
     EC2_INSTANCE: { title: "EC2 instance", icon: Server, accent: "text-amber-300" },
+    KEY_PAIR: { title: "EC2 key pair", icon: KeySquare, accent: "text-teal-300" },
     SECURITY_GROUP: { title: "Security group", icon: Network, accent: "text-emerald-300" },
     ECR_REPOSITORY: { title: "ECR repository", icon: Archive, accent: "text-rose-300" },
     S3_BUCKET: { title: "S3 bucket", icon: HardDrive, accent: "text-sky-300" },
@@ -47,6 +48,7 @@ export const awsServiceOptions = Object.entries(serviceAppearance).map(([service
 
 export function defaultResourceConfig(service: AwsService): Record<string, unknown> {
     if (service === "EC2_INSTANCE") return { mode: "create", imageId: "", instanceType: "t3.micro", instanceCount: 1, shutdownBehavior: "stop", metadataHttpTokens: "required" };
+    if (service === "KEY_PAIR") return { mode: "existing", keyName: "" };
     if (service === "SECURITY_GROUP") return { mode: "create", groupName: "cloudcanvas-security-group", description: "Managed by CloudCanvas", vpcId: "", ingressRules: [] };
     if (service === "ECR_REPOSITORY") return { repositoryName: "cloudcanvas-repository", imageTagMutability: "MUTABLE" };
     if (service === "S3_BUCKET") return { bucketName: "cloudcanvas-bucket", versioning: true, blockPublicAccess: true, encryption: "SSE-S3", enforceHttps: true };

@@ -23,3 +23,17 @@ test("validates AI graph objects with the same contract", () => {
         edges: [],
     }));
 });
+
+test("accepts an EC2 key pair graph node", () => {
+    const graph = validateGraphDefinition({
+        schemaVersion: 1,
+        name: "key-pair",
+        nodes: [{
+            id: "ssh-key",
+            type: "KEY_PAIR",
+            config: { mode: "existing", keyName: "cloudcanvas" },
+        }],
+        edges: [],
+    });
+    assert.equal(graph.nodes[0]?.type, "KEY_PAIR");
+});

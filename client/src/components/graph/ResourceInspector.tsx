@@ -71,6 +71,11 @@ function SecurityGroupForm({ catalog, config, update }: { catalog: AwsResourceCa
     </>;
 }
 
+function KeyPairForm({ catalog, config, update }: { catalog: AwsResourceCatalog | null; config: Record<string, unknown>; update: (key: string, value: unknown) => void }) {
+    const mode = String(config.mode ?? "existing");
+    return <><Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["existing", "Use existing"], ["import", "Import public key"]]} value={mode} />{mode === "existing" ? <Select label="Existing key pair" onChange={(value) => update("keyName", value)} options={[["", "Select key pair"], ...(catalog?.keyPairs ?? []).map((keyPair) => [keyPair.name, keyPair.name])]} value={String(config.keyName ?? "")} /> : <><Field label="Key pair name" onChange={(value) => update("keyName", value)} value={String(config.keyName ?? "")} /><label className="block"><span className="text-xs text-(--secondary-text-color)">Public key material</span><textarea className={`${inputClass} min-h-24 resize-y font-mono text-xs`} onChange={(event) => update("publicKeyMaterial", event.target.value)} value={String(config.publicKeyMaterial ?? "")} /></label></>}</>;
+}
+
 function IamForm({ config, update }: { config: Record<string, unknown>; update: (key: string, value: unknown) => void }) {
     const updateTrustedService = (trustedService: string) => {
         const { assumeRolePolicyDocument: _legacyPolicy, ...next } = config;
@@ -113,7 +118,7 @@ export default function ResourceInspector({ connectionId, node, onChange, onDele
 
     useEffect(() => {
         const accessToken = session?.accessToken;
-        if (!accessToken || (service !== "EC2_INSTANCE" && service !== "SECURITY_GROUP")) return;
+        if (!accessToken || (service !== "EC2_INSTANCE" && service !== "SECURITY_GROUP" && service !== "KEY_PAIR")) return;
         void listAwsConnections(accessToken).then((connections) => {
             const connection = connections.find((entry) => entry.id === connectionId) ?? connections.find((entry) => entry.isActive) ?? connections[0];
             return connection ? getAwsResourceCatalog(accessToken, connection.id) : null;
@@ -126,6 +131,7 @@ export default function ResourceInspector({ connectionId, node, onChange, onDele
             <label className="block"><span className="flex items-center gap-2 text-xs text-(--secondary-text-color)"><Tag className="h-3.5 w-3.5" />Node label</span><input className={inputClass} onChange={(event) => onChange(event.target.value, config)} value={node.data.label} /></label>
             <div className="border-y border-white/10 py-4"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--secondary-text-color)">{service.replaceAll("_", " ")}</p></div>
             {service === "EC2_INSTANCE" ? <Ec2Form catalog={catalog} config={config} update={update} /> : null}
+            {service === "KEY_PAIR" ? <KeyPairForm catalog={catalog} config={config} update={update} /> : null}
             {service === "SECURITY_GROUP" ? <SecurityGroupForm catalog={catalog} config={config} update={update} /> : null}
             {service === "ECR_REPOSITORY" ? <><Field label="Repository name" onChange={(value) => update("repositoryName", value)} value={String(config.repositoryName ?? "")} /><Select label="Tag mutability" onChange={(value) => update("imageTagMutability", value)} options={[["MUTABLE", "Mutable"], ["IMMUTABLE", "Immutable"]]} value={String(config.imageTagMutability ?? "MUTABLE")} /><Toggle checked={config.scanOnPush === true} label="Scan on push" onChange={(value) => update("scanOnPush", value)} /></> : null}
             {service === "S3_BUCKET" ? <><Field label="Bucket name" onChange={(value) => update("bucketName", value)} value={String(config.bucketName ?? "")} /><Select label="Encryption" onChange={(value) => update("encryption", value)} options={[["SSE-S3", "Amazon S3 managed keys"], ["SSE-KMS", "Customer managed KMS key"]]} value={String(config.encryption ?? "SSE-S3")} />{config.encryption === "SSE-KMS" ? <Field label="KMS key ARN" onChange={(value) => update("kmsKeyArn", value)} value={String(config.kmsKeyArn ?? "")} /> : null}<Toggle checked={config.versioning === true} label="Versioning" onChange={(value) => update("versioning", value)} /><Toggle checked={config.blockPublicAccess !== false} label="Block all public access" onChange={(value) => update("blockPublicAccess", value)} /><Toggle checked={config.enforceHttps !== false} label="Require HTTPS" onChange={(value) => update("enforceHttps", value)} /></> : null}

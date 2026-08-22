@@ -16,6 +16,7 @@ import { S3Service } from "./resources/s3.js";
 import { SnsService } from "./resources/sns.js";
 import { SqsService } from "./resources/sqs.js";
 import { SecurityGroupService } from "./resources/securityGroup.js";
+import { KeyPairService } from "./resources/keyPair.js";
 import { AwsService } from "./types.js";
 import { AwsCatalogService, type AwsResourceCatalog } from "./catalog.js";
 import type {
@@ -56,6 +57,7 @@ export class AWSResourceManager {
             subnets: (command) => ec2.send(command),
             launchTemplates: (command) => ec2.send(command),
             instances: (command) => ec2.send(command),
+            keyPairs: (command) => ec2.send(command),
             instanceProfiles: (command) => iam.send(command),
         }).list();
     }
@@ -70,6 +72,11 @@ export class AWSResourceManager {
             const externalId = data.instances[0]?.instanceId;
             if (!externalId) throw new Error("AWS did not return an EC2 instance ID.");
             return { service: request.service, region, name: request.config.name ?? externalId, externalId, data };
+        }
+        if (request.service === AwsService.KEY_PAIR) {
+            const client = new EC2Client({ region, credentials });
+            const data = await new KeyPairService({ import: (command) => client.send(command), delete: (command) => client.send(command) }, region).create(request.config);
+            return { service: request.service, region, name: data.keyName, externalId: data.keyName, data };
         }
         if (request.service === AwsService.SECURITY_GROUP) {
             const client = new EC2Client({ region, credentials });
@@ -163,6 +170,11 @@ export class AWSResourceManager {
     async deleteResource(service: AwsResourceCreateRequest["service"], externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceDeleteResult> {
         if (service === AwsService.EC2_INSTANCE) {
             const data = await this.terminateEc2Instances([externalId], credentials, region);
+            return { service, region, externalId, data };
+        }
+        if (service === AwsService.KEY_PAIR) {
+            const client = new EC2Client({ region, credentials });
+            const data = await new KeyPairService({ import: (command) => client.send(command), delete: (command) => client.send(command) }, region).delete(externalId);
             return { service, region, externalId, data };
         }
         if (service === AwsService.SECURITY_GROUP) {

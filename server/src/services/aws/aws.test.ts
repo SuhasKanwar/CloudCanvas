@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { RunInstancesCommand, TerminateInstancesCommand } from "@aws-sdk/client-ec2";
+import { ImportKeyPairCommand, RunInstancesCommand, TerminateInstancesCommand } from "@aws-sdk/client-ec2";
 import { AttachRolePolicyCommand, DetachRolePolicyCommand } from "@aws-sdk/client-iam";
 import { decryptAwsSecret, encryptAwsSecret } from "./crypto.js";
 import { Ec2Service } from "./resources/ec2.js";
@@ -13,6 +13,7 @@ import { SqsService } from "./resources/sqs.js";
 import { SnsService } from "./resources/sns.js";
 import { AwsCatalogService } from "./catalog.js";
 import { SecurityGroupService } from "./resources/securityGroup.js";
+import { KeyPairService } from "./resources/keyPair.js";
 
 test("encrypts and decrypts AWS secrets", () => {
     const encrypted = encryptAwsSecret("secret-value", "test-encryption-key");
@@ -226,11 +227,34 @@ test("lists catalog metadata required by resource forms", async () => {
         securityGroups: async () => ({ $metadata: {}, SecurityGroups: [{ GroupId: "sg-1", GroupName: "web", Description: "web traffic", VpcId: "vpc-1" }] }),
         launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [{ LaunchTemplateId: "lt-1", LaunchTemplateName: "app-template" }] }),
         instances: async () => ({ $metadata: {}, Reservations: [{ Instances: [{ InstanceId: "i-1", InstanceType: "t3.micro", State: { Name: "running" } }] }] }),
+        keyPairs: async () => ({ $metadata: {}, KeyPairs: [{ KeyName: "deploy", KeyPairId: "key-1", KeyFingerprint: "fingerprint" }] }),
         instanceProfiles: async () => ({ $metadata: {}, InstanceProfiles: [{ Arn: "arn:aws:iam::123:instance-profile/app", InstanceProfileName: "app", Path: "/", InstanceProfileId: "profile-id", CreateDate: new Date(), Roles: [] }] }),
     }).list();
     assert.equal(catalog.securityGroups[0]?.id, "sg-1");
     assert.equal(catalog.instanceProfiles[0]?.name, "app");
     assert.equal(catalog.instances[0]?.id, "i-1");
+    assert.equal(catalog.keyPairs[0]?.name, "deploy");
+});
+
+test("imports an EC2 key pair or adopts an existing one", async () => {
+    let command: ImportKeyPairCommand | undefined;
+    const service = new KeyPairService({
+        import: async (nextCommand) => {
+            command = nextCommand;
+            return { $metadata: {}, KeyPairId: "key-1" };
+        },
+        delete: async () => ({ $metadata: {} }),
+    }, "ap-south-1");
+
+    const created = await service.create({
+        keyName: "deploy",
+        publicKeyMaterial: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINonSensitivePublicKeyOnly cloudcanvas",
+    });
+    const adopted = await service.create({ mode: "existing", keyName: "existing" });
+
+    assert.equal(command?.input.KeyName, "deploy");
+    assert.equal(created.keyPairId, "key-1");
+    assert.equal(adopted.keyName, "existing");
 });
 
 test("creates a security group with an inbound rule or adopts an existing group", async () => {
