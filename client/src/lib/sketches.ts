@@ -65,3 +65,7 @@ export async function createAiSketch(accessToken: string, query: string, session
 export async function publishSketch(accessToken: string, sketchId: string, connectionId: string): Promise<void> {
     await api.post(`/api/sketches/${sketchId}/deploy`, { connectionId }, authenticatedRequest(accessToken));
 }
+
+export async function deleteSketch(accessToken: string, sketchId: string): Promise<void> {
+    await api.delete(`/api/sketches/${sketchId}`, authenticatedRequest(accessToken));
+}

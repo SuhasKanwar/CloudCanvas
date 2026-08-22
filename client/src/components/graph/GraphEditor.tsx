@@ -117,8 +117,12 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         setSelectedNodeId(null);
     };
 
+    const handleSketchDeleted = (deletedSketchId: string) => {
+        if (deletedSketchId === sketchId) newSketch();
+    };
+
     return <div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[#101218] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)_19rem]">
-        <aside className="border-r border-white/10 px-3 py-4">
+        <aside className="min-h-0 overflow-auto border-r border-white/10 px-3 py-4">
             <p className="px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-(--secondary-text-color)">AWS services</p>
             <div className="mt-3 space-y-1">
                 {awsServiceOptions.map((option) => {
@@ -136,7 +140,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
                 <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
                 <button aria-label="Create a new sketch" className="hidden p-2 text-(--secondary-text-color) hover:text-(--primary-text-color) md:block" onClick={newSketch} title="New sketch" type="button"><Plus className="h-4 w-4" /></button>
-                <SketchLibrary onLoad={loadSketch} />
+                <SketchLibrary onDelete={handleSketchDeleted} onLoad={loadSketch} />
                 <AiComposer onBuild={loadSketch} />
                 <PublishSketchButton connectionId={sketchConnectionId} onPublished={setSketchConnectionId} sketchId={sketchId} />
                 <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
@@ -146,7 +150,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             </ReactFlow>
         </div>
 
-        <aside className="hidden border-l border-white/10 xl:block">
+        <aside className="hidden min-h-0 overflow-hidden border-l border-white/10 xl:block">
             {selectedNode ? <ResourceInspector node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
         </aside>
     </div>;
