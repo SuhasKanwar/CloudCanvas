@@ -97,6 +97,7 @@ export const SketchScalarFieldEnum = {
   description: 'description',
   status: 'status',
   version: 'version',
+  connectionId: 'connectionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -138,6 +139,7 @@ export const AwsConnectionScalarFieldEnum = {
   secretAccessKeyEncrypted: 'secretAccessKeyEncrypted',
   sessionTokenEncrypted: 'sessionTokenEncrypted',
   encryptionKeyVersion: 'encryptionKeyVersion',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -156,6 +158,7 @@ export const AwsResourceScalarFieldEnum = {
   name: 'name',
   region: 'region',
   status: 'status',
+  managed: 'managed',
   desiredConfig: 'desiredConfig',
   actualState: 'actualState',
   lastError: 'lastError',

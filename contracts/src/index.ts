@@ -8,6 +8,7 @@ const validateSchema = new Ajv2020({ allErrors: true, useDefaults: true, strict:
 
 export type AwsService =
     | "EC2_INSTANCE"
+    | "SECURITY_GROUP"
     | "ECR_REPOSITORY"
     | "S3_BUCKET"
     | "IAM_ROLE"

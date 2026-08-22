@@ -11,6 +11,8 @@ import { LambdaService } from "./resources/lambda.js";
 import { DynamoDbService } from "./resources/dynamodb.js";
 import { SqsService } from "./resources/sqs.js";
 import { SnsService } from "./resources/sns.js";
+import { AwsCatalogService } from "./catalog.js";
+import { SecurityGroupService } from "./resources/securityGroup.js";
 
 test("encrypts and decrypts AWS secrets", () => {
     const encrypted = encryptAwsSecret("secret-value", "test-encryption-key");
@@ -208,4 +210,34 @@ test("maps SNS topic create and delete", async () => {
     const result = await service.createTopic({ topicName: "cloudcanvas" });
     assert.equal(result.topicArn.endsWith("cloudcanvas"), true);
     assert.equal((await service.deleteTopic(result.topicArn)).topicArn, result.topicArn);
+});
+
+test("lists catalog metadata required by resource forms", async () => {
+    const catalog = await new AwsCatalogService({
+        vpcs: async () => ({ $metadata: {}, Vpcs: [{ VpcId: "vpc-1", CidrBlock: "10.0.0.0/16", Tags: [{ Key: "Name", Value: "app" }] }] }),
+        subnets: async () => ({ $metadata: {}, Subnets: [{ SubnetId: "subnet-1", VpcId: "vpc-1", AvailabilityZone: "ap-south-1a" }] }),
+        securityGroups: async () => ({ $metadata: {}, SecurityGroups: [{ GroupId: "sg-1", GroupName: "web", Description: "web traffic", VpcId: "vpc-1" }] }),
+        launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [{ LaunchTemplateId: "lt-1", LaunchTemplateName: "app-template" }] }),
+        instances: async () => ({ $metadata: {}, Reservations: [{ Instances: [{ InstanceId: "i-1", InstanceType: "t3.micro", State: { Name: "running" } }] }] }),
+        instanceProfiles: async () => ({ $metadata: {}, InstanceProfiles: [{ Arn: "arn:aws:iam::123:instance-profile/app", InstanceProfileName: "app", Path: "/", InstanceProfileId: "profile-id", CreateDate: new Date(), Roles: [] }] }),
+    }).list();
+    assert.equal(catalog.securityGroups[0]?.id, "sg-1");
+    assert.equal(catalog.instanceProfiles[0]?.name, "app");
+    assert.equal(catalog.instances[0]?.id, "i-1");
+});
+
+test("creates a security group with an inbound rule or adopts an existing group", async () => {
+    let createdGroupName = "";
+    let ingressGroupId = "";
+    const service = new SecurityGroupService({
+        create: async (command) => { createdGroupName = command.input.GroupName ?? ""; return { $metadata: {}, GroupId: "sg-new" }; },
+        authorizeIngress: async (command) => { ingressGroupId = command.input.GroupId ?? ""; return { $metadata: {} }; },
+        delete: async () => ({ $metadata: {} }),
+    }, "ap-south-1");
+    const created = await service.create({ groupName: "web", description: "web", vpcId: "vpc-1", ingressRules: [{ protocol: "tcp", fromPort: 443, toPort: 443, cidrIpv4: "0.0.0.0/0" }] });
+    const existing = await service.create({ mode: "existing", groupId: "sg-existing", groupName: "existing" });
+    assert.equal(created.securityGroupId, "sg-new");
+    assert.equal(createdGroupName, "web");
+    assert.equal(ingressGroupId, "sg-new");
+    assert.equal(existing.securityGroupId, "sg-existing");
 });

@@ -53,13 +53,22 @@ function stringArray(value: unknown) {
     return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0) : [];
 }
 
+function isAdoptedResource(request: AwsResourceCreateRequest) {
+    return (request.service === AwsService.EC2_INSTANCE || request.service === AwsService.SECURITY_GROUP) && request.config.mode === "existing";
+}
+
 function buildResourceRequest(type: string, config: Record<string, unknown>): AwsResourceCreateRequest {
     if (type === "EC2_INSTANCE") {
-        if (typeof config.imageId !== "string" || !config.imageId) throw new Error("EC2 node config must include imageId.");
+        if (config.mode === "existing") {
+            if (typeof config.instanceId !== "string" || !config.instanceId) throw new Error("Choose an existing EC2 instance.");
+            return { service: AwsService.EC2_INSTANCE, config: { mode: "existing", instanceId: config.instanceId, ...(typeof config.name === "string" && { name: config.name }) } };
+        }
+        if ((typeof config.imageId !== "string" || !config.imageId) && (typeof config.launchTemplateId !== "string" || !config.launchTemplateId)) throw new Error("EC2 node config must include an AMI ID or launch template.");
         return {
             service: AwsService.EC2_INSTANCE,
             config: {
-                imageId: config.imageId,
+                ...(typeof config.imageId === "string" && config.imageId && { imageId: config.imageId }),
+                ...(typeof config.launchTemplateId === "string" && config.launchTemplateId && { launchTemplateId: config.launchTemplateId }),
                 ...(typeof config.instanceType === "string" && { instanceType: config.instanceType }),
                 ...(typeof config.instanceCount === "number" && { instanceCount: config.instanceCount }),
                 ...(typeof config.keyName === "string" && { keyName: config.keyName }),
@@ -76,6 +85,15 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
                 ...(config.dryRun === true && { dryRun: true }),
             },
         };
+    }
+    if (type === "SECURITY_GROUP") {
+        if (config.mode === "existing") {
+            if (typeof config.groupId !== "string" || !config.groupId) throw new Error("Choose an existing security group.");
+            return { service: AwsService.SECURITY_GROUP, config: { mode: "existing", groupId: config.groupId, ...(typeof config.groupName === "string" && { groupName: config.groupName }) } };
+        }
+        if (typeof config.groupName !== "string" || !config.groupName || typeof config.description !== "string" || !config.description || typeof config.vpcId !== "string" || !config.vpcId) throw new Error("New security groups require a name, description, and VPC.");
+        const ingressRules = Array.isArray(config.ingressRules) ? config.ingressRules.filter((rule): rule is { protocol: "tcp" | "udp" | "icmp" | "-1"; fromPort?: number; toPort?: number; cidrIpv4: string; description?: string } => isRecord(rule) && (rule.protocol === "tcp" || rule.protocol === "udp" || rule.protocol === "icmp" || rule.protocol === "-1") && typeof rule.cidrIpv4 === "string" && rule.cidrIpv4.length > 0 && (rule.protocol === "-1" || (typeof rule.fromPort === "number" && typeof rule.toPort === "number"))) : [];
+        return { service: AwsService.SECURITY_GROUP, config: { groupName: config.groupName, description: config.description, vpcId: config.vpcId, ...(ingressRules.length && { ingressRules }) } };
     }
     if (type === "ECR_REPOSITORY") {
         if (typeof config.repositoryName !== "string" || !config.repositoryName) throw new Error("ECR node config must include repositoryName.");
@@ -587,6 +605,25 @@ export async function listAwsConnections(req: Request, res: Response<ApiResponse
     return res.json({ success: true, message: "AWS connections fetched successfully.", data: connections });
 }
 
+export async function getAwsResourceCatalog(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    const connection = await prisma.awsConnection.findFirst({ where: { id: param(req, "connectionId"), userId } });
+    if (!connection) return res.status(404).json({ success: false, message: "AWS connection not found." });
+    if (!AWS_ENCRYPTION_KEY) return res.status(500).json({ success: false, message: "AWS credential encryption is not configured." });
+    try {
+        const credentials = {
+            accessKeyId: decryptAwsSecret(connection.accessKeyIdEncrypted, AWS_ENCRYPTION_KEY),
+            secretAccessKey: decryptAwsSecret(connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
+            ...(connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
+        };
+        const catalog = await awsResourceManager.getCatalog(credentials, connection.region);
+        return res.json({ success: true, message: "AWS resource catalog fetched successfully.", data: catalog });
+    } catch (error) {
+        return res.status(502).json({ success: false, message: "AWS resource catalog could not be fetched.", error: errorMessage(error) });
+    }
+}
+
 export async function setActiveAwsConnection(req: Request, res: Response<ApiResponse>) {
     const userId = ownedUser(req, res);
     if (!userId) return;
@@ -719,6 +756,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                     name: null,
                     region: connection.region,
                     status: AwsResourceStatus.PROVISIONING,
+                    managed: !isAdoptedResource(resourceRequest),
                     desiredConfig: jsonValue(resourceRequest.config),
                 },
                 update: {
@@ -728,6 +766,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                     externalId: null,
                     name: null,
                     status: AwsResourceStatus.PROVISIONING,
+                    managed: !isAdoptedResource(resourceRequest),
                     desiredConfig: jsonValue(resourceRequest.config),
                     actualState: Prisma.JsonNull,
                     lastError: null,
@@ -791,6 +830,10 @@ export async function deleteAwsResource(req: Request, res: Response<ApiResponse>
             return res.json({ success: true, message: "Failed AWS resource record cleared.", data: updatedResource });
         }
         return res.status(409).json({ success: false, message: "AWS resource has no external ID to delete." });
+    }
+    if (!resource.managed) {
+        const updatedResource = await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.TERMINATED, lastError: null } });
+        return res.json({ success: true, message: "Existing AWS resource removed from this sketch.", data: updatedResource });
     }
     if (!AWS_ENCRYPTION_KEY) {
         return res.status(500).json({ success: false, message: "AWS credential encryption is not configured." });

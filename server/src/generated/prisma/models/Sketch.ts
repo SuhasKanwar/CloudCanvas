@@ -41,6 +41,7 @@ export type SketchMinAggregateOutputType = {
   description: string | null
   status: $Enums.SketchStatus | null
   version: number | null
+  connectionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +53,7 @@ export type SketchMaxAggregateOutputType = {
   description: string | null
   status: $Enums.SketchStatus | null
   version: number | null
+  connectionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -63,6 +65,7 @@ export type SketchCountAggregateOutputType = {
   description: number
   status: number
   version: number
+  connectionId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +87,7 @@ export type SketchMinAggregateInputType = {
   description?: true
   status?: true
   version?: true
+  connectionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -95,6 +99,7 @@ export type SketchMaxAggregateInputType = {
   description?: true
   status?: true
   version?: true
+  connectionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +111,7 @@ export type SketchCountAggregateInputType = {
   description?: true
   status?: true
   version?: true
+  connectionId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -204,6 +210,7 @@ export type SketchGroupByOutputType = {
   description: string | null
   status: $Enums.SketchStatus
   version: number
+  connectionId: string | null
   createdAt: Date
   updatedAt: Date
   _count: SketchCountAggregateOutputType | null
@@ -238,9 +245,11 @@ export type SketchWhereInput = {
   description?: Prisma.StringNullableFilter<"Sketch"> | string | null
   status?: Prisma.EnumSketchStatusFilter<"Sketch"> | $Enums.SketchStatus
   version?: Prisma.IntFilter<"Sketch"> | number
+  connectionId?: Prisma.StringNullableFilter<"Sketch"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Sketch"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sketch"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  connection?: Prisma.XOR<Prisma.AwsConnectionNullableScalarRelationFilter, Prisma.AwsConnectionWhereInput> | null
   nodes?: Prisma.SketchNodeListRelationFilter
   edges?: Prisma.SketchEdgeListRelationFilter
   resources?: Prisma.AwsResourceListRelationFilter
@@ -254,9 +263,11 @@ export type SketchOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  connectionId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  connection?: Prisma.AwsConnectionOrderByWithRelationInput
   nodes?: Prisma.SketchNodeOrderByRelationAggregateInput
   edges?: Prisma.SketchEdgeOrderByRelationAggregateInput
   resources?: Prisma.AwsResourceOrderByRelationAggregateInput
@@ -273,9 +284,11 @@ export type SketchWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Sketch"> | string | null
   status?: Prisma.EnumSketchStatusFilter<"Sketch"> | $Enums.SketchStatus
   version?: Prisma.IntFilter<"Sketch"> | number
+  connectionId?: Prisma.StringNullableFilter<"Sketch"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Sketch"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sketch"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  connection?: Prisma.XOR<Prisma.AwsConnectionNullableScalarRelationFilter, Prisma.AwsConnectionWhereInput> | null
   nodes?: Prisma.SketchNodeListRelationFilter
   edges?: Prisma.SketchEdgeListRelationFilter
   resources?: Prisma.AwsResourceListRelationFilter
@@ -289,6 +302,7 @@ export type SketchOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  connectionId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.SketchCountOrderByAggregateInput
@@ -308,6 +322,7 @@ export type SketchScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"Sketch"> | string | null
   status?: Prisma.EnumSketchStatusWithAggregatesFilter<"Sketch"> | $Enums.SketchStatus
   version?: Prisma.IntWithAggregatesFilter<"Sketch"> | number
+  connectionId?: Prisma.StringNullableWithAggregatesFilter<"Sketch"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Sketch"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Sketch"> | Date | string
 }
@@ -321,6 +336,7 @@ export type SketchCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSketchesInput
+  connection?: Prisma.AwsConnectionCreateNestedOneWithoutSketchesInput
   nodes?: Prisma.SketchNodeCreateNestedManyWithoutSketchInput
   edges?: Prisma.SketchEdgeCreateNestedManyWithoutSketchInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutSketchInput
@@ -334,6 +350,7 @@ export type SketchUncheckedCreateInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   nodes?: Prisma.SketchNodeUncheckedCreateNestedManyWithoutSketchInput
@@ -351,6 +368,7 @@ export type SketchUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSketchesNestedInput
+  connection?: Prisma.AwsConnectionUpdateOneWithoutSketchesNestedInput
   nodes?: Prisma.SketchNodeUpdateManyWithoutSketchNestedInput
   edges?: Prisma.SketchEdgeUpdateManyWithoutSketchNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutSketchNestedInput
@@ -364,6 +382,7 @@ export type SketchUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   nodes?: Prisma.SketchNodeUncheckedUpdateManyWithoutSketchNestedInput
@@ -379,6 +398,7 @@ export type SketchCreateManyInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -400,6 +420,7 @@ export type SketchUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -421,6 +442,7 @@ export type SketchCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  connectionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -436,6 +458,7 @@ export type SketchMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  connectionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -447,6 +470,7 @@ export type SketchMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   status?: Prisma.SortOrder
   version?: Prisma.SortOrder
+  connectionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -542,6 +566,48 @@ export type SketchUpdateOneRequiredWithoutEdgesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SketchUpdateToOneWithWhereWithoutEdgesInput, Prisma.SketchUpdateWithoutEdgesInput>, Prisma.SketchUncheckedUpdateWithoutEdgesInput>
 }
 
+export type SketchCreateNestedManyWithoutConnectionInput = {
+  create?: Prisma.XOR<Prisma.SketchCreateWithoutConnectionInput, Prisma.SketchUncheckedCreateWithoutConnectionInput> | Prisma.SketchCreateWithoutConnectionInput[] | Prisma.SketchUncheckedCreateWithoutConnectionInput[]
+  connectOrCreate?: Prisma.SketchCreateOrConnectWithoutConnectionInput | Prisma.SketchCreateOrConnectWithoutConnectionInput[]
+  createMany?: Prisma.SketchCreateManyConnectionInputEnvelope
+  connect?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+}
+
+export type SketchUncheckedCreateNestedManyWithoutConnectionInput = {
+  create?: Prisma.XOR<Prisma.SketchCreateWithoutConnectionInput, Prisma.SketchUncheckedCreateWithoutConnectionInput> | Prisma.SketchCreateWithoutConnectionInput[] | Prisma.SketchUncheckedCreateWithoutConnectionInput[]
+  connectOrCreate?: Prisma.SketchCreateOrConnectWithoutConnectionInput | Prisma.SketchCreateOrConnectWithoutConnectionInput[]
+  createMany?: Prisma.SketchCreateManyConnectionInputEnvelope
+  connect?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+}
+
+export type SketchUpdateManyWithoutConnectionNestedInput = {
+  create?: Prisma.XOR<Prisma.SketchCreateWithoutConnectionInput, Prisma.SketchUncheckedCreateWithoutConnectionInput> | Prisma.SketchCreateWithoutConnectionInput[] | Prisma.SketchUncheckedCreateWithoutConnectionInput[]
+  connectOrCreate?: Prisma.SketchCreateOrConnectWithoutConnectionInput | Prisma.SketchCreateOrConnectWithoutConnectionInput[]
+  upsert?: Prisma.SketchUpsertWithWhereUniqueWithoutConnectionInput | Prisma.SketchUpsertWithWhereUniqueWithoutConnectionInput[]
+  createMany?: Prisma.SketchCreateManyConnectionInputEnvelope
+  set?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  disconnect?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  delete?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  connect?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  update?: Prisma.SketchUpdateWithWhereUniqueWithoutConnectionInput | Prisma.SketchUpdateWithWhereUniqueWithoutConnectionInput[]
+  updateMany?: Prisma.SketchUpdateManyWithWhereWithoutConnectionInput | Prisma.SketchUpdateManyWithWhereWithoutConnectionInput[]
+  deleteMany?: Prisma.SketchScalarWhereInput | Prisma.SketchScalarWhereInput[]
+}
+
+export type SketchUncheckedUpdateManyWithoutConnectionNestedInput = {
+  create?: Prisma.XOR<Prisma.SketchCreateWithoutConnectionInput, Prisma.SketchUncheckedCreateWithoutConnectionInput> | Prisma.SketchCreateWithoutConnectionInput[] | Prisma.SketchUncheckedCreateWithoutConnectionInput[]
+  connectOrCreate?: Prisma.SketchCreateOrConnectWithoutConnectionInput | Prisma.SketchCreateOrConnectWithoutConnectionInput[]
+  upsert?: Prisma.SketchUpsertWithWhereUniqueWithoutConnectionInput | Prisma.SketchUpsertWithWhereUniqueWithoutConnectionInput[]
+  createMany?: Prisma.SketchCreateManyConnectionInputEnvelope
+  set?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  disconnect?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  delete?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  connect?: Prisma.SketchWhereUniqueInput | Prisma.SketchWhereUniqueInput[]
+  update?: Prisma.SketchUpdateWithWhereUniqueWithoutConnectionInput | Prisma.SketchUpdateWithWhereUniqueWithoutConnectionInput[]
+  updateMany?: Prisma.SketchUpdateManyWithWhereWithoutConnectionInput | Prisma.SketchUpdateManyWithWhereWithoutConnectionInput[]
+  deleteMany?: Prisma.SketchScalarWhereInput | Prisma.SketchScalarWhereInput[]
+}
+
 export type SketchCreateNestedOneWithoutResourcesInput = {
   create?: Prisma.XOR<Prisma.SketchCreateWithoutResourcesInput, Prisma.SketchUncheckedCreateWithoutResourcesInput>
   connectOrCreate?: Prisma.SketchCreateOrConnectWithoutResourcesInput
@@ -578,6 +644,7 @@ export type SketchCreateWithoutUserInput = {
   version?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  connection?: Prisma.AwsConnectionCreateNestedOneWithoutSketchesInput
   nodes?: Prisma.SketchNodeCreateNestedManyWithoutSketchInput
   edges?: Prisma.SketchEdgeCreateNestedManyWithoutSketchInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutSketchInput
@@ -590,6 +657,7 @@ export type SketchUncheckedCreateWithoutUserInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   nodes?: Prisma.SketchNodeUncheckedCreateNestedManyWithoutSketchInput
@@ -634,6 +702,7 @@ export type SketchScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"Sketch"> | string | null
   status?: Prisma.EnumSketchStatusFilter<"Sketch"> | $Enums.SketchStatus
   version?: Prisma.IntFilter<"Sketch"> | number
+  connectionId?: Prisma.StringNullableFilter<"Sketch"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Sketch"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Sketch"> | Date | string
 }
@@ -647,6 +716,7 @@ export type SketchCreateWithoutNodesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSketchesInput
+  connection?: Prisma.AwsConnectionCreateNestedOneWithoutSketchesInput
   edges?: Prisma.SketchEdgeCreateNestedManyWithoutSketchInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutSketchInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutSketchInput
@@ -659,6 +729,7 @@ export type SketchUncheckedCreateWithoutNodesInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edges?: Prisma.SketchEdgeUncheckedCreateNestedManyWithoutSketchInput
@@ -691,6 +762,7 @@ export type SketchUpdateWithoutNodesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSketchesNestedInput
+  connection?: Prisma.AwsConnectionUpdateOneWithoutSketchesNestedInput
   edges?: Prisma.SketchEdgeUpdateManyWithoutSketchNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutSketchNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutSketchNestedInput
@@ -703,6 +775,7 @@ export type SketchUncheckedUpdateWithoutNodesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edges?: Prisma.SketchEdgeUncheckedUpdateManyWithoutSketchNestedInput
@@ -719,6 +792,7 @@ export type SketchCreateWithoutEdgesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSketchesInput
+  connection?: Prisma.AwsConnectionCreateNestedOneWithoutSketchesInput
   nodes?: Prisma.SketchNodeCreateNestedManyWithoutSketchInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutSketchInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutSketchInput
@@ -731,6 +805,7 @@ export type SketchUncheckedCreateWithoutEdgesInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   nodes?: Prisma.SketchNodeUncheckedCreateNestedManyWithoutSketchInput
@@ -763,6 +838,7 @@ export type SketchUpdateWithoutEdgesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSketchesNestedInput
+  connection?: Prisma.AwsConnectionUpdateOneWithoutSketchesNestedInput
   nodes?: Prisma.SketchNodeUpdateManyWithoutSketchNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutSketchNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutSketchNestedInput
@@ -775,11 +851,68 @@ export type SketchUncheckedUpdateWithoutEdgesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   nodes?: Prisma.SketchNodeUncheckedUpdateManyWithoutSketchNestedInput
   resources?: Prisma.AwsResourceUncheckedUpdateManyWithoutSketchNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutSketchNestedInput
+}
+
+export type SketchCreateWithoutConnectionInput = {
+  id?: string
+  name: string
+  description?: string | null
+  status?: $Enums.SketchStatus
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutSketchesInput
+  nodes?: Prisma.SketchNodeCreateNestedManyWithoutSketchInput
+  edges?: Prisma.SketchEdgeCreateNestedManyWithoutSketchInput
+  resources?: Prisma.AwsResourceCreateNestedManyWithoutSketchInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutSketchInput
+}
+
+export type SketchUncheckedCreateWithoutConnectionInput = {
+  id?: string
+  userId: string
+  name: string
+  description?: string | null
+  status?: $Enums.SketchStatus
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nodes?: Prisma.SketchNodeUncheckedCreateNestedManyWithoutSketchInput
+  edges?: Prisma.SketchEdgeUncheckedCreateNestedManyWithoutSketchInput
+  resources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutSketchInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutSketchInput
+}
+
+export type SketchCreateOrConnectWithoutConnectionInput = {
+  where: Prisma.SketchWhereUniqueInput
+  create: Prisma.XOR<Prisma.SketchCreateWithoutConnectionInput, Prisma.SketchUncheckedCreateWithoutConnectionInput>
+}
+
+export type SketchCreateManyConnectionInputEnvelope = {
+  data: Prisma.SketchCreateManyConnectionInput | Prisma.SketchCreateManyConnectionInput[]
+  skipDuplicates?: boolean
+}
+
+export type SketchUpsertWithWhereUniqueWithoutConnectionInput = {
+  where: Prisma.SketchWhereUniqueInput
+  update: Prisma.XOR<Prisma.SketchUpdateWithoutConnectionInput, Prisma.SketchUncheckedUpdateWithoutConnectionInput>
+  create: Prisma.XOR<Prisma.SketchCreateWithoutConnectionInput, Prisma.SketchUncheckedCreateWithoutConnectionInput>
+}
+
+export type SketchUpdateWithWhereUniqueWithoutConnectionInput = {
+  where: Prisma.SketchWhereUniqueInput
+  data: Prisma.XOR<Prisma.SketchUpdateWithoutConnectionInput, Prisma.SketchUncheckedUpdateWithoutConnectionInput>
+}
+
+export type SketchUpdateManyWithWhereWithoutConnectionInput = {
+  where: Prisma.SketchScalarWhereInput
+  data: Prisma.XOR<Prisma.SketchUpdateManyMutationInput, Prisma.SketchUncheckedUpdateManyWithoutConnectionInput>
 }
 
 export type SketchCreateWithoutResourcesInput = {
@@ -791,6 +924,7 @@ export type SketchCreateWithoutResourcesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSketchesInput
+  connection?: Prisma.AwsConnectionCreateNestedOneWithoutSketchesInput
   nodes?: Prisma.SketchNodeCreateNestedManyWithoutSketchInput
   edges?: Prisma.SketchEdgeCreateNestedManyWithoutSketchInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutSketchInput
@@ -803,6 +937,7 @@ export type SketchUncheckedCreateWithoutResourcesInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   nodes?: Prisma.SketchNodeUncheckedCreateNestedManyWithoutSketchInput
@@ -835,6 +970,7 @@ export type SketchUpdateWithoutResourcesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSketchesNestedInput
+  connection?: Prisma.AwsConnectionUpdateOneWithoutSketchesNestedInput
   nodes?: Prisma.SketchNodeUpdateManyWithoutSketchNestedInput
   edges?: Prisma.SketchEdgeUpdateManyWithoutSketchNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutSketchNestedInput
@@ -847,6 +983,7 @@ export type SketchUncheckedUpdateWithoutResourcesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   nodes?: Prisma.SketchNodeUncheckedUpdateManyWithoutSketchNestedInput
@@ -863,6 +1000,7 @@ export type SketchCreateWithoutDeploymentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutSketchesInput
+  connection?: Prisma.AwsConnectionCreateNestedOneWithoutSketchesInput
   nodes?: Prisma.SketchNodeCreateNestedManyWithoutSketchInput
   edges?: Prisma.SketchEdgeCreateNestedManyWithoutSketchInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutSketchInput
@@ -875,6 +1013,7 @@ export type SketchUncheckedCreateWithoutDeploymentsInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   nodes?: Prisma.SketchNodeUncheckedCreateNestedManyWithoutSketchInput
@@ -907,6 +1046,7 @@ export type SketchUpdateWithoutDeploymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutSketchesNestedInput
+  connection?: Prisma.AwsConnectionUpdateOneWithoutSketchesNestedInput
   nodes?: Prisma.SketchNodeUpdateManyWithoutSketchNestedInput
   edges?: Prisma.SketchEdgeUpdateManyWithoutSketchNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutSketchNestedInput
@@ -919,6 +1059,7 @@ export type SketchUncheckedUpdateWithoutDeploymentsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   nodes?: Prisma.SketchNodeUncheckedUpdateManyWithoutSketchNestedInput
@@ -932,6 +1073,7 @@ export type SketchCreateManyUserInput = {
   description?: string | null
   status?: $Enums.SketchStatus
   version?: number
+  connectionId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -944,6 +1086,7 @@ export type SketchUpdateWithoutUserInput = {
   version?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  connection?: Prisma.AwsConnectionUpdateOneWithoutSketchesNestedInput
   nodes?: Prisma.SketchNodeUpdateManyWithoutSketchNestedInput
   edges?: Prisma.SketchEdgeUpdateManyWithoutSketchNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutSketchNestedInput
@@ -956,6 +1099,7 @@ export type SketchUncheckedUpdateWithoutUserInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
   version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   nodes?: Prisma.SketchNodeUncheckedUpdateManyWithoutSketchNestedInput
@@ -966,6 +1110,59 @@ export type SketchUncheckedUpdateWithoutUserInput = {
 
 export type SketchUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  connectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SketchCreateManyConnectionInput = {
+  id?: string
+  userId: string
+  name: string
+  description?: string | null
+  status?: $Enums.SketchStatus
+  version?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type SketchUpdateWithoutConnectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutSketchesNestedInput
+  nodes?: Prisma.SketchNodeUpdateManyWithoutSketchNestedInput
+  edges?: Prisma.SketchEdgeUpdateManyWithoutSketchNestedInput
+  resources?: Prisma.AwsResourceUpdateManyWithoutSketchNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutSketchNestedInput
+}
+
+export type SketchUncheckedUpdateWithoutConnectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nodes?: Prisma.SketchNodeUncheckedUpdateManyWithoutSketchNestedInput
+  edges?: Prisma.SketchEdgeUncheckedUpdateManyWithoutSketchNestedInput
+  resources?: Prisma.AwsResourceUncheckedUpdateManyWithoutSketchNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutSketchNestedInput
+}
+
+export type SketchUncheckedUpdateManyWithoutConnectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSketchStatusFieldUpdateOperationsInput | $Enums.SketchStatus
@@ -1039,9 +1236,11 @@ export type SketchSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   description?: boolean
   status?: boolean
   version?: boolean
+  connectionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  connection?: boolean | Prisma.Sketch$connectionArgs<ExtArgs>
   nodes?: boolean | Prisma.Sketch$nodesArgs<ExtArgs>
   edges?: boolean | Prisma.Sketch$edgesArgs<ExtArgs>
   resources?: boolean | Prisma.Sketch$resourcesArgs<ExtArgs>
@@ -1056,9 +1255,11 @@ export type SketchSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   description?: boolean
   status?: boolean
   version?: boolean
+  connectionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  connection?: boolean | Prisma.Sketch$connectionArgs<ExtArgs>
 }, ExtArgs["result"]["sketch"]>
 
 export type SketchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1068,9 +1269,11 @@ export type SketchSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   description?: boolean
   status?: boolean
   version?: boolean
+  connectionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  connection?: boolean | Prisma.Sketch$connectionArgs<ExtArgs>
 }, ExtArgs["result"]["sketch"]>
 
 export type SketchSelectScalar = {
@@ -1080,13 +1283,15 @@ export type SketchSelectScalar = {
   description?: boolean
   status?: boolean
   version?: boolean
+  connectionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SketchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "status" | "version" | "createdAt" | "updatedAt", ExtArgs["result"]["sketch"]>
+export type SketchOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "status" | "version" | "connectionId" | "createdAt" | "updatedAt", ExtArgs["result"]["sketch"]>
 export type SketchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  connection?: boolean | Prisma.Sketch$connectionArgs<ExtArgs>
   nodes?: boolean | Prisma.Sketch$nodesArgs<ExtArgs>
   edges?: boolean | Prisma.Sketch$edgesArgs<ExtArgs>
   resources?: boolean | Prisma.Sketch$resourcesArgs<ExtArgs>
@@ -1095,15 +1300,18 @@ export type SketchInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 }
 export type SketchIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  connection?: boolean | Prisma.Sketch$connectionArgs<ExtArgs>
 }
 export type SketchIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  connection?: boolean | Prisma.Sketch$connectionArgs<ExtArgs>
 }
 
 export type $SketchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Sketch"
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
+    connection: Prisma.$AwsConnectionPayload<ExtArgs> | null
     nodes: Prisma.$SketchNodePayload<ExtArgs>[]
     edges: Prisma.$SketchEdgePayload<ExtArgs>[]
     resources: Prisma.$AwsResourcePayload<ExtArgs>[]
@@ -1116,6 +1324,7 @@ export type $SketchPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     description: string | null
     status: $Enums.SketchStatus
     version: number
+    connectionId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["sketch"]>
@@ -1513,6 +1722,7 @@ readonly fields: SketchFieldRefs;
 export interface Prisma__SketchClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  connection<T extends Prisma.Sketch$connectionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Sketch$connectionArgs<ExtArgs>>): Prisma.Prisma__AwsConnectionClient<runtime.Types.Result.GetResult<Prisma.$AwsConnectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   nodes<T extends Prisma.Sketch$nodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Sketch$nodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SketchNodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   edges<T extends Prisma.Sketch$edgesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Sketch$edgesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SketchEdgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   resources<T extends Prisma.Sketch$resourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Sketch$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AwsResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1552,6 +1762,7 @@ export interface SketchFieldRefs {
   readonly description: Prisma.FieldRef<"Sketch", 'String'>
   readonly status: Prisma.FieldRef<"Sketch", 'SketchStatus'>
   readonly version: Prisma.FieldRef<"Sketch", 'Int'>
+  readonly connectionId: Prisma.FieldRef<"Sketch", 'String'>
   readonly createdAt: Prisma.FieldRef<"Sketch", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Sketch", 'DateTime'>
 }
@@ -1952,6 +2163,25 @@ export type SketchDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Sketches to delete.
    */
   limit?: number
+}
+
+/**
+ * Sketch.connection
+ */
+export type Sketch$connectionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AwsConnection
+   */
+  select?: Prisma.AwsConnectionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AwsConnection
+   */
+  omit?: Prisma.AwsConnectionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AwsConnectionInclude<ExtArgs> | null
+  where?: Prisma.AwsConnectionWhereInput
 }
 
 /**

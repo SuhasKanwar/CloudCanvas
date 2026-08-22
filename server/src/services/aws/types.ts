@@ -13,6 +13,7 @@ export type AwsCredentials = {
 
 export enum AwsService {
     EC2_INSTANCE = "EC2_INSTANCE",
+    SECURITY_GROUP = "SECURITY_GROUP",
     ECR_REPOSITORY = "ECR_REPOSITORY",
     S3_BUCKET = "S3_BUCKET",
     IAM_ROLE = "IAM_ROLE",
@@ -25,7 +26,10 @@ export enum AwsService {
 export type AwsServiceType = AwsService;
 
 export type Ec2InstanceRequest = {
-    imageId: string;
+    mode?: "create" | "existing";
+    imageId?: string;
+    launchTemplateId?: string;
+    instanceId?: string;
     instanceType?: string;
     instanceCount?: number;
     keyName?: string;
@@ -74,6 +78,7 @@ export type Ec2CommandSender = {
 
 export type AwsResourceCreateRequest =
     | { service: AwsService.EC2_INSTANCE; config: Ec2InstanceRequest }
+    | { service: AwsService.SECURITY_GROUP; config: import("./resources/securityGroup.js").SecurityGroupRequest }
     | { service: AwsService.ECR_REPOSITORY; config: import("./resources/ecr.js").EcrRepositoryRequest }
     | { service: AwsService.S3_BUCKET; config: import("./resources/s3.js").S3BucketRequest }
     | { service: AwsService.IAM_ROLE; config: import("./resources/iam.js").IamRoleRequest }

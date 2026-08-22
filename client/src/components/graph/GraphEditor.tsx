@@ -151,7 +151,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         </div>
 
         <aside className="hidden min-h-0 overflow-hidden border-l border-white/10 xl:block">
-            {selectedNode ? <ResourceInspector node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
+            {selectedNode ? <ResourceInspector connectionId={sketchConnectionId} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
         </aside>
     </div>;
 }

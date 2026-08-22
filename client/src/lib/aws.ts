@@ -18,6 +18,15 @@ export type CreateAwsConnection = {
     sessionToken?: string;
 };
 
+export type AwsResourceCatalog = {
+    vpcs: Array<{ id: string; name: string; cidrBlock: string }>;
+    subnets: Array<{ id: string; name: string; vpcId: string; availabilityZone: string }>;
+    securityGroups: Array<{ id: string; name: string; description: string; vpcId: string }>;
+    instanceProfiles: Array<{ arn: string; name: string }>;
+    launchTemplates: Array<{ id: string; name: string }>;
+    instances: Array<{ id: string; name: string; state: string; instanceType: string; vpcId: string; subnetId: string }>;
+};
+
 type ApiEnvelope<T> = { data: T };
 
 export async function listAwsConnections(accessToken: string): Promise<AwsConnection[]> {
@@ -36,4 +45,9 @@ export async function deleteAwsConnection(accessToken: string, connectionId: str
 
 export async function setActiveAwsConnection(accessToken: string, connectionId: string): Promise<void> {
     await api.patch(`/api/aws/connections/${connectionId}/active`, undefined, authenticatedRequest(accessToken));
+}
+
+export async function getAwsResourceCatalog(accessToken: string, connectionId: string): Promise<AwsResourceCatalog> {
+    const response = await api.get<ApiEnvelope<AwsResourceCatalog>>(`/api/aws/connections/${connectionId}/catalog`, authenticatedRequest(accessToken));
+    return response.data.data;
 }

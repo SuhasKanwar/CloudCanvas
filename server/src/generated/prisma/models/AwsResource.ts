@@ -35,6 +35,7 @@ export type AwsResourceMinAggregateOutputType = {
   name: string | null
   region: string | null
   status: $Enums.AwsResourceStatus | null
+  managed: boolean | null
   lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -51,6 +52,7 @@ export type AwsResourceMaxAggregateOutputType = {
   name: string | null
   region: string | null
   status: $Enums.AwsResourceStatus | null
+  managed: boolean | null
   lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -67,6 +69,7 @@ export type AwsResourceCountAggregateOutputType = {
   name: number
   region: number
   status: number
+  managed: number
   desiredConfig: number
   actualState: number
   lastError: number
@@ -87,6 +90,7 @@ export type AwsResourceMinAggregateInputType = {
   name?: true
   region?: true
   status?: true
+  managed?: true
   lastError?: true
   createdAt?: true
   updatedAt?: true
@@ -103,6 +107,7 @@ export type AwsResourceMaxAggregateInputType = {
   name?: true
   region?: true
   status?: true
+  managed?: true
   lastError?: true
   createdAt?: true
   updatedAt?: true
@@ -119,6 +124,7 @@ export type AwsResourceCountAggregateInputType = {
   name?: true
   region?: true
   status?: true
+  managed?: true
   desiredConfig?: true
   actualState?: true
   lastError?: true
@@ -210,6 +216,7 @@ export type AwsResourceGroupByOutputType = {
   name: string | null
   region: string
   status: $Enums.AwsResourceStatus
+  managed: boolean
   desiredConfig: runtime.JsonValue
   actualState: runtime.JsonValue | null
   lastError: string | null
@@ -249,6 +256,7 @@ export type AwsResourceWhereInput = {
   name?: Prisma.StringNullableFilter<"AwsResource"> | string | null
   region?: Prisma.StringFilter<"AwsResource"> | string
   status?: Prisma.EnumAwsResourceStatusFilter<"AwsResource"> | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFilter<"AwsResource"> | boolean
   desiredConfig?: Prisma.JsonFilter<"AwsResource">
   actualState?: Prisma.JsonNullableFilter<"AwsResource">
   lastError?: Prisma.StringNullableFilter<"AwsResource"> | string | null
@@ -271,6 +279,7 @@ export type AwsResourceOrderByWithRelationInput = {
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   region?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  managed?: Prisma.SortOrder
   desiredConfig?: Prisma.SortOrder
   actualState?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -296,6 +305,7 @@ export type AwsResourceWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringNullableFilter<"AwsResource"> | string | null
   region?: Prisma.StringFilter<"AwsResource"> | string
   status?: Prisma.EnumAwsResourceStatusFilter<"AwsResource"> | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFilter<"AwsResource"> | boolean
   desiredConfig?: Prisma.JsonFilter<"AwsResource">
   actualState?: Prisma.JsonNullableFilter<"AwsResource">
   lastError?: Prisma.StringNullableFilter<"AwsResource"> | string | null
@@ -318,6 +328,7 @@ export type AwsResourceOrderByWithAggregationInput = {
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   region?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  managed?: Prisma.SortOrder
   desiredConfig?: Prisma.SortOrder
   actualState?: Prisma.SortOrderInput | Prisma.SortOrder
   lastError?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -342,6 +353,7 @@ export type AwsResourceScalarWhereWithAggregatesInput = {
   name?: Prisma.StringNullableWithAggregatesFilter<"AwsResource"> | string | null
   region?: Prisma.StringWithAggregatesFilter<"AwsResource"> | string
   status?: Prisma.EnumAwsResourceStatusWithAggregatesFilter<"AwsResource"> | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolWithAggregatesFilter<"AwsResource"> | boolean
   desiredConfig?: Prisma.JsonWithAggregatesFilter<"AwsResource">
   actualState?: Prisma.JsonNullableWithAggregatesFilter<"AwsResource">
   lastError?: Prisma.StringNullableWithAggregatesFilter<"AwsResource"> | string | null
@@ -356,6 +368,7 @@ export type AwsResourceCreateInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -378,6 +391,7 @@ export type AwsResourceUncheckedCreateInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -392,6 +406,7 @@ export type AwsResourceUpdateInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -414,6 +429,7 @@ export type AwsResourceUncheckedUpdateInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -432,6 +448,7 @@ export type AwsResourceCreateManyInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -446,6 +463,7 @@ export type AwsResourceUpdateManyMutationInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -464,6 +482,7 @@ export type AwsResourceUncheckedUpdateManyInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -497,6 +516,7 @@ export type AwsResourceCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   region?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  managed?: Prisma.SortOrder
   desiredConfig?: Prisma.SortOrder
   actualState?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
@@ -515,6 +535,7 @@ export type AwsResourceMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   region?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  managed?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -531,6 +552,7 @@ export type AwsResourceMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   region?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  managed?: Prisma.SortOrder
   lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -705,6 +727,7 @@ export type AwsResourceCreateWithoutUserInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -725,6 +748,7 @@ export type AwsResourceUncheckedCreateWithoutUserInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -772,6 +796,7 @@ export type AwsResourceScalarWhereInput = {
   name?: Prisma.StringNullableFilter<"AwsResource"> | string | null
   region?: Prisma.StringFilter<"AwsResource"> | string
   status?: Prisma.EnumAwsResourceStatusFilter<"AwsResource"> | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFilter<"AwsResource"> | boolean
   desiredConfig?: Prisma.JsonFilter<"AwsResource">
   actualState?: Prisma.JsonNullableFilter<"AwsResource">
   lastError?: Prisma.StringNullableFilter<"AwsResource"> | string | null
@@ -786,6 +811,7 @@ export type AwsResourceCreateWithoutSketchInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -806,6 +832,7 @@ export type AwsResourceUncheckedCreateWithoutSketchInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -846,6 +873,7 @@ export type AwsResourceCreateWithoutNodeInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -866,6 +894,7 @@ export type AwsResourceUncheckedCreateWithoutNodeInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -896,6 +925,7 @@ export type AwsResourceUpdateWithoutNodeInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -916,6 +946,7 @@ export type AwsResourceUncheckedUpdateWithoutNodeInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -930,6 +961,7 @@ export type AwsResourceCreateWithoutConnectionInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -950,6 +982,7 @@ export type AwsResourceUncheckedCreateWithoutConnectionInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -993,6 +1026,7 @@ export type AwsResourceCreateManyUserInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -1007,6 +1041,7 @@ export type AwsResourceUpdateWithoutUserInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1027,6 +1062,7 @@ export type AwsResourceUncheckedUpdateWithoutUserInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1044,6 +1080,7 @@ export type AwsResourceUncheckedUpdateManyWithoutUserInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1061,6 +1098,7 @@ export type AwsResourceCreateManySketchInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -1075,6 +1113,7 @@ export type AwsResourceUpdateWithoutSketchInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1095,6 +1134,7 @@ export type AwsResourceUncheckedUpdateWithoutSketchInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1112,6 +1152,7 @@ export type AwsResourceUncheckedUpdateManyWithoutSketchInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1129,6 +1170,7 @@ export type AwsResourceCreateManyConnectionInput = {
   name?: string | null
   region: string
   status?: $Enums.AwsResourceStatus
+  managed?: boolean
   desiredConfig: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: string | null
@@ -1143,6 +1185,7 @@ export type AwsResourceUpdateWithoutConnectionInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1163,6 +1206,7 @@ export type AwsResourceUncheckedUpdateWithoutConnectionInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1180,6 +1224,7 @@ export type AwsResourceUncheckedUpdateManyWithoutConnectionInput = {
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   region?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumAwsResourceStatusFieldUpdateOperationsInput | $Enums.AwsResourceStatus
+  managed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   desiredConfig?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   actualState?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1200,6 +1245,7 @@ export type AwsResourceSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   name?: boolean
   region?: boolean
   status?: boolean
+  managed?: boolean
   desiredConfig?: boolean
   actualState?: boolean
   lastError?: boolean
@@ -1222,6 +1268,7 @@ export type AwsResourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   name?: boolean
   region?: boolean
   status?: boolean
+  managed?: boolean
   desiredConfig?: boolean
   actualState?: boolean
   lastError?: boolean
@@ -1244,6 +1291,7 @@ export type AwsResourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   name?: boolean
   region?: boolean
   status?: boolean
+  managed?: boolean
   desiredConfig?: boolean
   actualState?: boolean
   lastError?: boolean
@@ -1266,6 +1314,7 @@ export type AwsResourceSelectScalar = {
   name?: boolean
   region?: boolean
   status?: boolean
+  managed?: boolean
   desiredConfig?: boolean
   actualState?: boolean
   lastError?: boolean
@@ -1273,7 +1322,7 @@ export type AwsResourceSelectScalar = {
   updatedAt?: boolean
 }
 
-export type AwsResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "sketchId" | "nodeId" | "connectionId" | "service" | "externalId" | "name" | "region" | "status" | "desiredConfig" | "actualState" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["awsResource"]>
+export type AwsResourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "sketchId" | "nodeId" | "connectionId" | "service" | "externalId" | "name" | "region" | "status" | "managed" | "desiredConfig" | "actualState" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["awsResource"]>
 export type AwsResourceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   sketch?: boolean | Prisma.SketchDefaultArgs<ExtArgs>
@@ -1312,6 +1361,7 @@ export type $AwsResourcePayload<ExtArgs extends runtime.Types.Extensions.Interna
     name: string | null
     region: string
     status: $Enums.AwsResourceStatus
+    managed: boolean
     desiredConfig: runtime.JsonValue
     actualState: runtime.JsonValue | null
     lastError: string | null
@@ -1754,6 +1804,7 @@ export interface AwsResourceFieldRefs {
   readonly name: Prisma.FieldRef<"AwsResource", 'String'>
   readonly region: Prisma.FieldRef<"AwsResource", 'String'>
   readonly status: Prisma.FieldRef<"AwsResource", 'AwsResourceStatus'>
+  readonly managed: Prisma.FieldRef<"AwsResource", 'Boolean'>
   readonly desiredConfig: Prisma.FieldRef<"AwsResource", 'Json'>
   readonly actualState: Prisma.FieldRef<"AwsResource", 'Json'>
   readonly lastError: Prisma.FieldRef<"AwsResource", 'String'>

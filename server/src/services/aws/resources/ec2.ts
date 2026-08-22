@@ -18,14 +18,15 @@ export class Ec2Service {
     constructor(private readonly send: Ec2CommandSender, private readonly region: string) {}
 
     async createInstance(request: Ec2InstanceRequest): Promise<Ec2InstanceResult> {
-        if (!request.imageId) throw new Error("imageId is required to create an EC2 instance.");
+        if (!request.imageId && !request.launchTemplateId) throw new Error("Choose an AMI or launch template to create an EC2 instance.");
         if (request.imageId === "ami-0123456789abcdef0") throw new Error("Choose a real AMI ID available in the selected AWS region.");
         if (request.instanceCount !== undefined && (!Number.isInteger(request.instanceCount) || request.instanceCount < 1)) {
             throw new Error("instanceCount must be a positive whole number.");
         }
 
         const input: RunInstancesCommandInput = {
-            ImageId: request.imageId,
+            ...(request.imageId && { ImageId: request.imageId }),
+            ...(request.launchTemplateId && { LaunchTemplate: { LaunchTemplateId: request.launchTemplateId } }),
             InstanceType: (request.instanceType || "t3.micro") as _InstanceType,
             MinCount: request.instanceCount ?? 1,
             MaxCount: request.instanceCount ?? 1,

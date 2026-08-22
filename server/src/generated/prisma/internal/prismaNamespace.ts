@@ -1001,6 +1001,7 @@ export const SketchScalarFieldEnum = {
   description: 'description',
   status: 'status',
   version: 'version',
+  connectionId: 'connectionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1042,6 +1043,7 @@ export const AwsConnectionScalarFieldEnum = {
   secretAccessKeyEncrypted: 'secretAccessKeyEncrypted',
   sessionTokenEncrypted: 'sessionTokenEncrypted',
   encryptionKeyVersion: 'encryptionKeyVersion',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1060,6 +1062,7 @@ export const AwsResourceScalarFieldEnum = {
   name: 'name',
   region: 'region',
   status: 'status',
+  managed: 'managed',
   desiredConfig: 'desiredConfig',
   actualState: 'actualState',
   lastError: 'lastError',
@@ -1236,6 +1239,13 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 

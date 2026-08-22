@@ -15,7 +15,9 @@ import { DynamoDbService } from "./resources/dynamodb.js";
 import { S3Service } from "./resources/s3.js";
 import { SnsService } from "./resources/sns.js";
 import { SqsService } from "./resources/sqs.js";
+import { SecurityGroupService } from "./resources/securityGroup.js";
 import { AwsService } from "./types.js";
+import { AwsCatalogService, type AwsResourceCatalog } from "./catalog.js";
 import type {
     AwsCredentials,
     AwsResourceCreateRequest,
@@ -45,12 +47,38 @@ export class AWSResourceManager {
         }, region).terminateInstances({ instanceIds });
     }
 
+    async getCatalog(credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceCatalog> {
+        const ec2 = new EC2Client({ region, credentials });
+        const iam = new IAMClient({ region, credentials });
+        return new AwsCatalogService({
+            securityGroups: (command) => ec2.send(command),
+            vpcs: (command) => ec2.send(command),
+            subnets: (command) => ec2.send(command),
+            launchTemplates: (command) => ec2.send(command),
+            instances: (command) => ec2.send(command),
+            instanceProfiles: (command) => iam.send(command),
+        }).list();
+    }
+
     async createResource(request: AwsResourceCreateRequest, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
         if (request.service === AwsService.EC2_INSTANCE) {
+            if (request.config.mode === "existing") {
+                if (!request.config.instanceId) throw new Error("Choose an existing EC2 instance.");
+                return { service: request.service, region, name: request.config.name ?? request.config.instanceId, externalId: request.config.instanceId, data: { instanceId: request.config.instanceId, instances: [{ instanceId: request.config.instanceId }] } };
+            }
             const data = await this.createEc2Instance(request.config, credentials, region);
             const externalId = data.instances[0]?.instanceId;
             if (!externalId) throw new Error("AWS did not return an EC2 instance ID.");
             return { service: request.service, region, name: request.config.name ?? externalId, externalId, data };
+        }
+        if (request.service === AwsService.SECURITY_GROUP) {
+            const client = new EC2Client({ region, credentials });
+            const data = await new SecurityGroupService({
+                create: (command) => client.send(command),
+                authorizeIngress: (command) => client.send(command),
+                delete: (command) => client.send(command),
+            }, region).create(request.config);
+            return { service: request.service, region, name: data.groupName, externalId: data.securityGroupId, data };
         }
         if (request.service === AwsService.ECR_REPOSITORY) {
             const client = new ECRClient({ region, credentials });
@@ -114,6 +142,15 @@ export class AWSResourceManager {
     async deleteResource(service: AwsResourceCreateRequest["service"], externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceDeleteResult> {
         if (service === AwsService.EC2_INSTANCE) {
             const data = await this.terminateEc2Instances([externalId], credentials, region);
+            return { service, region, externalId, data };
+        }
+        if (service === AwsService.SECURITY_GROUP) {
+            const client = new EC2Client({ region, credentials });
+            const data = await new SecurityGroupService({
+                create: (command) => client.send(command),
+                authorizeIngress: (command) => client.send(command),
+                delete: (command) => client.send(command),
+            }, region).delete(externalId);
             return { service, region, externalId, data };
         }
         if (service === AwsService.ECR_REPOSITORY) {

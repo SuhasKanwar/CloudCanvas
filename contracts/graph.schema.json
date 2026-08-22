@@ -18,7 +18,7 @@
       "required": ["id", "type", "config"],
       "properties": {
         "id": { "type": "string", "minLength": 1, "maxLength": 120 },
-        "type": { "enum": ["EC2_INSTANCE", "ECR_REPOSITORY", "S3_BUCKET", "IAM_ROLE", "LAMBDA_FUNCTION", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC"] },
+        "type": { "enum": ["EC2_INSTANCE", "SECURITY_GROUP", "ECR_REPOSITORY", "S3_BUCKET", "IAM_ROLE", "LAMBDA_FUNCTION", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC"] },
         "label": { "type": ["string", "null"], "maxLength": 120 },
         "positionX": { "type": "number", "default": 0 },
         "positionY": { "type": "number", "default": 0 },
@@ -26,6 +26,7 @@
       },
       "allOf": [
         { "if": { "properties": { "type": { "const": "EC2_INSTANCE" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/ec2" } } } },
+        { "if": { "properties": { "type": { "const": "SECURITY_GROUP" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/securityGroup" } } } },
         { "if": { "properties": { "type": { "const": "ECR_REPOSITORY" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/ecr" } } } },
         { "if": { "properties": { "type": { "const": "S3_BUCKET" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/s3" } } } },
         { "if": { "properties": { "type": { "const": "IAM_ROLE" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/iam" } } } },
@@ -46,7 +47,8 @@
         "targetHandle": { "type": ["string", "null"] }
       }
     },
-    "ec2": { "type": "object", "additionalProperties": false, "required": ["imageId"], "properties": { "imageId": { "type": "string", "minLength": 1 }, "instanceType": { "type": "string" }, "instanceCount": { "type": "integer", "minimum": 1 }, "keyName": { "type": "string" }, "securityGroupIds": { "type": "array", "items": { "type": "string" } }, "subnetId": { "type": "string" }, "iamInstanceProfile": { "type": "string" }, "name": { "type": "string" }, "userData": { "type": "string" }, "monitoring": { "type": "boolean" }, "ebsOptimized": { "type": "boolean" }, "disableApiTermination": { "type": "boolean" }, "shutdownBehavior": { "enum": ["stop", "terminate"] }, "metadataHttpTokens": { "enum": ["optional", "required"] }, "dryRun": { "type": "boolean" } } },
+    "ec2": { "type": "object", "additionalProperties": false, "properties": { "mode": { "enum": ["create", "existing"] }, "imageId": { "type": "string", "minLength": 1 }, "launchTemplateId": { "type": "string", "minLength": 1 }, "instanceId": { "type": "string", "minLength": 1 }, "instanceType": { "type": "string" }, "instanceCount": { "type": "integer", "minimum": 1 }, "keyName": { "type": "string" }, "securityGroupIds": { "type": "array", "items": { "type": "string" } }, "subnetId": { "type": "string" }, "iamInstanceProfile": { "type": "string" }, "name": { "type": "string" }, "userData": { "type": "string" }, "monitoring": { "type": "boolean" }, "ebsOptimized": { "type": "boolean" }, "disableApiTermination": { "type": "boolean" }, "shutdownBehavior": { "enum": ["stop", "terminate"] }, "metadataHttpTokens": { "enum": ["optional", "required"] }, "dryRun": { "type": "boolean" } } },
+    "securityGroup": { "type": "object", "additionalProperties": false, "properties": { "mode": { "enum": ["create", "existing"] }, "groupId": { "type": "string", "minLength": 1 }, "groupName": { "type": "string", "minLength": 1 }, "description": { "type": "string", "minLength": 1 }, "vpcId": { "type": "string", "minLength": 1 }, "ingressRules": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["protocol", "cidrIpv4"], "properties": { "protocol": { "enum": ["tcp", "udp", "icmp", "-1"] }, "fromPort": { "type": "integer", "minimum": -1, "maximum": 65535 }, "toPort": { "type": "integer", "minimum": -1, "maximum": 65535 }, "cidrIpv4": { "type": "string", "minLength": 1 }, "description": { "type": "string" } } } } } },
     "ecr": { "type": "object", "additionalProperties": false, "required": ["repositoryName"], "properties": { "repositoryName": { "type": "string", "minLength": 1 }, "imageTagMutability": { "enum": ["MUTABLE", "IMMUTABLE"] }, "scanOnPush": { "type": "boolean" } } },
     "s3": { "type": "object", "additionalProperties": false, "required": ["bucketName"], "properties": { "bucketName": { "type": "string", "minLength": 1 } } },
     "iam": { "type": "object", "additionalProperties": false, "required": ["roleName"], "anyOf": [{ "required": ["trustedService"] }, { "required": ["assumeRolePolicyDocument"] }], "properties": { "roleName": { "type": "string", "minLength": 1 }, "trustedService": { "enum": ["ec2.amazonaws.com", "lambda.amazonaws.com", "ecs-tasks.amazonaws.com"] }, "assumeRolePolicyDocument": { "type": "string", "minLength": 1 }, "managedPolicyArns": { "type": "array", "items": { "type": "string", "minLength": 20 } }, "description": { "type": "string" }, "path": { "type": "string" }, "maxSessionDuration": { "type": "integer", "minimum": 3600, "maximum": 43200 }, "permissionsBoundaryArn": { "type": "string", "minLength": 20 } } },

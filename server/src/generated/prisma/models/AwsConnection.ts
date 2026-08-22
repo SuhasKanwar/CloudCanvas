@@ -43,6 +43,7 @@ export type AwsConnectionMinAggregateOutputType = {
   secretAccessKeyEncrypted: string | null
   sessionTokenEncrypted: string | null
   encryptionKeyVersion: number | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +57,7 @@ export type AwsConnectionMaxAggregateOutputType = {
   secretAccessKeyEncrypted: string | null
   sessionTokenEncrypted: string | null
   encryptionKeyVersion: number | null
+  isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -69,6 +71,7 @@ export type AwsConnectionCountAggregateOutputType = {
   secretAccessKeyEncrypted: number
   sessionTokenEncrypted: number
   encryptionKeyVersion: number
+  isActive: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -92,6 +95,7 @@ export type AwsConnectionMinAggregateInputType = {
   secretAccessKeyEncrypted?: true
   sessionTokenEncrypted?: true
   encryptionKeyVersion?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -105,6 +109,7 @@ export type AwsConnectionMaxAggregateInputType = {
   secretAccessKeyEncrypted?: true
   sessionTokenEncrypted?: true
   encryptionKeyVersion?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -118,6 +123,7 @@ export type AwsConnectionCountAggregateInputType = {
   secretAccessKeyEncrypted?: true
   sessionTokenEncrypted?: true
   encryptionKeyVersion?: true
+  isActive?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -218,6 +224,7 @@ export type AwsConnectionGroupByOutputType = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted: string | null
   encryptionKeyVersion: number
+  isActive: boolean
   createdAt: Date
   updatedAt: Date
   _count: AwsConnectionCountAggregateOutputType | null
@@ -254,9 +261,11 @@ export type AwsConnectionWhereInput = {
   secretAccessKeyEncrypted?: Prisma.StringFilter<"AwsConnection"> | string
   sessionTokenEncrypted?: Prisma.StringNullableFilter<"AwsConnection"> | string | null
   encryptionKeyVersion?: Prisma.IntFilter<"AwsConnection"> | number
+  isActive?: Prisma.BoolFilter<"AwsConnection"> | boolean
   createdAt?: Prisma.DateTimeFilter<"AwsConnection"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AwsConnection"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  sketches?: Prisma.SketchListRelationFilter
   resources?: Prisma.AwsResourceListRelationFilter
   deployments?: Prisma.DeploymentListRelationFilter
 }
@@ -270,9 +279,11 @@ export type AwsConnectionOrderByWithRelationInput = {
   secretAccessKeyEncrypted?: Prisma.SortOrder
   sessionTokenEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   encryptionKeyVersion?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
+  sketches?: Prisma.SketchOrderByRelationAggregateInput
   resources?: Prisma.AwsResourceOrderByRelationAggregateInput
   deployments?: Prisma.DeploymentOrderByRelationAggregateInput
 }
@@ -289,9 +300,11 @@ export type AwsConnectionWhereUniqueInput = Prisma.AtLeast<{
   secretAccessKeyEncrypted?: Prisma.StringFilter<"AwsConnection"> | string
   sessionTokenEncrypted?: Prisma.StringNullableFilter<"AwsConnection"> | string | null
   encryptionKeyVersion?: Prisma.IntFilter<"AwsConnection"> | number
+  isActive?: Prisma.BoolFilter<"AwsConnection"> | boolean
   createdAt?: Prisma.DateTimeFilter<"AwsConnection"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AwsConnection"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  sketches?: Prisma.SketchListRelationFilter
   resources?: Prisma.AwsResourceListRelationFilter
   deployments?: Prisma.DeploymentListRelationFilter
 }, "id">
@@ -305,6 +318,7 @@ export type AwsConnectionOrderByWithAggregationInput = {
   secretAccessKeyEncrypted?: Prisma.SortOrder
   sessionTokenEncrypted?: Prisma.SortOrderInput | Prisma.SortOrder
   encryptionKeyVersion?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AwsConnectionCountOrderByAggregateInput
@@ -326,6 +340,7 @@ export type AwsConnectionScalarWhereWithAggregatesInput = {
   secretAccessKeyEncrypted?: Prisma.StringWithAggregatesFilter<"AwsConnection"> | string
   sessionTokenEncrypted?: Prisma.StringNullableWithAggregatesFilter<"AwsConnection"> | string | null
   encryptionKeyVersion?: Prisma.IntWithAggregatesFilter<"AwsConnection"> | number
+  isActive?: Prisma.BoolWithAggregatesFilter<"AwsConnection"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AwsConnection"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AwsConnection"> | Date | string
 }
@@ -338,9 +353,11 @@ export type AwsConnectionCreateInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutAwsConnectionsInput
+  sketches?: Prisma.SketchCreateNestedManyWithoutConnectionInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutConnectionInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutConnectionInput
 }
@@ -354,8 +371,10 @@ export type AwsConnectionUncheckedCreateInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutConnectionInput
   resources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutConnectionInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutConnectionInput
 }
@@ -368,9 +387,11 @@ export type AwsConnectionUpdateInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutAwsConnectionsNestedInput
+  sketches?: Prisma.SketchUpdateManyWithoutConnectionNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutConnectionNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutConnectionNestedInput
 }
@@ -384,8 +405,10 @@ export type AwsConnectionUncheckedUpdateInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutConnectionNestedInput
   resources?: Prisma.AwsResourceUncheckedUpdateManyWithoutConnectionNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutConnectionNestedInput
 }
@@ -399,6 +422,7 @@ export type AwsConnectionCreateManyInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -411,6 +435,7 @@ export type AwsConnectionUpdateManyMutationInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -424,6 +449,7 @@ export type AwsConnectionUncheckedUpdateManyInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -438,6 +464,11 @@ export type AwsConnectionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type AwsConnectionNullableScalarRelationFilter = {
+  is?: Prisma.AwsConnectionWhereInput | null
+  isNot?: Prisma.AwsConnectionWhereInput | null
+}
+
 export type AwsConnectionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
@@ -447,6 +478,7 @@ export type AwsConnectionCountOrderByAggregateInput = {
   secretAccessKeyEncrypted?: Prisma.SortOrder
   sessionTokenEncrypted?: Prisma.SortOrder
   encryptionKeyVersion?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -464,6 +496,7 @@ export type AwsConnectionMaxOrderByAggregateInput = {
   secretAccessKeyEncrypted?: Prisma.SortOrder
   sessionTokenEncrypted?: Prisma.SortOrder
   encryptionKeyVersion?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -477,6 +510,7 @@ export type AwsConnectionMinOrderByAggregateInput = {
   secretAccessKeyEncrypted?: Prisma.SortOrder
   sessionTokenEncrypted?: Prisma.SortOrder
   encryptionKeyVersion?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -532,6 +566,26 @@ export type AwsConnectionUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.AwsConnectionScalarWhereInput | Prisma.AwsConnectionScalarWhereInput[]
 }
 
+export type AwsConnectionCreateNestedOneWithoutSketchesInput = {
+  create?: Prisma.XOR<Prisma.AwsConnectionCreateWithoutSketchesInput, Prisma.AwsConnectionUncheckedCreateWithoutSketchesInput>
+  connectOrCreate?: Prisma.AwsConnectionCreateOrConnectWithoutSketchesInput
+  connect?: Prisma.AwsConnectionWhereUniqueInput
+}
+
+export type AwsConnectionUpdateOneWithoutSketchesNestedInput = {
+  create?: Prisma.XOR<Prisma.AwsConnectionCreateWithoutSketchesInput, Prisma.AwsConnectionUncheckedCreateWithoutSketchesInput>
+  connectOrCreate?: Prisma.AwsConnectionCreateOrConnectWithoutSketchesInput
+  upsert?: Prisma.AwsConnectionUpsertWithoutSketchesInput
+  disconnect?: Prisma.AwsConnectionWhereInput | boolean
+  delete?: Prisma.AwsConnectionWhereInput | boolean
+  connect?: Prisma.AwsConnectionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AwsConnectionUpdateToOneWithWhereWithoutSketchesInput, Prisma.AwsConnectionUpdateWithoutSketchesInput>, Prisma.AwsConnectionUncheckedUpdateWithoutSketchesInput>
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type AwsConnectionCreateNestedOneWithoutResourcesInput = {
   create?: Prisma.XOR<Prisma.AwsConnectionCreateWithoutResourcesInput, Prisma.AwsConnectionUncheckedCreateWithoutResourcesInput>
   connectOrCreate?: Prisma.AwsConnectionCreateOrConnectWithoutResourcesInput
@@ -568,8 +622,10 @@ export type AwsConnectionCreateWithoutUserInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  sketches?: Prisma.SketchCreateNestedManyWithoutConnectionInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutConnectionInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutConnectionInput
 }
@@ -582,8 +638,10 @@ export type AwsConnectionUncheckedCreateWithoutUserInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutConnectionInput
   resources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutConnectionInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutConnectionInput
 }
@@ -626,8 +684,89 @@ export type AwsConnectionScalarWhereInput = {
   secretAccessKeyEncrypted?: Prisma.StringFilter<"AwsConnection"> | string
   sessionTokenEncrypted?: Prisma.StringNullableFilter<"AwsConnection"> | string | null
   encryptionKeyVersion?: Prisma.IntFilter<"AwsConnection"> | number
+  isActive?: Prisma.BoolFilter<"AwsConnection"> | boolean
   createdAt?: Prisma.DateTimeFilter<"AwsConnection"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AwsConnection"> | Date | string
+}
+
+export type AwsConnectionCreateWithoutSketchesInput = {
+  id?: string
+  name: string
+  region: string
+  accessKeyIdEncrypted: string
+  secretAccessKeyEncrypted: string
+  sessionTokenEncrypted?: string | null
+  encryptionKeyVersion?: number
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutAwsConnectionsInput
+  resources?: Prisma.AwsResourceCreateNestedManyWithoutConnectionInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutConnectionInput
+}
+
+export type AwsConnectionUncheckedCreateWithoutSketchesInput = {
+  id?: string
+  userId: string
+  name: string
+  region: string
+  accessKeyIdEncrypted: string
+  secretAccessKeyEncrypted: string
+  sessionTokenEncrypted?: string | null
+  encryptionKeyVersion?: number
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  resources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutConnectionInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutConnectionInput
+}
+
+export type AwsConnectionCreateOrConnectWithoutSketchesInput = {
+  where: Prisma.AwsConnectionWhereUniqueInput
+  create: Prisma.XOR<Prisma.AwsConnectionCreateWithoutSketchesInput, Prisma.AwsConnectionUncheckedCreateWithoutSketchesInput>
+}
+
+export type AwsConnectionUpsertWithoutSketchesInput = {
+  update: Prisma.XOR<Prisma.AwsConnectionUpdateWithoutSketchesInput, Prisma.AwsConnectionUncheckedUpdateWithoutSketchesInput>
+  create: Prisma.XOR<Prisma.AwsConnectionCreateWithoutSketchesInput, Prisma.AwsConnectionUncheckedCreateWithoutSketchesInput>
+  where?: Prisma.AwsConnectionWhereInput
+}
+
+export type AwsConnectionUpdateToOneWithWhereWithoutSketchesInput = {
+  where?: Prisma.AwsConnectionWhereInput
+  data: Prisma.XOR<Prisma.AwsConnectionUpdateWithoutSketchesInput, Prisma.AwsConnectionUncheckedUpdateWithoutSketchesInput>
+}
+
+export type AwsConnectionUpdateWithoutSketchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  accessKeyIdEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
+  secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
+  sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutAwsConnectionsNestedInput
+  resources?: Prisma.AwsResourceUpdateManyWithoutConnectionNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutConnectionNestedInput
+}
+
+export type AwsConnectionUncheckedUpdateWithoutSketchesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  region?: Prisma.StringFieldUpdateOperationsInput | string
+  accessKeyIdEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
+  secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
+  sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  resources?: Prisma.AwsResourceUncheckedUpdateManyWithoutConnectionNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutConnectionNestedInput
 }
 
 export type AwsConnectionCreateWithoutResourcesInput = {
@@ -638,9 +777,11 @@ export type AwsConnectionCreateWithoutResourcesInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutAwsConnectionsInput
+  sketches?: Prisma.SketchCreateNestedManyWithoutConnectionInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutConnectionInput
 }
 
@@ -653,8 +794,10 @@ export type AwsConnectionUncheckedCreateWithoutResourcesInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutConnectionInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutConnectionInput
 }
 
@@ -682,9 +825,11 @@ export type AwsConnectionUpdateWithoutResourcesInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutAwsConnectionsNestedInput
+  sketches?: Prisma.SketchUpdateManyWithoutConnectionNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutConnectionNestedInput
 }
 
@@ -697,8 +842,10 @@ export type AwsConnectionUncheckedUpdateWithoutResourcesInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutConnectionNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutConnectionNestedInput
 }
 
@@ -710,9 +857,11 @@ export type AwsConnectionCreateWithoutDeploymentsInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutAwsConnectionsInput
+  sketches?: Prisma.SketchCreateNestedManyWithoutConnectionInput
   resources?: Prisma.AwsResourceCreateNestedManyWithoutConnectionInput
 }
 
@@ -725,8 +874,10 @@ export type AwsConnectionUncheckedCreateWithoutDeploymentsInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutConnectionInput
   resources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutConnectionInput
 }
 
@@ -754,9 +905,11 @@ export type AwsConnectionUpdateWithoutDeploymentsInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutAwsConnectionsNestedInput
+  sketches?: Prisma.SketchUpdateManyWithoutConnectionNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutConnectionNestedInput
 }
 
@@ -769,8 +922,10 @@ export type AwsConnectionUncheckedUpdateWithoutDeploymentsInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutConnectionNestedInput
   resources?: Prisma.AwsResourceUncheckedUpdateManyWithoutConnectionNestedInput
 }
 
@@ -782,6 +937,7 @@ export type AwsConnectionCreateManyUserInput = {
   secretAccessKeyEncrypted: string
   sessionTokenEncrypted?: string | null
   encryptionKeyVersion?: number
+  isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -794,8 +950,10 @@ export type AwsConnectionUpdateWithoutUserInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUpdateManyWithoutConnectionNestedInput
   resources?: Prisma.AwsResourceUpdateManyWithoutConnectionNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutConnectionNestedInput
 }
@@ -808,8 +966,10 @@ export type AwsConnectionUncheckedUpdateWithoutUserInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutConnectionNestedInput
   resources?: Prisma.AwsResourceUncheckedUpdateManyWithoutConnectionNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutConnectionNestedInput
 }
@@ -822,6 +982,7 @@ export type AwsConnectionUncheckedUpdateManyWithoutUserInput = {
   secretAccessKeyEncrypted?: Prisma.StringFieldUpdateOperationsInput | string
   sessionTokenEncrypted?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   encryptionKeyVersion?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -832,11 +993,13 @@ export type AwsConnectionUncheckedUpdateManyWithoutUserInput = {
  */
 
 export type AwsConnectionCountOutputType = {
+  sketches: number
   resources: number
   deployments: number
 }
 
 export type AwsConnectionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sketches?: boolean | AwsConnectionCountOutputTypeCountSketchesArgs
   resources?: boolean | AwsConnectionCountOutputTypeCountResourcesArgs
   deployments?: boolean | AwsConnectionCountOutputTypeCountDeploymentsArgs
 }
@@ -849,6 +1012,13 @@ export type AwsConnectionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Type
    * Select specific fields to fetch from the AwsConnectionCountOutputType
    */
   select?: Prisma.AwsConnectionCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * AwsConnectionCountOutputType without action
+ */
+export type AwsConnectionCountOutputTypeCountSketchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SketchWhereInput
 }
 
 /**
@@ -875,9 +1045,11 @@ export type AwsConnectionSelect<ExtArgs extends runtime.Types.Extensions.Interna
   secretAccessKeyEncrypted?: boolean
   sessionTokenEncrypted?: boolean
   encryptionKeyVersion?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  sketches?: boolean | Prisma.AwsConnection$sketchesArgs<ExtArgs>
   resources?: boolean | Prisma.AwsConnection$resourcesArgs<ExtArgs>
   deployments?: boolean | Prisma.AwsConnection$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.AwsConnectionCountOutputTypeDefaultArgs<ExtArgs>
@@ -892,6 +1064,7 @@ export type AwsConnectionSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   secretAccessKeyEncrypted?: boolean
   sessionTokenEncrypted?: boolean
   encryptionKeyVersion?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -906,6 +1079,7 @@ export type AwsConnectionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   secretAccessKeyEncrypted?: boolean
   sessionTokenEncrypted?: boolean
   encryptionKeyVersion?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -920,13 +1094,15 @@ export type AwsConnectionSelectScalar = {
   secretAccessKeyEncrypted?: boolean
   sessionTokenEncrypted?: boolean
   encryptionKeyVersion?: boolean
+  isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AwsConnectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "region" | "accessKeyIdEncrypted" | "secretAccessKeyEncrypted" | "sessionTokenEncrypted" | "encryptionKeyVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["awsConnection"]>
+export type AwsConnectionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "region" | "accessKeyIdEncrypted" | "secretAccessKeyEncrypted" | "sessionTokenEncrypted" | "encryptionKeyVersion" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["awsConnection"]>
 export type AwsConnectionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  sketches?: boolean | Prisma.AwsConnection$sketchesArgs<ExtArgs>
   resources?: boolean | Prisma.AwsConnection$resourcesArgs<ExtArgs>
   deployments?: boolean | Prisma.AwsConnection$deploymentsArgs<ExtArgs>
   _count?: boolean | Prisma.AwsConnectionCountOutputTypeDefaultArgs<ExtArgs>
@@ -942,6 +1118,7 @@ export type $AwsConnectionPayload<ExtArgs extends runtime.Types.Extensions.Inter
   name: "AwsConnection"
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
+    sketches: Prisma.$SketchPayload<ExtArgs>[]
     resources: Prisma.$AwsResourcePayload<ExtArgs>[]
     deployments: Prisma.$DeploymentPayload<ExtArgs>[]
   }
@@ -954,6 +1131,7 @@ export type $AwsConnectionPayload<ExtArgs extends runtime.Types.Extensions.Inter
     secretAccessKeyEncrypted: string
     sessionTokenEncrypted: string | null
     encryptionKeyVersion: number
+    isActive: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["awsConnection"]>
@@ -1351,6 +1529,7 @@ readonly fields: AwsConnectionFieldRefs;
 export interface Prisma__AwsConnectionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  sketches<T extends Prisma.AwsConnection$sketchesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AwsConnection$sketchesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SketchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   resources<T extends Prisma.AwsConnection$resourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AwsConnection$resourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AwsResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deployments<T extends Prisma.AwsConnection$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AwsConnection$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1390,6 +1569,7 @@ export interface AwsConnectionFieldRefs {
   readonly secretAccessKeyEncrypted: Prisma.FieldRef<"AwsConnection", 'String'>
   readonly sessionTokenEncrypted: Prisma.FieldRef<"AwsConnection", 'String'>
   readonly encryptionKeyVersion: Prisma.FieldRef<"AwsConnection", 'Int'>
+  readonly isActive: Prisma.FieldRef<"AwsConnection", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"AwsConnection", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"AwsConnection", 'DateTime'>
 }
@@ -1790,6 +1970,30 @@ export type AwsConnectionDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many AwsConnections to delete.
    */
   limit?: number
+}
+
+/**
+ * AwsConnection.sketches
+ */
+export type AwsConnection$sketchesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Sketch
+   */
+  select?: Prisma.SketchSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Sketch
+   */
+  omit?: Prisma.SketchOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SketchInclude<ExtArgs> | null
+  where?: Prisma.SketchWhereInput
+  orderBy?: Prisma.SketchOrderByWithRelationInput | Prisma.SketchOrderByWithRelationInput[]
+  cursor?: Prisma.SketchWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SketchScalarFieldEnum | Prisma.SketchScalarFieldEnum[]
 }
 
 /**

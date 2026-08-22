@@ -143,6 +143,7 @@ model AwsResource {
   name          String?
   region        String
   status        AwsResourceStatus @default(DESIRED)
+  managed       Boolean           @default(true)
   desiredConfig Json
   actualState   Json?
   lastError     String?
