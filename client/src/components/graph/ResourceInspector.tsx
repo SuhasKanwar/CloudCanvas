@@ -17,8 +17,11 @@ function Field({ label, value, onChange, type = "text" }: FieldProps) {
     return <label className="block"><span className="text-xs text-(--secondary-text-color)">{label}</span><input className={inputClass} min={type === "number" ? 0 : undefined} onChange={(event) => onChange(event.target.value)} type={type} value={value} /></label>;
 }
 
-function InstanceTypeField({ options, value, onChange }: { options: string[]; value: string; onChange: (value: string) => void }) {
-    return <label className="block"><span className="text-xs text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option} value={option} />)}</datalist></label>;
+function InstanceTypeField({ options, value, onChange }: { options: AwsResourceCatalog["instanceTypes"]; value: string; onChange: (value: string) => void }) {
+    const selected = options.find((option) => option.name === value);
+    const memory = selected?.memoryMiB ? `${Math.round(selected.memoryMiB / 102.4) / 10} GiB memory` : "";
+    const details = selected ? [`${selected.vcpus ?? "Unknown"} vCPUs`, memory, selected.architectures.join(", "), selected.networkPerformance, selected.instanceStorageGiB ? `${selected.instanceStorageGiB} GB instance storage` : "EBS only"].filter(Boolean) : [];
+    return <div><label className="block"><span className="text-xs text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option.name} label={[`${option.vcpus ?? "?"} vCPU`, option.memoryMiB ? `${Math.round(option.memoryMiB / 1024)} GiB` : ""].filter(Boolean).join(" · ")} value={option.name} />)}</datalist></label>{details.length ? <p className="mt-2 border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-(--secondary-text-color)">{details.join(" · ")}</p> : null}</div>;
 }
 
 function AmiField({ images, value, onChange }: { images: AwsResourceCatalog["images"]; value: string; onChange: (image: AwsResourceCatalog["images"][number] | null) => void }) {

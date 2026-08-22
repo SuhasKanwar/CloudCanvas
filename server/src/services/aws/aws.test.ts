@@ -240,7 +240,7 @@ test("lists catalog metadata required by resource forms", async () => {
         securityGroups: async () => ({ $metadata: {}, SecurityGroups: [{ GroupId: "sg-1", GroupName: "web", Description: "web traffic", VpcId: "vpc-1" }] }),
         launchTemplates: async () => ({ $metadata: {}, LaunchTemplates: [{ LaunchTemplateId: "lt-1", LaunchTemplateName: "app-template" }] }),
         instances: async () => ({ $metadata: {}, Reservations: [{ Instances: [{ InstanceId: "i-1", InstanceType: "t3.micro", State: { Name: "running" } }] }] }),
-        instanceTypes: async () => (++instanceTypeCalls === 1 ? { $metadata: {}, InstanceTypes: [{ InstanceType: "t3.micro" }], NextToken: "next" } : { $metadata: {}, InstanceTypes: [{ InstanceType: "m7i.large" }] }),
+        instanceTypes: async () => (++instanceTypeCalls === 1 ? { $metadata: {}, InstanceTypes: [{ InstanceType: "t3.micro", VCpuInfo: { DefaultVCpus: 2 }, MemoryInfo: { SizeInMiB: 1024 }, ProcessorInfo: { SupportedArchitectures: ["x86_64"] }, NetworkInfo: { NetworkPerformance: "Up to 5 Gigabit" } }], NextToken: "next" } : { $metadata: {}, InstanceTypes: [{ InstanceType: "m7i.large" }] }),
         images: async (command) => ({
             $metadata: {},
             Images: command.input.Filters?.[0]?.Values?.[0]?.startsWith("Windows")
@@ -253,7 +253,8 @@ test("lists catalog metadata required by resource forms", async () => {
     assert.equal(catalog.securityGroups[0]?.id, "sg-1");
     assert.equal(catalog.instanceProfiles[0]?.name, "app");
     assert.equal(catalog.instances[0]?.id, "i-1");
-    assert.deepEqual(catalog.instanceTypes, ["m7i.large", "t3.micro"]);
+    assert.deepEqual(catalog.instanceTypes.map((instanceType) => instanceType.name), ["m7i.large", "t3.micro"]);
+    assert.equal(catalog.instanceTypes.find((instanceType) => instanceType.name === "t3.micro")?.vcpus, 2);
     assert.equal(catalog.keyPairs[0]?.name, "deploy");
     assert.equal(catalog.images.find((image) => image.category === "amazon-linux")?.title, "Amazon Linux 2023");
     assert.equal(catalog.images.find((image) => image.category === "windows")?.title, "Microsoft Windows Server 2025");

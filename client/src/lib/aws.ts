@@ -26,7 +26,7 @@ export type AwsResourceCatalog = {
     instanceProfiles: Array<{ arn: string; name: string }>;
     launchTemplates: Array<{ id: string; name: string }>;
     instances: Array<{ id: string; name: string; state: string; instanceType: string; vpcId: string; subnetId: string }>;
-    instanceTypes: string[];
+    instanceTypes: Array<{ name: string; vcpus?: number | undefined; memoryMiB?: number | undefined; architectures: string[]; networkPerformance?: string | undefined; instanceStorageGiB?: number | undefined }>;
     keyPairs: Array<{ id: string; name: string; fingerprint: string }>;
     images: Array<{ id: string; category: "amazon-linux" | "windows"; title: string; architecture: string; release: string; label: string; description: string; rootDeviceName: string }>;
 };

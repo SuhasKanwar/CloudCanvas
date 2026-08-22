@@ -29,7 +29,7 @@ export type AwsResourceCatalog = {
     instanceProfiles: Array<{ arn: string; name: string }>;
     launchTemplates: Array<{ id: string; name: string }>;
     instances: Array<{ id: string; name: string; state: string; instanceType: string; vpcId: string; subnetId: string }>;
-    instanceTypes: string[];
+    instanceTypes: Array<{ name: string; vcpus?: number | undefined; memoryMiB?: number | undefined; architectures: string[]; networkPerformance?: string | undefined; instanceStorageGiB?: number | undefined }>;
     keyPairs: Array<{ id: string; name: string; fingerprint: string }>;
     images: Array<{ id: string; category: "amazon-linux" | "windows"; title: string; architecture: string; release: string; label: string; description: string; rootDeviceName: string }>;
 };
@@ -63,14 +63,21 @@ export class AwsCatalogService {
     constructor(private readonly send: AwsCatalogSender) {}
 
     private async listInstanceTypes() {
-        const instanceTypes: string[] = [];
+        const instanceTypes: AwsResourceCatalog["instanceTypes"] = [];
         let nextToken: string | undefined;
         do {
             const page = await this.send.instanceTypes(new DescribeInstanceTypesCommand({ MaxResults: 100, NextToken: nextToken }));
-            instanceTypes.push(...(page.InstanceTypes ?? []).flatMap((instanceType) => instanceType.InstanceType ? [instanceType.InstanceType] : []));
+            instanceTypes.push(...(page.InstanceTypes ?? []).flatMap((instanceType) => instanceType.InstanceType ? [{
+                name: instanceType.InstanceType,
+                vcpus: instanceType.VCpuInfo?.DefaultVCpus,
+                memoryMiB: instanceType.MemoryInfo?.SizeInMiB,
+                architectures: instanceType.ProcessorInfo?.SupportedArchitectures ?? [],
+                networkPerformance: instanceType.NetworkInfo?.NetworkPerformance,
+                instanceStorageGiB: instanceType.InstanceStorageInfo?.TotalSizeInGB,
+            }] : []));
             nextToken = page.NextToken;
         } while (nextToken);
-        return instanceTypes.sort();
+        return instanceTypes.sort((left, right) => left.name.localeCompare(right.name));
     }
 
     async list(): Promise<AwsResourceCatalog> {
