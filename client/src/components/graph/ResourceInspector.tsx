@@ -21,6 +21,13 @@ function InstanceTypeField({ options, value, onChange }: { options: string[]; va
     return <label className="block"><span className="text-xs text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option} value={option} />)}</datalist></label>;
 }
 
+function AmiField({ images, value, onChange }: { images: AwsResourceCatalog["images"]; value: string; onChange: (image: AwsResourceCatalog["images"][number] | null) => void }) {
+    const selected = images.find((image) => image.id === value);
+    const [query, setQuery] = useState(selected?.label ?? "");
+    useEffect(() => setQuery(selected?.label ?? ""), [selected?.label]);
+    return <label className="block"><span className="text-xs text-(--secondary-text-color)">Operating system / AMI</span><input className={inputClass} list="ec2-os-images" onChange={(event) => { const next = event.target.value; setQuery(next); const image = images.find((entry) => entry.label === next || entry.id === next); if (image || !next) onChange(image ?? null); }} placeholder="Search Amazon Linux or Windows" value={query} /><datalist id="ec2-os-images">{images.map((image) => <option key={image.id} value={image.label} />)}</datalist></label>;
+}
+
 function Select({ label, onChange, options, value }: { label: string; onChange: (value: string) => void; options: ReadonlyArray<ReadonlyArray<string>>; value: string }) {
     return <label className="block"><span className="text-xs text-(--secondary-text-color)">{label}</span><select className={inputClass} onChange={(event) => onChange(event.target.value)} value={value}>{options.map(([option = "", title = ""]) => <option className="bg-[#151821]" key={option} value={option}>{title}</option>)}</select></label>;
 }
@@ -46,7 +53,7 @@ function Ec2Form({ bindings, catalog, config, update }: { bindings?: Ec2Bindings
     if (mode === "existing") return <><Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} /><Select label="Existing EC2 instance" onChange={(value) => update("instanceId", value)} options={[["", "Select instance"], ...(catalog?.instances ?? []).map((instance) => [instance.id, `${instance.name} (${instance.state})`])]} value={String(config.instanceId ?? "")} /></>;
     return <>
         <Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} />
-        <Select label="Operating system / AMI" onChange={(value) => { const image = catalog?.images.find((entry) => entry.id === value); update("__all__", { ...config, imageId: value, ...(image && { rootDeviceName: image.rootDeviceName }) }); }} options={[["", "Choose an OS image"], ...(catalog?.images ?? []).map((image) => [image.id, image.label])]} value={String(config.imageId ?? "")} />
+        <AmiField images={catalog?.images ?? []} onChange={(image) => update("__all__", { ...config, imageId: image?.id ?? "", ...(image && { rootDeviceName: image.rootDeviceName }) })} value={String(config.imageId ?? "")} />
         <Field label="Custom AMI ID" onChange={(value) => update("imageId", value)} value={String(config.imageId ?? "")} />
         <Select label="Launch template" onChange={(value) => update("launchTemplateId", value)} options={[["", "No launch template"], ...(catalog?.launchTemplates ?? []).map((template) => [template.id, template.name])]} value={String(config.launchTemplateId ?? "")} />
         <InstanceTypeField onChange={(value) => update("instanceType", value)} options={catalog?.instanceTypes ?? []} value={String(config.instanceType ?? "t3.micro")} />
