@@ -101,6 +101,9 @@ export class AWSResourceManager {
             const data = await new S3Service({
                 create: (command) => client.send(command),
                 delete: (command) => client.send(command),
+                deleteObjects: (command) => client.send(command),
+                listVersions: (command) => client.send(command),
+                listObjects: (command) => client.send(command),
                 getPolicy: (command) => client.send(command),
                 putPolicy: (command) => client.send(command),
                 putEncryption: (command) => client.send(command),
@@ -159,6 +162,9 @@ export class AWSResourceManager {
         const data = await new S3Service({
             create: (command) => client.send(command),
             delete: (command) => client.send(command),
+            deleteObjects: (command) => client.send(command),
+            listVersions: (command) => client.send(command),
+            listObjects: (command) => client.send(command),
             getPolicy: (command) => client.send(command),
             putPolicy: (command) => client.send(command),
             putEncryption: (command) => client.send(command),
@@ -200,6 +206,9 @@ export class AWSResourceManager {
             const data = await new S3Service({
                 create: (command) => client.send(command),
                 delete: (command) => client.send(command),
+                deleteObjects: (command) => client.send(command),
+                listVersions: (command) => client.send(command),
+                listObjects: (command) => client.send(command),
                 getPolicy: (command) => client.send(command),
                 putPolicy: (command) => client.send(command),
                 putEncryption: (command) => client.send(command),

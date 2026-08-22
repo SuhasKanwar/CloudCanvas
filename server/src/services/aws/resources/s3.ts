@@ -1,19 +1,25 @@
 import {
     CreateBucketCommand,
+    DeleteObjectsCommand,
     DeleteBucketCommand,
     GetBucketPolicyCommand,
     PutBucketEncryptionCommand,
     PutBucketPolicyCommand,
     PutBucketVersioningCommand,
     PutPublicAccessBlockCommand,
+    ListObjectVersionsCommand,
+    ListObjectsV2Command,
     type BucketLocationConstraint,
     type CreateBucketCommandOutput,
     type DeleteBucketCommandOutput,
+    type DeleteObjectsCommandOutput,
     type GetBucketPolicyCommandOutput,
     type PutBucketEncryptionCommandOutput,
     type PutBucketPolicyCommandOutput,
     type PutBucketVersioningCommandOutput,
     type PutPublicAccessBlockCommandOutput,
+    type ListObjectVersionsCommandOutput,
+    type ListObjectsV2CommandOutput,
 } from "@aws-sdk/client-s3";
 
 export type S3BucketRequest = {
@@ -39,6 +45,9 @@ export type S3DeleteResult = {
 export type S3CommandSender = {
     create: (command: CreateBucketCommand) => Promise<CreateBucketCommandOutput>;
     delete: (command: DeleteBucketCommand) => Promise<DeleteBucketCommandOutput>;
+    deleteObjects: (command: DeleteObjectsCommand) => Promise<DeleteObjectsCommandOutput>;
+    listVersions: (command: ListObjectVersionsCommand) => Promise<ListObjectVersionsCommandOutput>;
+    listObjects: (command: ListObjectsV2Command) => Promise<ListObjectsV2CommandOutput>;
     getPolicy: (command: GetBucketPolicyCommand) => Promise<GetBucketPolicyCommandOutput>;
     putPolicy: (command: PutBucketPolicyCommand) => Promise<PutBucketPolicyCommandOutput>;
     putEncryption: (command: PutBucketEncryptionCommand) => Promise<PutBucketEncryptionCommandOutput>;
@@ -80,6 +89,22 @@ export class S3Service {
 
     async deleteBucket(bucketName: string): Promise<S3DeleteResult> {
         if (!bucketName) throw new Error("bucketName is required to delete an S3 bucket.");
+        let keyMarker: string | undefined;
+        let versionIdMarker: string | undefined;
+        do {
+            const page = await this.send.listVersions(new ListObjectVersionsCommand({ Bucket: bucketName, KeyMarker: keyMarker, VersionIdMarker: versionIdMarker }));
+            const objects = [...(page.Versions ?? []), ...(page.DeleteMarkers ?? [])].flatMap((entry) => entry.Key ? [{ Key: entry.Key, ...(entry.VersionId && { VersionId: entry.VersionId }) }] : []);
+            if (objects.length) await this.send.deleteObjects(new DeleteObjectsCommand({ Bucket: bucketName, Delete: { Objects: objects, Quiet: true } }));
+            keyMarker = page.IsTruncated ? page.NextKeyMarker : undefined;
+            versionIdMarker = page.IsTruncated ? page.NextVersionIdMarker : undefined;
+        } while (keyMarker);
+        let continuationToken: string | undefined;
+        do {
+            const page = await this.send.listObjects(new ListObjectsV2Command({ Bucket: bucketName, ContinuationToken: continuationToken }));
+            const objects = (page.Contents ?? []).flatMap((entry) => entry.Key ? [{ Key: entry.Key }] : []);
+            if (objects.length) await this.send.deleteObjects(new DeleteObjectsCommand({ Bucket: bucketName, Delete: { Objects: objects, Quiet: true } }));
+            continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+        } while (continuationToken);
         await this.send.delete(new DeleteBucketCommand({ Bucket: bucketName }));
         return { region: this.region, bucketName };
     }

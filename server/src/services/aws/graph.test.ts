@@ -9,6 +9,7 @@ test("orders source nodes before targets and resolves direct references", () => 
         [{ sourceNodeId: "role", targetNodeId: "lambda" }],
     );
     assert.deepEqual(plan.order, ["role", "lambda"]);
+    assert.deepEqual(plan.order.slice().reverse(), ["lambda", "role"]);
     assert.deepEqual(
         resolveConfigReferences("${role.roleArn}", "lambda", plan.sourcesByTarget, new Map([
             ["role", { roleArn: "arn:aws:iam::123:role/app" }],
