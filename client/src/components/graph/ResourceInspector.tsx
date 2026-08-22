@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Code2, Plus, Tag, Trash2 } from "lucide-react";
+import { Code2, Link2, Plus, Tag, Trash2 } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import { getAwsResourceCatalog, listAwsConnections, type AwsResourceCatalog } from "@/lib/aws";
 import type { ResourceNodeData } from "./resourceNode";
 
-type Props = { connectionId: string | null; node: Node<ResourceNodeData>; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void };
+type Ec2Bindings = { keyPair?: string; securityGroups: string[] };
+type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void };
 type FieldProps = { label: string; value: string | number; onChange: (value: string) => void; type?: "number" | "text" };
 
 const inputClass = "mt-2 w-full border border-white/10 bg-black/20 px-3 py-2 text-sm outline-none focus:border-(--primary-color)";
@@ -29,12 +30,14 @@ function LineList({ label, onChange, value }: { label: string; onChange: (values
     return <label className="block"><span className="text-xs text-(--secondary-text-color)">{label}</span><textarea className={`${inputClass} min-h-24 resize-y`} onChange={(event) => onChange(event.target.value.split("\n").map((entry) => entry.trim()).filter(Boolean))} value={lines} /></label>;
 }
 
-function SecurityGroupPicker({ groups, onChange, value }: { groups: AwsResourceCatalog["securityGroups"]; onChange: (value: string[]) => void; value: unknown }) {
+function SecurityGroupPicker({ groups, linkedGroups, onChange, value }: { groups: AwsResourceCatalog["securityGroups"]; linkedGroups: string[]; onChange: (value: string[]) => void; value: unknown }) {
     const selected = Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
-    return <div><span className="text-xs text-(--secondary-text-color)">Security groups</span><div className="mt-2 max-h-36 space-y-2 overflow-auto border border-white/10 bg-black/20 p-3">{groups.map((group) => <label className="flex items-start gap-2 text-xs text-(--secondary-text-color)" key={group.id}><input checked={selected.includes(group.id)} className="mt-0.5 accent-(--primary-color)" onChange={(event) => onChange(event.target.checked ? [...selected, group.id] : selected.filter((id) => id !== group.id))} type="checkbox" /><span><b className="font-medium text-(--primary-text-color)">{group.name}</b> <span className="font-mono">{group.id}</span></span></label>)}</div></div>;
+    const linked = selected.filter((entry) => entry.match(/^\$\{[^}]+\.securityGroupId\}$/));
+    const manual = selected.filter((entry) => !linked.includes(entry));
+    return <div><span className="text-xs text-(--secondary-text-color)">Security groups</span>{linkedGroups.length ? <div className="mt-2 space-y-1 border border-(--secondary-color)/30 bg-(--secondary-color)/8 p-3 text-xs text-(--secondary-color)">{linkedGroups.map((group) => <p className="flex items-center gap-2" key={group}><Link2 className="h-3.5 w-3.5" />{group}</p>)}</div> : null}<div className="mt-2 max-h-36 space-y-2 overflow-auto border border-white/10 bg-black/20 p-3">{groups.map((group) => <label className="flex items-start gap-2 text-xs text-(--secondary-text-color)" key={group.id}><input checked={manual.includes(group.id)} className="mt-0.5 accent-(--primary-color)" onChange={(event) => onChange(event.target.checked ? [...linked, ...manual, group.id] : [...linked, ...manual.filter((id) => id !== group.id)])} type="checkbox" /><span><b className="font-medium text-(--primary-text-color)">{group.name}</b> <span className="font-mono">{group.id}</span></span></label>)}</div></div>;
 }
 
-function Ec2Form({ catalog, config, update }: { catalog: AwsResourceCatalog | null; config: Record<string, unknown>; update: (key: string, value: unknown) => void }) {
+function Ec2Form({ bindings, catalog, config, update }: { bindings?: Ec2Bindings; catalog: AwsResourceCatalog | null; config: Record<string, unknown>; update: (key: string, value: unknown) => void }) {
     const mode = String(config.mode ?? "create");
     if (mode === "existing") return <><Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} /><Select label="Existing EC2 instance" onChange={(value) => update("instanceId", value)} options={[["", "Select instance"], ...(catalog?.instances ?? []).map((instance) => [instance.id, `${instance.name} (${instance.state})`])]} value={String(config.instanceId ?? "")} /></>;
     return <>
@@ -45,10 +48,10 @@ function Ec2Form({ catalog, config, update }: { catalog: AwsResourceCatalog | nu
         <Select label="Instance type" onChange={(value) => update("instanceType", value)} options={[["t3.micro", "t3.micro"], ["t3.small", "t3.small"], ["t3.medium", "t3.medium"], ["t3.large", "t3.large"], ["m5.large", "m5.large"], ["c5.large", "c5.large"]]} value={String(config.instanceType ?? "t3.micro")} />
         <Field label="Instance count" onChange={(value) => update("instanceCount", Number(value) || 1)} type="number" value={Number(config.instanceCount ?? 1)} />
         <Field label="Instance name" onChange={(value) => update("name", value)} value={String(config.name ?? "")} />
-        <Field label="Key pair name" onChange={(value) => update("keyName", value)} value={String(config.keyName ?? "")} />
+        {bindings?.keyPair ? <div className="border border-(--secondary-color)/30 bg-(--secondary-color)/8 p-3 text-xs text-(--secondary-color)"><span className="flex items-center gap-2"><Link2 className="h-3.5 w-3.5" />Linked key pair</span><p className="mt-1 truncate font-medium text-(--primary-text-color)">{bindings.keyPair}</p></div> : <Field label="Key pair name" onChange={(value) => update("keyName", value)} value={String(config.keyName ?? "")} />}
         <div className="border-t border-white/10 pt-4"><p className="text-xs text-(--secondary-text-color)">Root EBS volume</p><Field label="Storage (GiB)" onChange={(value) => update("rootVolumeSizeGiB", value ? Number(value) : undefined)} type="number" value={String(config.rootVolumeSizeGiB ?? "")} /><Select label="Volume type" onChange={(value) => update("rootVolumeType", value)} options={[["gp3", "General purpose SSD (gp3)"], ["gp2", "General purpose SSD (gp2)"]]} value={String(config.rootVolumeType ?? "gp3")} /><Toggle checked={config.deleteRootVolumeOnTermination !== false} label="Delete volume on termination" onChange={(value) => update("deleteRootVolumeOnTermination", value)} /></div>
         <Select label="Subnet" onChange={(value) => update("subnetId", value)} options={[["", "Default subnet"], ...(catalog?.subnets ?? []).map((subnet) => [subnet.id, `${subnet.name} (${subnet.availabilityZone})`])]} value={String(config.subnetId ?? "")} />
-        <SecurityGroupPicker groups={catalog?.securityGroups ?? []} onChange={(value) => update("securityGroupIds", value)} value={config.securityGroupIds} />
+        <SecurityGroupPicker groups={catalog?.securityGroups ?? []} linkedGroups={bindings?.securityGroups ?? []} onChange={(value) => update("securityGroupIds", value)} value={config.securityGroupIds} />
         <Select label="IAM instance profile" onChange={(value) => update("iamInstanceProfile", value)} options={[["", "No instance profile"], ...(catalog?.instanceProfiles ?? []).map((profile) => [profile.arn, profile.name])]} value={String(config.iamInstanceProfile ?? "")} />
         <label className="block"><span className="text-xs text-(--secondary-text-color)">User data</span><textarea className={`${inputClass} min-h-24 resize-y font-mono text-xs`} onChange={(event) => update("userData", event.target.value)} value={String(config.userData ?? "")} /></label>
         <Select label="Shutdown behavior" onChange={(value) => update("shutdownBehavior", value)} options={[["stop", "Stop"], ["terminate", "Terminate"]]} value={String(config.shutdownBehavior ?? "stop")} />
@@ -112,7 +115,7 @@ function DynamoDbForm({ config, update }: { config: Record<string, unknown>; upd
     </>;
 }
 
-export default function ResourceInspector({ connectionId, node, onChange, onDelete }: Props) {
+export default function ResourceInspector({ bindings, connectionId, node, onChange, onDelete }: Props) {
     const { data: session } = useSession();
     const { config, service } = node.data;
     const [catalog, setCatalog] = useState<AwsResourceCatalog | null>(null);
@@ -133,7 +136,7 @@ export default function ResourceInspector({ connectionId, node, onChange, onDele
             <label className="block"><span className="flex items-center gap-2 text-xs text-(--secondary-text-color)"><Tag className="h-3.5 w-3.5" />Node label</span><input className={inputClass} onChange={(event) => onChange(event.target.value, config)} value={node.data.label} /></label>
             <div className="border-y border-white/10 py-4"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--secondary-text-color)">{service.replaceAll("_", " ")}</p></div>
             {catalog?.warnings.length ? <p className="border border-(--warning-color)/40 bg-(--warning-color)/8 p-3 text-xs leading-5 text-(--warning-color)">{catalog.warnings.join(" ")}</p> : null}
-            {service === "EC2_INSTANCE" ? <Ec2Form catalog={catalog} config={config} update={update} /> : null}
+            {service === "EC2_INSTANCE" ? <Ec2Form bindings={bindings} catalog={catalog} config={config} update={update} /> : null}
             {service === "KEY_PAIR" ? <KeyPairForm catalog={catalog} config={config} update={update} /> : null}
             {service === "SECURITY_GROUP" ? <SecurityGroupForm catalog={catalog} config={config} update={update} /> : null}
             {service === "ECR_REPOSITORY" ? <><Field label="Repository name" onChange={(value) => update("repositoryName", value)} value={String(config.repositoryName ?? "")} /><Select label="Tag mutability" onChange={(value) => update("imageTagMutability", value)} options={[["MUTABLE", "Mutable"], ["IMMUTABLE", "Immutable"]]} value={String(config.imageTagMutability ?? "MUTABLE")} /><Toggle checked={config.scanOnPush === true} label="Scan on push" onChange={(value) => update("scanOnPush", value)} /></> : null}

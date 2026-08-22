@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import { addEdge, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type Node } from "@xyflow/react";
+import { addEdge, applyEdgeChanges, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type EdgeChange, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Check, Pencil, Plus, Save, Settings2 } from "lucide-react";
 import { stringify } from "yaml";
@@ -19,6 +19,33 @@ type ResourceFlowNode = Node<ResourceNodeData, "resource">;
 
 const nodeTypes = { resource: ResourceNode };
 
+function isEc2Dependency(node: ResourceFlowNode | undefined) {
+    return node?.data.service === "KEY_PAIR" || node?.data.service === "SECURITY_GROUP";
+}
+
+function normalizeEc2Connection(connection: Connection, nodes: readonly ResourceFlowNode[]): Connection {
+    const source = nodes.find((node) => node.id === connection.source);
+    const target = nodes.find((node) => node.id === connection.target);
+    if (source?.data.service === "EC2_INSTANCE" && isEc2Dependency(target)) {
+        return { source: target!.id, target: source.id, sourceHandle: null, targetHandle: null };
+    }
+    return connection;
+}
+
+function syncEc2Bindings(nodes: readonly ResourceFlowNode[], edges: readonly Edge[]): ResourceFlowNode[] {
+    const byId = new Map(nodes.map((node) => [node.id, node]));
+    return nodes.map((node) => {
+        if (node.data.service !== "EC2_INSTANCE") return node;
+        const sources = edges.flatMap((edge) => edge.target === node.id ? [byId.get(edge.source)] : []).filter((source): source is ResourceFlowNode => Boolean(source));
+        const keyPair = sources.find((source) => source.data.service === "KEY_PAIR");
+        const securityGroups = sources.filter((source) => source.data.service === "SECURITY_GROUP").map((source) => `\${${source.id}.securityGroupId}`);
+        const currentSecurityGroups = Array.isArray(node.data.config.securityGroupIds) ? node.data.config.securityGroupIds.filter((value): value is string => typeof value === "string" && !value.match(/^\$\{[^}]+\.securityGroupId\}$/)) : [];
+        const keyName = typeof node.data.config.keyName === "string" ? node.data.config.keyName : "";
+        const nextKeyName = keyPair ? `\${${keyPair.id}.keyName}` : keyName.match(/^\$\{[^}]+\.keyName\}$/) ? "" : keyName;
+        return { ...node, data: { ...node.data, config: { ...node.data.config, keyName: nextKeyName, securityGroupIds: [...currentSecurityGroups, ...securityGroups] } } };
+    });
+}
+
 export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: () => void }) {
     const { data: session } = useSession();
     const [nodes, setNodes, onNodesChange] = useNodesState<ResourceFlowNode>([]);
@@ -31,6 +58,10 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
     const [saveError, setSaveError] = useState<string | null>(null);
 
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
+    const selectedBindings = selectedNode?.data.service === "EC2_INSTANCE" ? {
+        keyPair: edges.map((edge) => edge.target === selectedNode.id ? nodes.find((node) => node.id === edge.source) : undefined).find((node) => node?.data.service === "KEY_PAIR"),
+        securityGroups: edges.map((edge) => edge.target === selectedNode.id ? nodes.find((node) => node.id === edge.source) : undefined).filter((node): node is ResourceFlowNode => node?.data.service === "SECURITY_GROUP"),
+    } : undefined;
     const nodeTypeMap = useMemo(() => nodeTypes, []);
 
     const addNode = (service: AwsService) => {
@@ -47,18 +78,22 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
 
     const onConnect = useCallback((connection: Connection) => {
         if (!connection.source || !connection.target) return;
-        const source = nodes.find((node) => node.id === connection.source);
-        const target = nodes.find((node) => node.id === connection.target);
-        if (target?.data.service === "EC2_INSTANCE" && source?.data.service === "SECURITY_GROUP") {
-            const reference = `\${${source.id}.securityGroupId}`;
-            const current = Array.isArray(target.data.config.securityGroupIds) ? target.data.config.securityGroupIds.filter((value): value is string => typeof value === "string") : [];
-            if (!current.includes(reference)) setNodes((items) => items.map((node) => node.id === target.id ? { ...node, data: { ...node.data, config: { ...node.data.config, securityGroupIds: [...current, reference] } } } : node));
-        }
-        if (target?.data.service === "EC2_INSTANCE" && source?.data.service === "KEY_PAIR") {
-            setNodes((items) => items.map((node) => node.id === target.id ? { ...node, data: { ...node.data, config: { ...node.data.config, keyName: `\${${source.id}.keyName}` } } } : node));
-        }
-        setEdges((current) => addEdge({ ...connection, type: "smoothstep" }, current));
+        const normalized = normalizeEc2Connection(connection, nodes);
+        const source = nodes.find((node) => node.id === normalized.source);
+        const target = nodes.find((node) => node.id === normalized.target);
+        const withoutPreviousKeyPair = source?.data.service === "KEY_PAIR" && target?.data.service === "EC2_INSTANCE"
+            ? edges.filter((edge) => !(edge.target === target.id && nodes.find((node) => node.id === edge.source)?.data.service === "KEY_PAIR"))
+            : edges;
+        const nextEdges = addEdge({ ...normalized, type: "smoothstep" }, withoutPreviousKeyPair);
+        setEdges(nextEdges);
+        setNodes((current) => syncEc2Bindings(current, nextEdges));
     }, [nodes, setEdges, setNodes]);
+
+    const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
+        const nextEdges = applyEdgeChanges(changes, edges);
+        setEdges(nextEdges);
+        setNodes((current) => syncEc2Bindings(current, nextEdges));
+    }, [edges, setEdges, setNodes]);
 
     const updateSelectedResource = (label: string, config: Record<string, unknown>) => {
         if (!selectedNode) return;
@@ -98,18 +133,18 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         setSketchId(sketch.id);
         setSketchConnectionId(sketch.connectionId);
         setName(sketch.name);
-        setNodes((sketch.nodes ?? []).map((node) => ({
+        const loadedNodes: ResourceFlowNode[] = (sketch.nodes ?? []).map((node) => ({
             id: node.id,
-            type: "resource",
+            type: "resource" as const,
             position: { x: node.positionX, y: node.positionY },
             data: { service: node.type, label: node.label ?? node.type, config: node.config },
-        })));
-        setEdges((sketch.edges ?? []).map((edge) => ({
-            id: edge.id,
-            source: edge.sourceNodeId,
-            target: edge.targetNodeId,
-            type: "smoothstep",
-        })));
+        }));
+        const loadedEdges: Edge[] = (sketch.edges ?? []).map((edge) => {
+            const connection = normalizeEc2Connection({ source: edge.sourceNodeId, target: edge.targetNodeId, sourceHandle: edge.sourceHandle ?? null, targetHandle: edge.targetHandle ?? null }, loadedNodes);
+            return { id: edge.id, source: connection.source, target: connection.target, sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle, type: "smoothstep" };
+        });
+        setNodes(syncEc2Bindings(loadedNodes, loadedEdges));
+        setEdges(loadedEdges);
         setSelectedNodeId(null);
     };
 
@@ -125,8 +160,10 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
 
     const deleteSelectedNode = () => {
         if (!selectedNode) return;
-        setNodes((current) => current.filter((node) => node.id !== selectedNode.id));
-        setEdges((current) => current.filter((edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id));
+        const nextNodes = nodes.filter((node) => node.id !== selectedNode.id);
+        const nextEdges = edges.filter((edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id);
+        setNodes(syncEc2Bindings(nextNodes, nextEdges));
+        setEdges(nextEdges);
         setSelectedNodeId(null);
     };
 
@@ -158,13 +195,13 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
                 <PublishSketchButton connectionId={sketchConnectionId} onPublished={setSketchConnectionId} sketchId={sketchId} />
                 <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
             </div>
-            <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={onEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
+            <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
                 <Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} />
             </ReactFlow>
         </div>
 
         <aside className="hidden min-h-0 overflow-hidden border-l border-white/10 xl:block">
-            {selectedNode ? <ResourceInspector connectionId={sketchConnectionId} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
+            {selectedNode ? <ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
         </aside>
     </div>;
 }
