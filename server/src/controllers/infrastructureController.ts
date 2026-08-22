@@ -111,7 +111,8 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
     }
     if (type === "S3_BUCKET") {
         if (typeof config.bucketName !== "string" || !config.bucketName) throw new Error("S3 node config must include bucketName.");
-        return { service: AwsService.S3_BUCKET, config: { bucketName: config.bucketName } };
+        if (config.encryption !== undefined && config.encryption !== "SSE-S3" && config.encryption !== "SSE-KMS") throw new Error("S3 encryption must be SSE-S3 or SSE-KMS.");
+        return { service: AwsService.S3_BUCKET, config: { bucketName: config.bucketName, ...(typeof config.versioning === "boolean" && { versioning: config.versioning }), ...(typeof config.blockPublicAccess === "boolean" && { blockPublicAccess: config.blockPublicAccess }), ...(config.encryption && { encryption: config.encryption }), ...(typeof config.kmsKeyArn === "string" && { kmsKeyArn: config.kmsKeyArn }), ...(typeof config.enforceHttps === "boolean" && { enforceHttps: config.enforceHttps }) } };
     }
     if (type === "IAM_ROLE") {
         if (typeof config.roleName !== "string" || !config.roleName) throw new Error("IAM node config must include roleName.");
@@ -734,7 +735,24 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
     for (const nodeId of graph.order) {
         const existingResource = resourcesByNodeId.get(nodeId);
         if (existingResource?.status === AwsResourceStatus.RUNNING) {
-            outcomes.push({ nodeId, status: "skipped", resourceId: existingResource.id, externalId: existingResource.externalId });
+            const baseRequest = requests.get(nodeId);
+            if (!baseRequest || !existingResource.externalId) throw new Error(`Node ${nodeId} has no deployment request or external ID.`);
+            const resolvedConfig = resolveConfigReferences(baseRequest.config, nodeId, graph.sourcesByTarget, outputsByNode);
+            if (!isRecord(resolvedConfig)) throw new Error(`Resolved config for node ${nodeId} is invalid.`);
+            const resourceRequest = buildResourceRequest(baseRequest.service, resolvedConfig);
+            if (JSON.stringify(existingResource.desiredConfig) === JSON.stringify(resourceRequest.config)) {
+                outcomes.push({ nodeId, status: "skipped", resourceId: existingResource.id, externalId: existingResource.externalId });
+                continue;
+            }
+            if (!existingResource.managed) return res.status(409).json({ success: false, message: `Node ${nodeId} adopts an external resource and cannot update it.` });
+            try {
+                const result = await awsResourceManager.updateResource(resourceRequest, existingResource.externalId, credentials, connection.region);
+                const updated = await prisma.awsResource.update({ where: { id: existingResource.id }, data: { desiredConfig: jsonValue(resourceRequest.config), actualState: jsonValue(result.data), lastError: null } });
+                if (isRecord(result.data)) outputsByNode.set(nodeId, result.data);
+                outcomes.push({ nodeId, status: "updated", resourceId: updated.id, result });
+            } catch (error) {
+                return res.status(409).json({ success: false, message: errorMessage(error) });
+            }
             continue;
         }
         const baseRequest = requests.get(nodeId);

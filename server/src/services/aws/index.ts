@@ -93,6 +93,11 @@ export class AWSResourceManager {
             const data = await new S3Service({
                 create: (command) => client.send(command),
                 delete: (command) => client.send(command),
+                getPolicy: (command) => client.send(command),
+                putPolicy: (command) => client.send(command),
+                putEncryption: (command) => client.send(command),
+                putVersioning: (command) => client.send(command),
+                putPublicAccessBlock: (command) => client.send(command),
             }, region).createBucket(request.config);
             return { service: request.service, region, name: data.bucketName, externalId: data.bucketName, data };
         }
@@ -139,6 +144,22 @@ export class AWSResourceManager {
         return { service: request.service, region, name: data.roleName, externalId: data.roleName, data };
     }
 
+    async updateResource(request: AwsResourceCreateRequest, externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
+        if (request.service !== AwsService.S3_BUCKET) throw new Error(`${request.service} configuration updates require an explicit resource operation.`);
+        if (request.config.bucketName !== externalId) throw new Error("Changing an S3 bucket name requires a new resource.");
+        const client = new S3Client({ region, credentials });
+        const data = await new S3Service({
+            create: (command) => client.send(command),
+            delete: (command) => client.send(command),
+            getPolicy: (command) => client.send(command),
+            putPolicy: (command) => client.send(command),
+            putEncryption: (command) => client.send(command),
+            putVersioning: (command) => client.send(command),
+            putPublicAccessBlock: (command) => client.send(command),
+        }, region).configureBucket(request.config);
+        return { service: request.service, region, name: data.bucketName, externalId, data };
+    }
+
     async deleteResource(service: AwsResourceCreateRequest["service"], externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceDeleteResult> {
         if (service === AwsService.EC2_INSTANCE) {
             const data = await this.terminateEc2Instances([externalId], credentials, region);
@@ -166,6 +187,11 @@ export class AWSResourceManager {
             const data = await new S3Service({
                 create: (command) => client.send(command),
                 delete: (command) => client.send(command),
+                getPolicy: (command) => client.send(command),
+                putPolicy: (command) => client.send(command),
+                putEncryption: (command) => client.send(command),
+                putVersioning: (command) => client.send(command),
+                putPublicAccessBlock: (command) => client.send(command),
             }, region).deleteBucket(externalId);
             return { service, region, externalId, data };
         }
