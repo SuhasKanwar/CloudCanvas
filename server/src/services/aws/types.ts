@@ -27,11 +27,18 @@ export type AwsServiceType = AwsService;
 export type Ec2InstanceRequest = {
     imageId: string;
     instanceType?: string;
+    instanceCount?: number;
     keyName?: string;
     securityGroupIds?: string[];
     subnetId?: string;
+    iamInstanceProfile?: string;
     name?: string;
     userData?: string;
+    monitoring?: boolean;
+    ebsOptimized?: boolean;
+    disableApiTermination?: boolean;
+    shutdownBehavior?: "stop" | "terminate";
+    metadataHttpTokens?: "optional" | "required";
     dryRun?: boolean;
 };
 

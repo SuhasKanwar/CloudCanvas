@@ -19,16 +19,26 @@ export class Ec2Service {
 
     async createInstance(request: Ec2InstanceRequest): Promise<Ec2InstanceResult> {
         if (!request.imageId) throw new Error("imageId is required to create an EC2 instance.");
+        if (request.imageId === "ami-0123456789abcdef0") throw new Error("Choose a real AMI ID available in the selected AWS region.");
+        if (request.instanceCount !== undefined && (!Number.isInteger(request.instanceCount) || request.instanceCount < 1)) {
+            throw new Error("instanceCount must be a positive whole number.");
+        }
 
         const input: RunInstancesCommandInput = {
             ImageId: request.imageId,
             InstanceType: (request.instanceType || "t3.micro") as _InstanceType,
-            MinCount: 1,
-            MaxCount: 1,
+            MinCount: request.instanceCount ?? 1,
+            MaxCount: request.instanceCount ?? 1,
             ...(request.keyName && { KeyName: request.keyName }),
             ...(request.securityGroupIds?.length && { SecurityGroupIds: request.securityGroupIds }),
             ...(request.subnetId && { SubnetId: request.subnetId }),
+            ...(request.iamInstanceProfile && { IamInstanceProfile: request.iamInstanceProfile.startsWith("arn:") ? { Arn: request.iamInstanceProfile } : { Name: request.iamInstanceProfile } }),
             ...(request.userData && { UserData: Buffer.from(request.userData).toString("base64") }),
+            ...(request.monitoring !== undefined && { Monitoring: { Enabled: request.monitoring } }),
+            ...(request.ebsOptimized !== undefined && { EbsOptimized: request.ebsOptimized }),
+            ...(request.disableApiTermination !== undefined && { DisableApiTermination: request.disableApiTermination }),
+            ...(request.shutdownBehavior && { InstanceInitiatedShutdownBehavior: request.shutdownBehavior }),
+            ...(request.metadataHttpTokens && { MetadataOptions: { HttpTokens: request.metadataHttpTokens } }),
             ...(request.dryRun && { DryRun: true }),
             ...(request.name && {
                 TagSpecifications: [{

@@ -45,10 +45,10 @@ export const awsServiceOptions = Object.entries(serviceAppearance).map(([service
 }));
 
 export function defaultResourceConfig(service: AwsService): Record<string, unknown> {
-    if (service === "EC2_INSTANCE") return { imageId: "ami-0123456789abcdef0", instanceType: "t3.micro" };
+    if (service === "EC2_INSTANCE") return { imageId: "", instanceType: "t3.micro", instanceCount: 1, shutdownBehavior: "stop", metadataHttpTokens: "required" };
     if (service === "ECR_REPOSITORY") return { repositoryName: "cloudcanvas-repository", imageTagMutability: "MUTABLE" };
     if (service === "S3_BUCKET") return { bucketName: "cloudcanvas-bucket" };
-    if (service === "IAM_ROLE") return { roleName: "cloudcanvas-role", assumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[]}" };
+    if (service === "IAM_ROLE") return { roleName: "cloudcanvas-role", trustedService: "ec2.amazonaws.com", managedPolicyArns: [] };
     if (service === "LAMBDA_FUNCTION") return { functionName: "cloudcanvas-function", roleArn: "arn:aws:iam::123456789012:role/cloudcanvas-role", handler: "index.handler", runtime: "nodejs22.x", codeZipBase64: "UEsDB" };
     if (service === "DYNAMODB_TABLE") return { tableName: "cloudcanvas-table", keySchema: [{ AttributeName: "id", KeyType: "HASH" }], attributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }], billingMode: "PAY_PER_REQUEST" };
     if (service === "SQS_QUEUE") return { queueName: "cloudcanvas-queue" };

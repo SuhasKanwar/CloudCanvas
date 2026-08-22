@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { RunInstancesCommand, TerminateInstancesCommand } from "@aws-sdk/client-ec2";
+import { AttachRolePolicyCommand, DetachRolePolicyCommand } from "@aws-sdk/client-iam";
 import { decryptAwsSecret, encryptAwsSecret } from "./crypto.js";
 import { Ec2Service } from "./resources/ec2.js";
 import { EcrService } from "./resources/ecr.js";
@@ -32,15 +33,22 @@ test("maps EC2 configuration into a RunInstances command", async () => {
     }, "us-east-1");
 
     const result = await service.createInstance({
-        imageId: "ami-test",
+        imageId: "ami-0abc1234",
         instanceType: "t3.micro",
+        instanceCount: 2,
+        iamInstanceProfile: "cloudcanvas-profile",
+        monitoring: true,
+        metadataHttpTokens: "required",
         name: "test-instance",
         userData: "echo hello",
     });
 
-    assert.equal(command?.input.ImageId, "ami-test");
-    assert.equal(command?.input.MinCount, 1);
-    assert.equal(command?.input.MaxCount, 1);
+    assert.equal(command?.input.ImageId, "ami-0abc1234");
+    assert.equal(command?.input.MinCount, 2);
+    assert.equal(command?.input.MaxCount, 2);
+    assert.equal(command?.input.IamInstanceProfile?.Name, "cloudcanvas-profile");
+    assert.equal(command?.input.Monitoring?.Enabled, true);
+    assert.equal(command?.input.MetadataOptions?.HttpTokens, "required");
     assert.equal(command?.input.TagSpecifications?.[0]?.Tags?.[0]?.Value, "test-instance");
     assert.equal(typeof command?.input.UserData, "string");
     assert.equal(result.instances[0]?.instanceId, "i-test");
@@ -102,7 +110,7 @@ test("maps S3 bucket create and delete", async () => {
     assert.equal(result.bucketName, "cloudcanvas");
 });
 
-test("maps IAM role create and delete", async () => {
+test("maps IAM role creation, policy attachment, and deletion", async () => {
     const commands: string[] = [];
     const service = new IamService({
         create: async (command) => {
@@ -118,15 +126,26 @@ test("maps IAM role create and delete", async () => {
                 },
             };
         },
+        attach: async (command) => {
+            assert.ok(command instanceof AttachRolePolicyCommand);
+            commands.push(command.input.PolicyArn ?? "");
+            return { $metadata: {} };
+        },
+        listAttached: async () => ({ $metadata: {}, AttachedPolicies: [{ PolicyArn: "arn:aws:iam::aws:policy/ReadOnlyAccess" }] }),
+        detach: async (command) => {
+            assert.ok(command instanceof DetachRolePolicyCommand);
+            commands.push(command.input.PolicyArn ?? "");
+            return { $metadata: {} };
+        },
         delete: async (command) => {
             commands.push(command.input.RoleName ?? "");
             return { $metadata: {} };
         },
     }, "us-east-1");
 
-    assert.equal((await service.createRole({ roleName: "cloudcanvas-role", assumeRolePolicyDocument: "{}" })).roleId, "role-id");
+    assert.equal((await service.createRole({ roleName: "cloudcanvas-role", trustedService: "ec2.amazonaws.com", managedPolicyArns: ["arn:aws:iam::aws:policy/ReadOnlyAccess"] })).roleId, "role-id");
     await service.deleteRole("cloudcanvas-role");
-    assert.deepEqual(commands, ["cloudcanvas-role", "cloudcanvas-role"]);
+    assert.deepEqual(commands, ["cloudcanvas-role", "arn:aws:iam::aws:policy/ReadOnlyAccess", "arn:aws:iam::aws:policy/ReadOnlyAccess", "cloudcanvas-role"]);
 });
 
 test("maps Lambda function create and delete", async () => {

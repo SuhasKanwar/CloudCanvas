@@ -103,6 +103,9 @@ export class AWSResourceManager {
         const client = new IAMClient({ region, credentials });
         const data = await new IamService({
             create: (command) => client.send(command),
+            attach: (command) => client.send(command),
+            listAttached: (command) => client.send(command),
+            detach: (command) => client.send(command),
             delete: (command) => client.send(command),
         }, region).createRole(request.config);
         return { service: request.service, region, name: data.roleName, externalId: data.roleName, data };
@@ -164,6 +167,9 @@ export class AWSResourceManager {
         const client = new IAMClient({ region, credentials });
         const data = await new IamService({
             create: (command) => client.send(command),
+            attach: (command) => client.send(command),
+            listAttached: (command) => client.send(command),
+            detach: (command) => client.send(command),
             delete: (command) => client.send(command),
         }, region).deleteRole(externalId);
         return { service, region, externalId, data };

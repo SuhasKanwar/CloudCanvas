@@ -49,6 +49,10 @@ function param(req: Request, name: string) {
     return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
+function stringArray(value: unknown) {
+    return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0) : [];
+}
+
 function buildResourceRequest(type: string, config: Record<string, unknown>): AwsResourceCreateRequest {
     if (type === "EC2_INSTANCE") {
         if (typeof config.imageId !== "string" || !config.imageId) throw new Error("EC2 node config must include imageId.");
@@ -57,11 +61,18 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
             config: {
                 imageId: config.imageId,
                 ...(typeof config.instanceType === "string" && { instanceType: config.instanceType }),
+                ...(typeof config.instanceCount === "number" && { instanceCount: config.instanceCount }),
                 ...(typeof config.keyName === "string" && { keyName: config.keyName }),
-                ...(Array.isArray(config.securityGroupIds) && { securityGroupIds: config.securityGroupIds.filter((value): value is string => typeof value === "string") }),
+                ...(Array.isArray(config.securityGroupIds) && { securityGroupIds: stringArray(config.securityGroupIds) }),
                 ...(typeof config.subnetId === "string" && { subnetId: config.subnetId }),
+                ...(typeof config.iamInstanceProfile === "string" && { iamInstanceProfile: config.iamInstanceProfile }),
                 ...(typeof config.name === "string" && { name: config.name }),
                 ...(typeof config.userData === "string" && { userData: config.userData }),
+                ...(typeof config.monitoring === "boolean" && { monitoring: config.monitoring }),
+                ...(typeof config.ebsOptimized === "boolean" && { ebsOptimized: config.ebsOptimized }),
+                ...(typeof config.disableApiTermination === "boolean" && { disableApiTermination: config.disableApiTermination }),
+                ...(config.shutdownBehavior === "stop" || config.shutdownBehavior === "terminate" ? { shutdownBehavior: config.shutdownBehavior } : {}),
+                ...(config.metadataHttpTokens === "optional" || config.metadataHttpTokens === "required" ? { metadataHttpTokens: config.metadataHttpTokens } : {}),
                 ...(config.dryRun === true && { dryRun: true }),
             },
         };
@@ -86,16 +97,24 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
     }
     if (type === "IAM_ROLE") {
         if (typeof config.roleName !== "string" || !config.roleName) throw new Error("IAM node config must include roleName.");
-        if (typeof config.assumeRolePolicyDocument !== "string" || !config.assumeRolePolicyDocument) {
-            throw new Error("IAM node config must include assumeRolePolicyDocument.");
+        const trustedService = config.trustedService;
+        if (trustedService !== undefined && trustedService !== "ec2.amazonaws.com" && trustedService !== "lambda.amazonaws.com" && trustedService !== "ecs-tasks.amazonaws.com") {
+            throw new Error("IAM trustedService must be EC2, Lambda, or ECS tasks.");
+        }
+        if (trustedService === undefined && (typeof config.assumeRolePolicyDocument !== "string" || !config.assumeRolePolicyDocument)) {
+            throw new Error("IAM node config must include a trusted AWS service.");
         }
         return {
             service: AwsService.IAM_ROLE,
             config: {
                 roleName: config.roleName,
-                assumeRolePolicyDocument: config.assumeRolePolicyDocument,
+                ...(typeof trustedService === "string" && { trustedService }),
+                ...(typeof config.assumeRolePolicyDocument === "string" && { assumeRolePolicyDocument: config.assumeRolePolicyDocument }),
+                ...(Array.isArray(config.managedPolicyArns) && { managedPolicyArns: stringArray(config.managedPolicyArns) }),
                 ...(typeof config.description === "string" && { description: config.description }),
                 ...(typeof config.path === "string" && { path: config.path }),
+                ...(typeof config.maxSessionDuration === "number" && { maxSessionDuration: config.maxSessionDuration }),
+                ...(typeof config.permissionsBoundaryArn === "string" && { permissionsBoundaryArn: config.permissionsBoundaryArn }),
             },
         };
     }
