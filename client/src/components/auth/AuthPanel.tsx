@@ -67,7 +67,9 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
 
             if (result?.error) {
                 const message = result.error === "CredentialsSignin"
-                    ? "Invalid email or password."
+                    ? isSignup
+                        ? "We could not create that account. Try another email address."
+                        : "No account matched those credentials. Create an account or check your password."
                     : result.error;
                 setError(message);
                 pushToast({ message, variant: "error" });

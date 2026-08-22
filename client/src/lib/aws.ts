@@ -4,6 +4,7 @@ export type AwsConnection = {
     id: string;
     name: string;
     region: string;
+    isActive: boolean;
     encryptionKeyVersion: number;
     createdAt: string;
     updatedAt: string;
@@ -31,4 +32,8 @@ export async function createAwsConnection(accessToken: string, connection: Creat
 
 export async function deleteAwsConnection(accessToken: string, connectionId: string): Promise<void> {
     await api.delete(`/api/aws/connections/${connectionId}`, authenticatedRequest(accessToken));
+}
+
+export async function setActiveAwsConnection(accessToken: string, connectionId: string): Promise<void> {
+    await api.patch(`/api/aws/connections/${connectionId}/active`, undefined, authenticatedRequest(accessToken));
 }

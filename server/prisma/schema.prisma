@@ -60,8 +60,10 @@ model Sketch {
   description String?
   status      SketchStatus @default(DRAFT)
   version     Int          @default(1)
+  connectionId String?
 
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connection  AwsConnection? @relation("SketchConnection", fields: [connectionId], references: [id], onDelete: SetNull)
   nodes       SketchNode[]
   edges       SketchEdge[]
   resources   AwsResource[]
@@ -71,6 +73,7 @@ model Sketch {
   updatedAt DateTime @updatedAt
 
   @@index([userId, updatedAt])
+  @@index([connectionId])
 }
 
 model SketchNode {
@@ -116,8 +119,10 @@ model AwsConnection {
   secretAccessKeyEncrypted String
   sessionTokenEncrypted    String?
   encryptionKeyVersion     Int     @default(1)
+  isActive                 Boolean @default(false)
 
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sketches    Sketch[]      @relation("SketchConnection")
   resources   AwsResource[]
   deployments Deployment[]
 

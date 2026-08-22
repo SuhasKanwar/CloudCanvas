@@ -26,6 +26,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [name, setName] = useState("Untitled infrastructure");
     const [sketchId, setSketchId] = useState<string | null>(null);
+    const [sketchConnectionId, setSketchConnectionId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -82,6 +83,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
 
     const loadSketch = (sketch: Sketch) => {
         setSketchId(sketch.id);
+        setSketchConnectionId(sketch.connectionId);
         setName(sketch.name);
         setNodes((sketch.nodes ?? []).map((node) => ({
             id: node.id,
@@ -100,11 +102,19 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
 
     const newSketch = () => {
         setSketchId(null);
+        setSketchConnectionId(null);
         setName("Untitled infrastructure");
         setNodes([]);
         setEdges([]);
         setSelectedNodeId(null);
         setSaveError(null);
+    };
+
+    const deleteSelectedNode = () => {
+        if (!selectedNode) return;
+        setNodes((current) => current.filter((node) => node.id !== selectedNode.id));
+        setEdges((current) => current.filter((edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id));
+        setSelectedNodeId(null);
     };
 
     return <div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[#101218] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)_19rem]">
@@ -128,7 +138,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
                 <button aria-label="Create a new sketch" className="hidden p-2 text-(--secondary-text-color) hover:text-(--primary-text-color) md:block" onClick={newSketch} title="New sketch" type="button"><Plus className="h-4 w-4" /></button>
                 <SketchLibrary onLoad={loadSketch} />
                 <AiComposer onBuild={loadSketch} />
-                <PublishSketchButton sketchId={sketchId} />
+                <PublishSketchButton connectionId={sketchConnectionId} onPublished={setSketchConnectionId} sketchId={sketchId} />
                 <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
             </div>
             <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={onEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
@@ -137,7 +147,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         </div>
 
         <aside className="hidden border-l border-white/10 xl:block">
-            {selectedNode ? <ResourceInspector node={selectedNode} onChange={updateSelectedResource} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
+            {selectedNode ? <ResourceInspector node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
         </aside>
     </div>;
 }

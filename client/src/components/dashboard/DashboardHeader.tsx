@@ -4,14 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
-import { ChevronDown, LayoutPanelTop, LogOut, Settings2, UserRound } from "lucide-react";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import api from "@/lib/api";
+import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 
-type DashboardView = "canvas" | "aws";
-
-export default function DashboardHeader({ onNavigate, view }: { onNavigate: (view: DashboardView) => void; view: DashboardView }) {
+export default function DashboardHeader() {
     const { data: session } = useSession();
     const [open, setOpen] = useState(false);
+    const menuRef = useOutsideDismiss<HTMLDivElement>(() => setOpen(false));
     const user = session?.user;
 
     const logout = async () => {
@@ -27,11 +27,8 @@ export default function DashboardHeader({ onNavigate, view }: { onNavigate: (vie
             <Image alt="CloudCanvas" className="h-8 w-8 object-contain" height={32} priority src="/logo.png" width={32} />
             <span className="font-(family-name:--font-display) text-lg text-(--primary-text-color)">CloudCanvas</span>
         </Link>
-        <nav aria-label="Dashboard" className="flex items-center gap-1 rounded border border-white/10 bg-white/4 p-1">
-            <button aria-label="Canvas" className={`inline-flex items-center gap-2 px-2 py-1.5 text-sm sm:px-3 ${view === "canvas" ? "bg-white/10 text-(--primary-text-color)" : "text-(--secondary-text-color) hover:text-(--primary-text-color)"}`} onClick={() => onNavigate("canvas")} type="button"><LayoutPanelTop className="h-4 w-4" /><span className="hidden sm:inline">Canvas</span></button>
-            <button aria-label="AWS settings" className={`inline-flex items-center gap-2 px-2 py-1.5 text-sm sm:px-3 ${view === "aws" ? "bg-white/10 text-(--primary-text-color)" : "text-(--secondary-text-color) hover:text-(--primary-text-color)"}`} onClick={() => onNavigate("aws")} type="button"><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">AWS settings</span></button>
-        </nav>
-        <div className="relative">
+        <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-(--secondary-text-color) sm:block">Infrastructure workspace</span>
+        <div className="relative" ref={menuRef}>
             <button aria-expanded={open} className="flex items-center gap-2 border border-white/10 bg-white/4 px-2 py-1.5 text-sm text-(--primary-text-color) hover:bg-white/8" onClick={() => setOpen((current) => !current)} type="button">
                 {user?.image ? <Image alt="" className="h-6 w-6 rounded-full" height={24} src={user.image} width={24} /> : <span className="grid h-6 w-6 place-items-center rounded-full bg-(--primary-color)/20 text-(--primary-color)"><UserRound className="h-3.5 w-3.5" /></span>}
                 <span className="hidden max-w-36 truncate sm:block">{user?.name ?? user?.email ?? "Account"}</span><ChevronDown className="h-3.5 w-3.5 text-(--secondary-text-color)" />

@@ -2,18 +2,19 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
-import { KeyRound, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, KeyRound, Loader2, Plus, Trash2 } from "lucide-react";
 import {
     createAwsConnection,
     deleteAwsConnection,
     listAwsConnections,
+    setActiveAwsConnection,
     type AwsConnection,
 } from "@/lib/aws";
 
 const defaultForm = { name: "", region: "ap-south-1", accessKeyId: "", secretAccessKey: "", sessionToken: "" };
 const regions = ["ap-south-1", "us-east-1", "us-east-2", "us-west-2", "eu-west-1", "eu-central-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1"];
 
-export default function AwsConnectionsPanel() {
+export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) {
     const { data: session, status } = useSession();
     const [connections, setConnections] = useState<AwsConnection[]>([]);
     const [form, setForm] = useState(defaultForm);
@@ -62,10 +63,21 @@ export default function AwsConnectionsPanel() {
         }
     };
 
+    const activate = async (connectionId: string) => {
+        if (!accessToken) return;
+        try {
+            await setActiveAwsConnection(accessToken, connectionId);
+            setConnections((current) => current.map((connection) => ({ ...connection, isActive: connection.id === connectionId })));
+        } catch {
+            // The API interceptor displays the server response.
+        }
+    };
+
     return (
         <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
             <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
                 <div>
+                    <button className="mb-4 inline-flex items-center gap-2 text-sm text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={onBack} type="button"><ArrowLeft className="h-4 w-4" />Back to canvas</button>
                     <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-(--secondary-color)">Workspace</p>
                     <h1 className="mt-2 text-3xl text-(--primary-text-color)">AWS connections</h1>
                 </div>
@@ -84,11 +96,9 @@ export default function AwsConnectionsPanel() {
                             <div className="flex items-center justify-between gap-4 py-4" key={connection.id}>
                                 <div className="min-w-0">
                                     <p className="truncate text-sm font-medium text-(--primary-text-color)">{connection.name}</p>
-                                    <p className="mt-1 font-mono text-xs text-(--secondary-text-color)">{connection.region}</p>
+                                    <p className="mt-1 flex items-center gap-2 font-mono text-xs text-(--secondary-text-color)">{connection.region}{connection.isActive ? <span className="inline-flex items-center gap-1 text-(--success-color)"><Check className="h-3 w-3" />Active</span> : null}</p>
                                 </div>
-                                <button aria-label={`Delete ${connection.name}`} className="shrink-0 p-2 text-(--secondary-text-color) transition-colors hover:text-(--danger-color)" onClick={() => void remove(connection.id)} type="button">
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
+                                <div className="flex items-center gap-1"><button className="px-2 py-1 text-xs text-(--secondary-text-color) hover:text-(--primary-text-color) disabled:opacity-40" disabled={connection.isActive} onClick={() => void activate(connection.id)} type="button">{connection.isActive ? "In use" : "Use"}</button><button aria-label={`Delete ${connection.name}`} className="shrink-0 p-2 text-(--secondary-text-color) transition-colors hover:text-(--danger-color)" onClick={() => void remove(connection.id)} type="button"><Trash2 className="h-4 w-4" /></button></div>
                             </div>
                         ))}
                     </div>

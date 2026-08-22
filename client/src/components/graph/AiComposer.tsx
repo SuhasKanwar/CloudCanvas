@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { Loader2, Sparkles } from "lucide-react";
 import { createAiSketch, type Sketch } from "@/lib/sketches";
+import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 
 export default function AiComposer({ onBuild }: { onBuild: (sketch: Sketch) => void }) {
     const { data: session } = useSession();
@@ -11,6 +12,7 @@ export default function AiComposer({ onBuild }: { onBuild: (sketch: Sketch) => v
     const [query, setQuery] = useState("");
     const [message, setMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const composerRef = useOutsideDismiss<HTMLDivElement>(() => setOpen(false));
 
     const submit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -27,7 +29,7 @@ export default function AiComposer({ onBuild }: { onBuild: (sketch: Sketch) => v
         }
     };
 
-    return <div className="relative">
+    return <div className="relative" ref={composerRef}>
         <button aria-expanded={open} className="inline-flex items-center gap-2 border border-white/12 px-3 py-2 text-sm text-(--primary-text-color) hover:bg-white/6" onClick={() => setOpen((current) => !current)} type="button"><Sparkles className="h-4 w-4 text-(--secondary-color)" />AI</button>
         {open ? <form className="absolute right-0 top-11 z-30 w-80 border border-white/12 bg-[#151821] p-4 shadow-2xl" onSubmit={submit}>
             <label className="text-sm font-medium text-(--primary-text-color)" htmlFor="ai-query">Describe infrastructure</label>

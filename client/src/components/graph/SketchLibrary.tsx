@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { FolderOpen, Loader2 } from "lucide-react";
 import { getSketch, listSketches, type Sketch } from "@/lib/sketches";
+import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 
 export default function SketchLibrary({ onLoad }: { onLoad: (sketch: Sketch) => void }) {
     const { data: session } = useSession();
     const [open, setOpen] = useState(false);
     const [sketches, setSketches] = useState<Sketch[]>([]);
     const [loading, setLoading] = useState(false);
+    const libraryRef = useOutsideDismiss<HTMLDivElement>(() => setOpen(false));
 
     useEffect(() => {
         if (!open || !session?.accessToken) return;
@@ -24,7 +26,7 @@ export default function SketchLibrary({ onLoad }: { onLoad: (sketch: Sketch) => 
         setOpen(false);
     };
 
-    return <div className="relative">
+    return <div className="relative" ref={libraryRef}>
         <button aria-expanded={open} className="inline-flex items-center gap-2 border border-white/12 px-3 py-2 text-sm text-(--primary-text-color) hover:bg-white/6" onClick={() => setOpen((current) => !current)} type="button"><FolderOpen className="h-4 w-4 text-(--secondary-text-color)" />Sketches</button>
         {open ? <div className="absolute right-0 top-11 z-30 w-72 border border-white/12 bg-[#151821] shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-sm font-medium">Saved sketches {loading ? <Loader2 className="h-4 w-4 animate-spin text-(--secondary-text-color)" /> : null}</div>

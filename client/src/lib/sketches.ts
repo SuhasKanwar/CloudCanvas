@@ -13,6 +13,7 @@ export type Sketch = {
     description: string | null;
     status: string;
     version: number;
+    connectionId: string | null;
     createdAt: string;
     updatedAt: string;
     nodes?: SketchNode[];

@@ -21,6 +21,7 @@ import { isAwsService } from "../utils/aws.js";
 import { isRecord } from "../utils/validation.js";
 
 const sketchInclude = {
+    connection: { select: { id: true, name: true, region: true } },
     nodes: true,
     edges: true,
     resources: true,
@@ -539,6 +540,8 @@ export async function createAwsConnection(req: Request, res: Response<ApiRespons
     }
     if (!AWS_ENCRYPTION_KEY) return res.status(500).json({ success: false, message: "AWS credential encryption is not configured." });
 
+    const hasExistingConnection = await prisma.awsConnection.count({ where: { userId } });
+
     const connection = await prisma.awsConnection.create({
         data: {
             userId,
@@ -547,8 +550,9 @@ export async function createAwsConnection(req: Request, res: Response<ApiRespons
             accessKeyIdEncrypted: encryptAwsSecret(accessKeyId, AWS_ENCRYPTION_KEY),
             secretAccessKeyEncrypted: encryptAwsSecret(secretAccessKey, AWS_ENCRYPTION_KEY),
             sessionTokenEncrypted: typeof sessionToken === "string" && sessionToken ? encryptAwsSecret(sessionToken, AWS_ENCRYPTION_KEY) : null,
+            isActive: hasExistingConnection === 0,
         },
-        select: { id: true, name: true, region: true, encryptionKeyVersion: true, createdAt: true, updatedAt: true },
+        select: { id: true, name: true, region: true, isActive: true, encryptionKeyVersion: true, createdAt: true, updatedAt: true },
     });
     return res.status(201).json({ success: true, message: "AWS connection saved successfully.", data: connection });
 }
@@ -558,18 +562,38 @@ export async function listAwsConnections(req: Request, res: Response<ApiResponse
     if (!userId) return;
     const connections = await prisma.awsConnection.findMany({
         where: { userId },
-        select: { id: true, name: true, region: true, encryptionKeyVersion: true, createdAt: true, updatedAt: true },
-        orderBy: { updatedAt: "desc" },
+        select: { id: true, name: true, region: true, isActive: true, encryptionKeyVersion: true, createdAt: true, updatedAt: true },
+        orderBy: [{ isActive: "desc" }, { updatedAt: "desc" }],
     });
     return res.json({ success: true, message: "AWS connections fetched successfully.", data: connections });
+}
+
+export async function setActiveAwsConnection(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    const connectionId = param(req, "connectionId");
+    const connection = await prisma.awsConnection.findFirst({ where: { id: connectionId, userId }, select: { id: true } });
+    if (!connection) return res.status(404).json({ success: false, message: "AWS connection not found." });
+    await prisma.$transaction([
+        prisma.awsConnection.updateMany({ where: { userId }, data: { isActive: false } }),
+        prisma.awsConnection.update({ where: { id: connection.id }, data: { isActive: true } }),
+    ]);
+    return res.json({ success: true, message: "Active AWS connection updated successfully." });
 }
 
 export async function deleteAwsConnection(req: Request, res: Response<ApiResponse>) {
     const userId = ownedUser(req, res);
     if (!userId) return;
     try {
-        const result = await prisma.awsConnection.deleteMany({ where: { id: param(req, "connectionId"), userId } });
-        if (!result.count) return res.status(404).json({ success: false, message: "AWS connection not found." });
+        const connection = await prisma.awsConnection.findFirst({ where: { id: param(req, "connectionId"), userId }, select: { id: true, isActive: true } });
+        if (!connection) return res.status(404).json({ success: false, message: "AWS connection not found." });
+        await prisma.$transaction(async (tx) => {
+            await tx.awsConnection.delete({ where: { id: connection.id } });
+            if (connection.isActive) {
+                const next = await tx.awsConnection.findFirst({ where: { userId }, orderBy: { updatedAt: "desc" }, select: { id: true } });
+                if (next) await tx.awsConnection.update({ where: { id: next.id }, data: { isActive: true } });
+            }
+        });
         return res.json({ success: true, message: "AWS connection deleted successfully." });
     } catch (error) {
         return res.status(409).json({ success: false, message: "AWS connection is used by a resource or deployment.", error: errorMessage(error) });
@@ -638,6 +662,8 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
             return res.status(409).json({ success: false, message: `Node ${nodeId} has an unresolved AWS resource. Delete it before publishing again.` });
         }
     }
+
+    await prisma.sketch.update({ where: { id: sketch.id }, data: { connectionId } });
 
     const deployment = await prisma.deployment.create({
         data: {
