@@ -8,16 +8,19 @@ import { AuthProvider } from "../generated/prisma/enums.js";
 
 export async function signUpHandler(req: Request, res: Response<ApiResponse>) {
     try {
-        const { name, email, password, imageUrl } = req.body;
-        if(!name || !email || !password) {
+        const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+        const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+        const password = req.body?.password;
+        const imageUrl = req.body?.imageUrl;
+        if(!name || !email || typeof password !== "string" || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Name, email, and password are required.",
             });
         }
 
-        const existingUser = await prisma.user.findUnique({
-            where: { email },
+        const existingUser = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: "insensitive" } },
         });
 
         if (existingUser) {
@@ -60,7 +63,8 @@ export async function signUpHandler(req: Request, res: Response<ApiResponse>) {
 
 export async function signInHandler(req: Request, res: Response<ApiResponse>) {
     try {
-        const { email, password } = req.body;
+        const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+        const password = req.body?.password;
         if(!email) {
             return res.status(400).json({
                 success: false,
@@ -68,8 +72,8 @@ export async function signInHandler(req: Request, res: Response<ApiResponse>) {
             });
         }
 
-        const user = await prisma.user.findUnique({
-            where: { email },
+        const user = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: "insensitive" } },
         });
 
         if (!user) {
@@ -86,7 +90,7 @@ export async function signInHandler(req: Request, res: Response<ApiResponse>) {
             });
         }
 
-        if (!password) {
+        if (typeof password !== "string" || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Password is required for credential-based accounts.",
@@ -142,7 +146,9 @@ export async function signOutHandler(req: Request, res: Response<ApiResponse>) {
 
 export async function googleAuthHandler(req: Request, res: Response<ApiResponse>) {
     try {
-        const { name, email, imageUrl } = req.body;
+        const name = req.body?.name;
+        const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+        const imageUrl = req.body?.imageUrl;
 
         if (!email) {
             return res.status(400).json({
@@ -151,13 +157,13 @@ export async function googleAuthHandler(req: Request, res: Response<ApiResponse>
             });
         }
 
-        const existingUser = await prisma.user.findUnique({
-            where: { email },
+        const existingUser = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: "insensitive" } },
         });
 
         if (existingUser) {
             const updatedUser = await prisma.user.update({
-                where: { email },
+                where: { id: existingUser.id },
                 data: {
                     name: name ?? existingUser.name,
                     provider: AuthProvider.GOOGLE,

@@ -6,7 +6,6 @@ import { signIn } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 import { ArrowRight, BadgeInfo, Loader2, LockKeyhole, Mail, User } from "lucide-react";
 import { AUTH_CALLBACK_URL } from "@/lib/config";
-import api from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 
 type AuthMode = "signin" | "signup";
@@ -58,28 +57,18 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
         setError(null);
 
         try {
-            const response = isSignup
-                ? await api.post("/api/auth/signup", { name, email, password })
-                : await api.post("/api/auth/signin", { email, password });
-
-            const authData = response.data?.data;
-
-            if (!authData?.user || !authData?.token) {
-                throw new Error("Invalid authentication response from the server.");
-            }
-
             const result = await signIn("credentials", {
                 redirect: false,
                 callbackUrl: AUTH_CALLBACK_URL,
-                email: authData.user.email,
-                name: authData.user.name ?? "",
-                token: authData.token,
-                userId: authData.user.id,
-                imageUrl: authData.user.imageUrl ?? "",
+                email,
+                password,
+                ...(isSignup && { name, register: "true" }),
             });
 
             if (result?.error) {
-                const message = result.error;
+                const message = result.error === "CredentialsSignin"
+                    ? "Invalid email or password."
+                    : result.error;
                 setError(message);
                 pushToast({ message, variant: "error" });
                 return;
