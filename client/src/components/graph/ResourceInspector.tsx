@@ -5,23 +5,24 @@ import { useSession } from "next-auth/react";
 import { Check, Code2, Link2, Monitor, Plus, Tag, Terminal, Trash2 } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import { getAwsResourceCatalog, listAwsConnections, type AwsResourceCatalog } from "@/lib/aws";
+import Skeleton from "@/components/ui/Skeleton";
 import type { ResourceNodeData } from "./resourceNode";
 
 type Ec2Bindings = { keyPair?: string; securityGroups: string[] };
 type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void };
 type FieldProps = { label: string; value: string | number; onChange: (value: string) => void; type?: "number" | "text" };
 
-const inputClass = "mt-2 w-full border border-white/10 bg-black/20 px-3 py-2 text-sm outline-none focus:border-(--primary-color)";
+const inputClass = "mt-2 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-(--primary-text-color) outline-none transition placeholder:text-(--muted-text-color) hover:border-white/20 focus:border-(--primary-color) focus:ring-2 focus:ring-(--primary-color)/15";
 
 function Field({ label, value, onChange, type = "text" }: FieldProps) {
-    return <label className="block"><span className="text-xs text-(--secondary-text-color)">{label}</span><input className={inputClass} min={type === "number" ? 0 : undefined} onChange={(event) => onChange(event.target.value)} type={type} value={value} /></label>;
+    return <label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">{label}</span><input className={inputClass} min={type === "number" ? 0 : undefined} onChange={(event) => onChange(event.target.value)} type={type} value={value} /></label>;
 }
 
 function InstanceTypeField({ options, value, onChange }: { options: AwsResourceCatalog["instanceTypes"]; value: string; onChange: (value: string) => void }) {
     const selected = options.find((option) => option.name === value);
     const memory = selected?.memoryMiB ? `${Math.round(selected.memoryMiB / 102.4) / 10} GiB memory` : "";
     const details = selected ? [`${selected.vcpus ?? "Unknown"} vCPUs`, memory, selected.architectures.join(", "), selected.networkPerformance, selected.instanceStorageGiB ? `${selected.instanceStorageGiB} GB instance storage` : "EBS only"].filter(Boolean) : [];
-    return <div><label className="block"><span className="text-xs text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option.name} label={[`${option.vcpus ?? "?"} vCPU`, option.memoryMiB ? `${Math.round(option.memoryMiB / 1024)} GiB` : ""].filter(Boolean).join(" · ")} value={option.name} />)}</datalist></label>{details.length ? <p className="mt-2 border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-(--secondary-text-color)">{details.join(" · ")}</p> : null}</div>;
+    return <div><label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option.name} label={[`${option.vcpus ?? "?"} vCPU`, option.memoryMiB ? `${Math.round(option.memoryMiB / 1024)} GiB` : ""].filter(Boolean).join(" · ")} value={option.name} />)}</datalist></label>{details.length ? <p className="mt-2 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-(--secondary-text-color)">{details.join(" · ")}</p> : null}</div>;
 }
 
 function AmiField({ images, value, onChange }: { images: AwsResourceCatalog["images"]; value: string; onChange: (image: AwsResourceCatalog["images"][number] | null) => void }) {
@@ -46,11 +47,11 @@ function AmiField({ images, value, onChange }: { images: AwsResourceCatalog["ima
 }
 
 function Select({ label, onChange, options, value }: { label: string; onChange: (value: string) => void; options: ReadonlyArray<ReadonlyArray<string>>; value: string }) {
-    return <label className="block"><span className="text-xs text-(--secondary-text-color)">{label}</span><select className={inputClass} onChange={(event) => onChange(event.target.value)} value={value}>{options.map(([option = "", title = ""]) => <option className="bg-[#151821]" key={option} value={option}>{title}</option>)}</select></label>;
+    return <label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">{label}</span><select className={inputClass} onChange={(event) => onChange(event.target.value)} value={value}>{options.map(([option = "", title = ""]) => <option className="bg-[#151821]" key={option} value={option}>{title}</option>)}</select></label>;
 }
 
 function Toggle({ checked, label, onChange }: { checked: boolean; label: string; onChange: (value: boolean) => void }) {
-    return <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-4 text-sm text-(--secondary-text-color)"><span>{label}</span><input checked={checked} className="h-4 w-4 accent-(--primary-color)" onChange={(event) => onChange(event.target.checked)} type="checkbox" /></label>;
+    return <label className="flex items-center justify-between gap-3 rounded-md border border-white/10 bg-black/10 px-3 py-3 text-sm text-(--secondary-text-color) transition hover:border-white/20"><span>{label}</span><input checked={checked} className="h-4 w-4 accent-(--primary-color)" onChange={(event) => onChange(event.target.checked)} type="checkbox" /></label>;
 }
 
 function LineList({ label, onChange, value }: { label: string; onChange: (values: string[]) => void; value: unknown }) {
@@ -111,7 +112,8 @@ function KeyPairForm({ catalog, config, update }: { catalog: AwsResourceCatalog 
 
 function IamForm({ config, update }: { config: Record<string, unknown>; update: (key: string, value: unknown) => void }) {
     const updateTrustedService = (trustedService: string) => {
-        const { assumeRolePolicyDocument: _legacyPolicy, ...next } = config;
+        const next = { ...config };
+        delete next.assumeRolePolicyDocument;
         update("__all__", { ...next, trustedService });
     };
     return <>
@@ -143,27 +145,36 @@ function DynamoDbForm({ config, update }: { config: Record<string, unknown>; upd
     </>;
 }
 
+function ConfigurationSkeleton() {
+    return <div className="space-y-6" aria-label="Loading resource configuration"><div className="space-y-2"><Skeleton className="h-3 w-24" /><Skeleton className="h-11 w-full" /></div><div className="grid gap-5 sm:grid-cols-2"><div className="space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-11 w-full" /></div><div className="space-y-2"><Skeleton className="h-3 w-28" /><Skeleton className="h-11 w-full" /></div></div><div className="space-y-3 border-t border-white/10 pt-6"><Skeleton className="h-3 w-32" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></div>;
+}
+
 export default function ResourceInspector({ bindings, connectionId, node, onChange, onDelete }: Props) {
     const { data: session } = useSession();
     const { config, service } = node.data;
     const [catalog, setCatalog] = useState<AwsResourceCatalog | null>(null);
+    const catalogRequired = service === "EC2_INSTANCE" || service === "SECURITY_GROUP" || service === "KEY_PAIR";
+    const [catalogLoading, setCatalogLoading] = useState(catalogRequired);
     const update = (key: string, value: unknown) => onChange(node.data.label, key === "__all__" ? value as Record<string, unknown> : { ...config, [key]: value });
 
     useEffect(() => {
         const accessToken = session?.accessToken;
-        if (!accessToken || (service !== "EC2_INSTANCE" && service !== "SECURITY_GROUP" && service !== "KEY_PAIR")) return;
+        if (!accessToken || !catalogRequired) return;
+        let active = true;
         void listAwsConnections(accessToken).then((connections) => {
             const connection = connections.find((entry) => entry.id === connectionId) ?? connections.find((entry) => entry.isActive) ?? connections[0];
             return connection ? getAwsResourceCatalog(accessToken, connection.id) : null;
-        }).then((data) => setCatalog(data)).catch(() => setCatalog(null));
-    }, [connectionId, service, session?.accessToken]);
+        }).then((data) => { if (active) setCatalog(data); }).catch(() => { if (active) setCatalog(null); }).finally(() => { if (active) setCatalogLoading(false); });
+        return () => { active = false; };
+    }, [catalogRequired, connectionId, session?.accessToken]);
 
-    return <div className="h-full overflow-auto p-5">
-        <div className="flex items-center justify-between gap-3 text-sm font-medium text-(--primary-text-color)"><span className="flex items-center gap-2"><Code2 className="h-4 w-4 text-(--secondary-color)" />Resource settings</span><button aria-label="Delete node" className="p-2 text-(--secondary-text-color) hover:text-(--danger-color)" onClick={onDelete} title="Delete node" type="button"><Trash2 className="h-4 w-4" /></button></div>
-        <div className="mt-6 space-y-5">
+    return <div className="h-full overflow-auto p-5 sm:p-7">
+        <div className="flex items-center justify-between gap-3 text-sm font-medium text-(--primary-text-color)"><span className="flex items-center gap-2"><Code2 className="h-4 w-4 text-(--secondary-color)" />Resource settings</span><button aria-label="Delete node" className="grid h-9 w-9 place-items-center rounded-md text-(--secondary-text-color) transition hover:bg-(--danger-color)/10 hover:text-(--danger-color)" onClick={onDelete} title="Delete node" type="button"><Trash2 className="h-4 w-4" /></button></div>
+        <div className="mt-6 max-w-4xl space-y-5">
             <label className="block"><span className="flex items-center gap-2 text-xs text-(--secondary-text-color)"><Tag className="h-3.5 w-3.5" />Node label</span><input className={inputClass} onChange={(event) => onChange(event.target.value, config)} value={node.data.label} /></label>
-            <div className="border-y border-white/10 py-4"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--secondary-text-color)">{service.replaceAll("_", " ")}</p></div>
-            {catalog?.warnings.length ? <p className="border border-(--warning-color)/40 bg-(--warning-color)/8 p-3 text-xs leading-5 text-(--warning-color)">{catalog.warnings.join(" ")}</p> : null}
+            <div className="rounded-md border border-white/8 bg-black/15 px-4 py-3"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--secondary-text-color)">{service.replaceAll("_", " ")}</p></div>
+            {catalogLoading ? <ConfigurationSkeleton /> : <>
+            {catalog?.warnings.length ? <p className="rounded-md border border-(--warning-color)/40 bg-(--warning-color)/8 p-3 text-xs leading-5 text-(--warning-color)">{catalog.warnings.join(" ")}</p> : null}
             {service === "EC2_INSTANCE" ? <Ec2Form bindings={bindings} catalog={catalog} config={config} update={update} /> : null}
             {service === "KEY_PAIR" ? <KeyPairForm catalog={catalog} config={config} update={update} /> : null}
             {service === "SECURITY_GROUP" ? <SecurityGroupForm catalog={catalog} config={config} update={update} /> : null}
@@ -174,6 +185,7 @@ export default function ResourceInspector({ bindings, connectionId, node, onChan
             {service === "DYNAMODB_TABLE" ? <DynamoDbForm config={config} update={update} /> : null}
             {service === "SQS_QUEUE" ? <><Field label="Queue name" onChange={(value) => update("queueName", value)} value={String(config.queueName ?? "")} /><Field label="Visibility timeout (seconds)" onChange={(value) => update("visibilityTimeoutSeconds", Number(value) || 0)} type="number" value={Number(config.visibilityTimeoutSeconds ?? 30)} /><Field label="Message retention (seconds)" onChange={(value) => update("messageRetentionPeriodSeconds", Number(value) || 60)} type="number" value={Number(config.messageRetentionPeriodSeconds ?? 345600)} /></> : null}
             {service === "SNS_TOPIC" ? <><Field label="Topic name" onChange={(value) => update("topicName", value)} value={String(config.topicName ?? "")} /><Toggle checked={config.fifoTopic === true} label="FIFO topic" onChange={(value) => update("fifoTopic", value)} /></> : null}
+            </>}
         </div>
     </div>;
 }

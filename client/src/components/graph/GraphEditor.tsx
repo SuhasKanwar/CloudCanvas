@@ -13,6 +13,7 @@ import AiComposer from "./AiComposer";
 import SketchLibrary from "./SketchLibrary";
 import PublishSketchButton from "./PublishSketchButton";
 import ResourceInspector from "./ResourceInspector";
+import Modal from "@/components/ui/Modal";
 import { awsServiceOptions, defaultResourceConfig, ResourceNode, type ResourceNodeData } from "./resourceNode";
 
 type ResourceFlowNode = Node<ResourceNodeData, "resource">;
@@ -49,7 +50,7 @@ function syncEc2Bindings(nodes: readonly ResourceFlowNode[], edges: readonly Edg
 export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: () => void }) {
     const { data: session } = useSession();
     const [nodes, setNodes, onNodesChange] = useNodesState<ResourceFlowNode>([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+    const [edges, setEdges] = useEdgesState<Edge>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [name, setName] = useState("Untitled infrastructure");
     const [sketchId, setSketchId] = useState<string | null>(null);
@@ -87,7 +88,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         const nextEdges = addEdge({ ...normalized, type: "smoothstep" }, withoutPreviousKeyPair);
         setEdges(nextEdges);
         setNodes((current) => syncEc2Bindings(current, nextEdges));
-    }, [nodes, setEdges, setNodes]);
+    }, [edges, nodes, setEdges, setNodes]);
 
     const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
         const nextEdges = applyEdgeChanges(changes, edges);
@@ -171,37 +172,33 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         if (deletedSketchId === sketchId) newSketch();
     };
 
-    return <div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[#101218] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)_19rem]">
+    return <><div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[#101218] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="min-h-0 overflow-auto border-r border-white/10 px-3 py-4">
             <p className="px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-(--secondary-text-color)">AWS services</p>
             <div className="mt-3 space-y-1">
                 {awsServiceOptions.map((option) => {
                     const Icon = option.icon;
-                    return <button className="flex w-full items-center gap-3 px-2 py-2.5 text-left text-sm text-(--secondary-text-color) transition-colors hover:bg-white/6 hover:text-(--primary-text-color)" key={option.service} onClick={() => addNode(option.service)} type="button">
+                    return <button className="flex w-full items-center gap-3 rounded-md px-2.5 py-2.5 text-left text-sm text-(--secondary-text-color) transition hover:bg-white/6 hover:text-(--primary-text-color)" key={option.service} onClick={() => addNode(option.service)} type="button">
                         <Icon className={`h-4 w-4 ${option.accent}`} /><span>{option.title}</span>
                     </button>;
                 })}
             </div>
-            <button className="mt-6 flex w-full items-center gap-2 border-t border-white/10 px-2 pt-4 text-sm text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={onOpenAwsSettings} type="button"><Settings2 className="h-4 w-4" />AWS settings</button>
+                <button className="mt-6 flex w-full items-center gap-2 border-t border-white/10 px-2 pt-4 text-sm text-(--secondary-text-color) transition hover:text-(--primary-text-color)" onClick={onOpenAwsSettings} type="button"><Settings2 className="h-4 w-4" />AWS settings</button>
         </aside>
 
         <div className="relative min-w-0">
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
                 <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
-                <button aria-label="Create a new sketch" className="hidden p-2 text-(--secondary-text-color) hover:text-(--primary-text-color) md:block" onClick={newSketch} title="New sketch" type="button"><Plus className="h-4 w-4" /></button>
+                <button aria-label="Create a new sketch" className="hidden rounded-md p-2 text-(--secondary-text-color) transition hover:bg-white/6 hover:text-(--primary-text-color) md:block" onClick={newSketch} title="New sketch" type="button"><Plus className="h-4 w-4" /></button>
                 <SketchLibrary onDelete={handleSketchDeleted} onLoad={loadSketch} />
-                <AiComposer onBuild={loadSketch} />
                 <PublishSketchButton connectionId={sketchConnectionId} onPublished={setSketchConnectionId} sketchId={sketchId} />
-                <button className="inline-flex items-center gap-2 bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
+                <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
             </div>
             <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
                 <Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} />
             </ReactFlow>
+            <AiComposer onBuild={loadSketch} />
         </div>
-
-        <aside className="hidden min-h-0 overflow-hidden border-l border-white/10 xl:block">
-            {selectedNode ? <ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /> : <div className="grid h-full place-items-center px-8 text-center text-sm leading-6 text-(--secondary-text-color)">Select a service node to configure its AWS settings.</div>}
-        </aside>
-    </div>;
+    </div>{selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /></Modal> : null}</>;
 }
