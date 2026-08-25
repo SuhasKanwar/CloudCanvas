@@ -24,7 +24,12 @@ class Nvidia:
                 api_key=NVIDIA_API_KEY,
                 model=self.model_name,
                 temperature=NVIDIA["TEMPERATURE"],
-                max_completion_tokens=NVIDIA["MAX_COMPLETION_TOKENS"],
+                top_p=NVIDIA["TOP_P"],
+                max_tokens=NVIDIA["MAX_TOKENS"],
+                model_kwargs={
+                    "reasoning_budget": NVIDIA["REASONING_BUDGET"],
+                    "chat_template_kwargs": NVIDIA["CHAT_TEMPLATE_KWARGS"],
+                },
                 timeout=NVIDIA["REQUEST_TIMEOUT_SECONDS"],
             ).bind_tools([search_tool])
             self.prompt_template = ChatPromptTemplate.from_messages([

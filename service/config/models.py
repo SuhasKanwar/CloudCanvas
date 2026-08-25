@@ -15,10 +15,13 @@ LLAMA = {
 }
 
 NVIDIA = {
-    "MODEL_NAME": "meta/llama-3.3-70b-instruct",
-    "TEMPERATURE": 0.2,
-    "MAX_COMPLETION_TOKENS": 512,
-    "REQUEST_TIMEOUT_SECONDS": 90,
+    "MODEL_NAME": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "TEMPERATURE": 1,
+    "TOP_P": 0.95,
+    "MAX_TOKENS": 16384,
+    "REASONING_BUDGET": 16384,
+    "CHAT_TEMPLATE_KWARGS": {"enable_thinking": True},
+    "REQUEST_TIMEOUT_SECONDS": 110,
 }
 
 ROUTER_MODEL = {

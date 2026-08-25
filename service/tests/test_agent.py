@@ -29,7 +29,7 @@ class AgentShapeTests(unittest.TestCase):
         )
         self.assertEqual(ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "RouteDecision")
         self.assertEqual(AWS_ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "BuildResponse")
-        self.assertEqual(NVIDIA["MODEL_NAME"], "meta/llama-3.3-70b-instruct")
+        self.assertEqual(NVIDIA["MODEL_NAME"], "nvidia/nemotron-3.5-lightning-30b-a3b")
 
     def test_nvidia_client_requires_an_api_key(self):
         with patch("models.nvidia.NVIDIA_API_KEY", ""):
