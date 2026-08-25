@@ -1,5 +1,3 @@
-import os
-
 from schemas.agent import BuildResponse, RouteDecision
 
 def _response_format(name: str, model: type) -> dict:
@@ -12,7 +10,7 @@ def _response_format(name: str, model: type) -> dict:
     }
 
 LLAMA = {
-    "MODEL_NAME": os.getenv("LLAMA_MODEL", "llama-3.3-70b-versatile"),
+    "MODEL_NAME": "llama-3.3-70b-versatile",
     "TEMPERATURE": 0.2,
 }
 
