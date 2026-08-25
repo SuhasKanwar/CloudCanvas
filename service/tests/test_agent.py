@@ -1,13 +1,13 @@
 import unittest
 
 from agents.graph import agent_app
-from config.models import AWS_ROUTER_MODEL, ROUTER_MODEL
+from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
 from schemas.agent import AwsService, BuildResponse
 
 
 class AgentShapeTests(unittest.TestCase):
     def test_graph_and_router_schemas_are_wired(self):
-        self.assertTrue({"router", "aws_router", "llama", "tools"}.issubset(agent_app.get_graph().nodes))
+        self.assertTrue({"router", "aws_router", "nvidia", "tools"}.issubset(agent_app.get_graph().nodes))
         self.assertEqual(
             {service.value for service in AwsService},
             {
@@ -23,6 +23,7 @@ class AgentShapeTests(unittest.TestCase):
         )
         self.assertEqual(ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "RouteDecision")
         self.assertEqual(AWS_ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "BuildResponse")
+        self.assertEqual(NVIDIA["MODEL_NAME"], "meta/llama-3.3-70b-instruct")
 
     def test_build_response_matches_server_node_shape(self):
         response = BuildResponse.model_validate({

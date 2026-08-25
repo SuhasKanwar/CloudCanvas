@@ -3,6 +3,7 @@ python-dotenv
 uvicorn[standard]
 langchain-core
 langchain-groq
+langchain-nvidia-ai-endpoints
 langgraph
 langchain-community
 ddgs

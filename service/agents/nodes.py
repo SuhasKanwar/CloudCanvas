@@ -3,7 +3,7 @@ from functools import lru_cache
 from langchain_core.messages import AIMessage
 
 from agents.state import AgentState
-from models.llama import Llama
+from models.nvidia import Nvidia
 from schemas.agent import BuildResponse, Route, RouteDecision
 from services.router import AwsRouter, ModelRouter
 
@@ -19,8 +19,8 @@ def aws_router_client() -> AwsRouter:
 
 
 @lru_cache
-def llama_client() -> Llama:
-    return Llama()
+def nvidia_client() -> Nvidia:
+    return Nvidia()
 
 
 def route_node(state: AgentState) -> dict:
@@ -36,8 +36,8 @@ def aws_router_node(state: AgentState) -> dict:
     return {"final_response": response}
 
 
-def llama_node(state: AgentState) -> dict:
-    response = llama_client().invoke(
+def nvidia_node(state: AgentState) -> dict:
+    response = nvidia_client().invoke(
         state["query"],
         state.get("session_history", []),
         state.get("messages", []),
@@ -59,7 +59,7 @@ def route_query(state: AgentState) -> str:
     return state.get("route", Route.GENERAL).value
 
 
-def route_llama_tools(state: AgentState) -> str:
+def route_nvidia_tools(state: AgentState) -> str:
     messages = state.get("messages", [])
     if not messages:
         return "done"

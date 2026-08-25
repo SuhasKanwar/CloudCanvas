@@ -3,8 +3,8 @@ from langgraph.prebuilt import ToolNode
 
 from agents.nodes import (
     aws_router_node,
-    llama_node,
-    route_llama_tools,
+    nvidia_node,
+    route_nvidia_tools,
     route_node,
     route_query,
 )
@@ -17,21 +17,21 @@ def compile_graph():
     workflow = StateGraph(AgentState)
     workflow.add_node("router", route_node)
     workflow.add_node("aws_router", aws_router_node)
-    workflow.add_node("llama", llama_node)
+    workflow.add_node("nvidia", nvidia_node)
     workflow.add_node("tools", ToolNode([search_tool]))
     workflow.add_edge(START, "router")
     workflow.add_conditional_edges(
         "router",
         route_query,
-        {Route.AWS.value: "aws_router", Route.GENERAL.value: "llama"},
+        {Route.AWS.value: "aws_router", Route.GENERAL.value: "nvidia"},
     )
     workflow.add_edge("aws_router", END)
     workflow.add_conditional_edges(
-        "llama",
-        route_llama_tools,
+        "nvidia",
+        route_nvidia_tools,
         {"tools": "tools", "done": END},
     )
-    workflow.add_edge("tools", "llama")
+    workflow.add_edge("tools", "nvidia")
     return workflow.compile()
 
 

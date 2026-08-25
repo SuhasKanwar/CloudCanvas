@@ -15,6 +15,10 @@ LLAMA = {
     "MODEL_NAME": os.getenv("LLAMA_MODEL", "llama-3.3-70b-versatile"),
 }
 
+NVIDIA = {
+    "MODEL_NAME": "meta/llama-3.3-70b-instruct",
+}
+
 ROUTER_MODEL = {
     "MODEL_NAME": "openai/gpt-oss-120b",
     "RESPONSE_FORMAT": _response_format("RouteDecision", RouteDecision),
