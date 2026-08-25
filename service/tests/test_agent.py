@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
 
+from requests.exceptions import ReadTimeout
+
 from agents.graph import agent_app
 from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
 from models.llama import Llama
@@ -33,6 +35,14 @@ class AgentShapeTests(unittest.TestCase):
         with patch("models.nvidia.NVIDIA_API_KEY", ""):
             with self.assertRaises(CloudCanvasException):
                 Nvidia()
+
+    def test_nvidia_client_maps_read_timeouts_to_gateway_timeout(self):
+        client = Nvidia.__new__(Nvidia)
+        client.model_name = NVIDIA["MODEL_NAME"]
+        client.chain = type("TimeoutChain", (), {"invoke": lambda *_: (_ for _ in ()).throw(ReadTimeout("slow"))})()
+        with self.assertRaises(CloudCanvasException) as raised:
+            client.invoke("Explain S3", [])
+        self.assertEqual(raised.exception.status_code, 504)
 
     def test_llama_client_requires_an_api_key(self):
         with patch("models.llama.GROQ_API_KEY", ""):

@@ -62,3 +62,13 @@ test("turns malformed responses into typed errors", async () => {
         (error: unknown) => error instanceof AIServiceError && error.code === "invalid_response",
     );
 });
+
+test("keeps upstream gateway timeouts typed as timeouts", async () => {
+    const client = {
+        post: async () => { throw Object.assign(new Error("NVIDIA NIM timed out"), { isAxiosError: true, response: { status: 504, data: { detail: "NVIDIA NIM timed out" } } }); },
+    } as unknown as AxiosInstance;
+    await assert.rejects(
+        () => new AIService(client).query({ query: "Explain S3" }),
+        (error: unknown) => error instanceof AIServiceError && error.code === "timeout" && error.statusCode === 504,
+    );
+});

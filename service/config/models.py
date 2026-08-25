@@ -17,6 +17,8 @@ LLAMA = {
 NVIDIA = {
     "MODEL_NAME": "meta/llama-3.3-70b-instruct",
     "TEMPERATURE": 0.2,
+    "MAX_COMPLETION_TOKENS": 512,
+    "REQUEST_TIMEOUT_SECONDS": 90,
 }
 
 ROUTER_MODEL = {

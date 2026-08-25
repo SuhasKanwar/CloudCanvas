@@ -218,6 +218,9 @@ export class AIService {
                 if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
                     throw new AIServiceError(`AI service timed out: ${message}`, "timeout", error.response?.status, { cause: error });
                 }
+                if (error.response?.status === 504) {
+                    throw new AIServiceError(message, "timeout", 504, { cause: error });
+                }
                 if (!error.response) {
                     throw new AIServiceError(`AI service is unavailable: ${message}`, "unavailable", undefined, { cause: error });
                 }

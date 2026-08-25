@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException
 from agents.graph import agent_app
 from config.agent import AGENT_CONFIG
 from schemas.agent import QueryRequest, QueryResponse
+from utils.exception import CloudCanvasException
 from utils.logger import logger
 
 
@@ -26,6 +27,9 @@ async def execute_query(request: QueryRequest) -> QueryResponse:
             data=result["final_response"],
             message="Query executed successfully.",
         )
+    except CloudCanvasException as error:
+        logger.exception("Agent graph failed")
+        raise HTTPException(status_code=error.status_code, detail=error.error_message) from error
     except Exception as error:
         logger.exception("Agent graph failed")
         raise HTTPException(status_code=502, detail=str(error)) from error

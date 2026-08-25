@@ -3,6 +3,7 @@ import sys
 from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
+from requests.exceptions import Timeout
 
 from config import NVIDIA_API_KEY
 from config.models import NVIDIA
@@ -23,6 +24,8 @@ class Nvidia:
                 api_key=NVIDIA_API_KEY,
                 model=self.model_name,
                 temperature=NVIDIA["TEMPERATURE"],
+                max_completion_tokens=NVIDIA["MAX_COMPLETION_TOKENS"],
+                timeout=NVIDIA["REQUEST_TIMEOUT_SECONDS"],
             ).bind_tools([search_tool])
             self.prompt_template = ChatPromptTemplate.from_messages([
                 ("system", self.system_prompt),
@@ -47,6 +50,11 @@ class Nvidia:
                 "history": [*session_history, HumanMessage(content=prompt), *(messages or [])],
                 "context": "",
             })
+        except Timeout as error:
+            logger.warning("NVIDIA model %s timed out", self.model_name)
+            raise CloudCanvasException(
+                f"NVIDIA NIM did not respond within {NVIDIA['REQUEST_TIMEOUT_SECONDS']} seconds", sys, 504,
+            ) from error
         except Exception as error:
             logger.exception("NVIDIA model %s failed to generate a response", self.model_name)
             raise CloudCanvasException(
