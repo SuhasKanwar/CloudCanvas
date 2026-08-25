@@ -13,6 +13,7 @@ def _response_format(name: str, model: type) -> dict:
 
 LLAMA = {
     "MODEL_NAME": os.getenv("LLAMA_MODEL", "llama-3.3-70b-versatile"),
+    "TEMPERATURE": 0.2,
 }
 
 NVIDIA = {

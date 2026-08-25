@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from agents.graph import agent_app
 from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
+from models.llama import Llama
 from models.nvidia import Nvidia
 from schemas.agent import AwsService, BuildResponse
 from utils.exception import CloudCanvasException
@@ -32,6 +33,11 @@ class AgentShapeTests(unittest.TestCase):
         with patch("models.nvidia.NVIDIA_API_KEY", ""):
             with self.assertRaises(CloudCanvasException):
                 Nvidia()
+
+    def test_llama_client_requires_an_api_key(self):
+        with patch("models.llama.GROQ_API_KEY", ""):
+            with self.assertRaises(CloudCanvasException):
+                Llama()
 
     def test_build_response_matches_server_node_shape(self):
         response = BuildResponse.model_validate({
