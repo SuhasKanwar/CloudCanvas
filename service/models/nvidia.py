@@ -1,20 +1,40 @@
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+import sys
+
+from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
 
 from config import NVIDIA_API_KEY
 from config.models import NVIDIA
 from config.prompts import NVIDIA_SYSTEM_PROMPT
 from tools.search import search_tool
+from utils.exception import CloudCanvasException
+from utils.logger import logger
 
 
 class Nvidia:
     def __init__(self, model_name: str = NVIDIA["MODEL_NAME"]) -> None:
         self.model_name = model_name
-        self.model = ChatNVIDIA(
-            api_key=NVIDIA_API_KEY,
-            model=self.model_name,
-            temperature=0.2,
-        ).bind_tools([search_tool])
+        self.system_prompt = NVIDIA_SYSTEM_PROMPT
+        try:
+            if not NVIDIA_API_KEY:
+                raise ValueError("NVIDIA_API_KEY is not configured")
+            self.model = ChatNVIDIA(
+                api_key=NVIDIA_API_KEY,
+                model=self.model_name,
+                temperature=NVIDIA["TEMPERATURE"],
+            ).bind_tools([search_tool])
+            self.prompt_template = ChatPromptTemplate.from_messages([
+                ("system", self.system_prompt),
+                ("system", "Relevant context (may be partial):\n{context}"),
+                MessagesPlaceholder(variable_name="history"),
+            ])
+            self.chain = self.prompt_template | self.model
+        except Exception as error:
+            logger.exception("Failed to initialize NVIDIA model %s", self.model_name)
+            raise CloudCanvasException(
+                f"Failed to initialize NVIDIA model ({self.model_name})", sys,
+            ) from error
 
     def invoke(
         self,
@@ -22,11 +42,13 @@ class Nvidia:
         session_history: list[dict],
         messages: list[BaseMessage] | None = None,
     ) -> object:
-        if not NVIDIA_API_KEY:
-            raise RuntimeError("NVIDIA_API_KEY is not configured")
-        conversation = [HumanMessage(content=prompt), *(messages or [])]
-        return self.model.invoke([
-            SystemMessage(content=NVIDIA_SYSTEM_PROMPT),
-            *session_history,
-            *conversation,
-        ])
+        try:
+            return self.chain.invoke({
+                "history": [*session_history, HumanMessage(content=prompt), *(messages or [])],
+                "context": "",
+            })
+        except Exception as error:
+            logger.exception("NVIDIA model %s failed to generate a response", self.model_name)
+            raise CloudCanvasException(
+                f"Failed to generate a response from NVIDIA model ({self.model_name})", sys,
+            ) from error

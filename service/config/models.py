@@ -17,6 +17,7 @@ LLAMA = {
 
 NVIDIA = {
     "MODEL_NAME": "meta/llama-3.3-70b-instruct",
+    "TEMPERATURE": 0.2,
 }
 
 ROUTER_MODEL = {

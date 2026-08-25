@@ -1,8 +1,11 @@
 import unittest
+from unittest.mock import patch
 
 from agents.graph import agent_app
 from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
+from models.nvidia import Nvidia
 from schemas.agent import AwsService, BuildResponse
+from utils.exception import CloudCanvasException
 
 
 class AgentShapeTests(unittest.TestCase):
@@ -24,6 +27,11 @@ class AgentShapeTests(unittest.TestCase):
         self.assertEqual(ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "RouteDecision")
         self.assertEqual(AWS_ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "BuildResponse")
         self.assertEqual(NVIDIA["MODEL_NAME"], "meta/llama-3.3-70b-instruct")
+
+    def test_nvidia_client_requires_an_api_key(self):
+        with patch("models.nvidia.NVIDIA_API_KEY", ""):
+            with self.assertRaises(CloudCanvasException):
+                Nvidia()
 
     def test_build_response_matches_server_node_shape(self):
         response = BuildResponse.model_validate({
