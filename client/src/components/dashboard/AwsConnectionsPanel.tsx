@@ -10,6 +10,7 @@ import {
     setActiveAwsConnection,
     type AwsConnection,
 } from "@/lib/aws";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const defaultForm = { name: "", region: "ap-south-1", accessKeyId: "", secretAccessKey: "", sessionToken: "" };
 const regions = ["ap-south-1", "us-east-1", "us-east-2", "us-west-2", "eu-west-1", "eu-central-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1"];
@@ -20,15 +21,14 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
     const [form, setForm] = useState(defaultForm);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [connectionToDelete, setConnectionToDelete] = useState<AwsConnection | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const accessToken = session?.accessToken;
 
     useEffect(() => {
         if (status === "loading") return;
-        if (!accessToken) {
-            setLoading(false);
-            return;
-        }
+        if (!accessToken) return;
         void listAwsConnections(accessToken)
             .then(setConnections)
             .catch(() => undefined)
@@ -53,13 +53,17 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
         }
     };
 
-    const remove = async (connectionId: string) => {
-        if (!accessToken) return;
+    const remove = async () => {
+        if (!accessToken || !connectionToDelete) return;
+        setDeleting(true);
         try {
-            await deleteAwsConnection(accessToken, connectionId);
-            setConnections((current) => current.filter((connection) => connection.id !== connectionId));
+            await deleteAwsConnection(accessToken, connectionToDelete.id);
+            setConnections((current) => current.filter((connection) => connection.id !== connectionToDelete.id));
+            setConnectionToDelete(null);
         } catch {
             // The API interceptor displays the server response.
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -98,7 +102,7 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
                                     <p className="truncate text-sm font-medium text-(--primary-text-color)">{connection.name}</p>
                                     <p className="mt-1 flex items-center gap-2 font-mono text-xs text-(--secondary-text-color)">{connection.region}{connection.isActive ? <span className="inline-flex items-center gap-1 text-(--success-color)"><Check className="h-3 w-3" />Active</span> : null}</p>
                                 </div>
-                                <div className="flex items-center gap-1"><button className="px-2 py-1 text-xs text-(--secondary-text-color) hover:text-(--primary-text-color) disabled:opacity-40" disabled={connection.isActive} onClick={() => void activate(connection.id)} type="button">{connection.isActive ? "In use" : "Use"}</button><button aria-label={`Delete ${connection.name}`} className="shrink-0 p-2 text-(--secondary-text-color) transition-colors hover:text-(--danger-color)" onClick={() => void remove(connection.id)} type="button"><Trash2 className="h-4 w-4" /></button></div>
+                                <div className="flex items-center gap-1"><button className="px-2 py-1 text-xs text-(--secondary-text-color) hover:text-(--primary-text-color) disabled:opacity-40" disabled={connection.isActive} onClick={() => void activate(connection.id)} type="button">{connection.isActive ? "In use" : "Use"}</button><button aria-label={`Delete ${connection.name}`} className="shrink-0 p-2 text-(--secondary-text-color) transition-colors hover:text-(--danger-color)" onClick={() => setConnectionToDelete(connection)} type="button"><Trash2 className="h-4 w-4" /></button></div>
                             </div>
                         ))}
                     </div>
@@ -119,6 +123,7 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
                     </button>
                 </form>
             </div>
+            <ConfirmModal confirmLabel="Delete connection" confirming={deleting} description={`Delete ${connectionToDelete?.name ?? "this AWS connection"}. Sketches using it can no longer be deployed with these credentials.`} onClose={() => setConnectionToDelete(null)} onConfirm={() => void remove()} open={Boolean(connectionToDelete)} title="Delete AWS connection?" variant="danger" />
         </section>
     );
 }

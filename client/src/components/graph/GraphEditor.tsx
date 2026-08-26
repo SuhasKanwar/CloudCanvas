@@ -16,6 +16,7 @@ import AiComposer from "./AiComposer";
 import PublishSketchButton from "./PublishSketchButton";
 import ResourceInspector from "./ResourceInspector";
 import Modal from "@/components/ui/Modal";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { awsServiceOptions, defaultResourceConfig, ResourceNode, type ResourceNodeData } from "./resourceNode";
 import ResourceSidebar from "./ResourceSidebar";
 
@@ -65,6 +66,9 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
     const resourcesByNodeIdRef = useRef<Record<string, AwsResourceSnapshot>>({});
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [nameToConfirm, setNameToConfirm] = useState<string | null>(null);
+    const [renaming, setRenaming] = useState(false);
+    const [nodeToDelete, setNodeToDelete] = useState<ResourceFlowNode | null>(null);
 
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
     const selectedBindings = selectedNode?.data.service === "EC2_INSTANCE" ? {
@@ -180,19 +184,28 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         setSelectedNodeId(null);
     }, [applyResourceSnapshots, setEdges, setNodes]);
 
-    const saveName = async () => {
+    const requestRename = () => {
         const nextName = name.trim();
         if (!nextName) {
             setName(persistedName);
             return;
         }
         if (!accessToken || nextName === persistedName) return;
+        setNameToConfirm(nextName);
+    };
+
+    const rename = async () => {
+        if (!accessToken || !nameToConfirm) return;
+        setRenaming(true);
         try {
-            const sketch = await renameSketch(accessToken, sketchId, nextName);
+            const sketch = await renameSketch(accessToken, sketchId, nameToConfirm);
             setName(sketch.name);
             setPersistedName(sketch.name);
+            setNameToConfirm(null);
         } catch {
             setName(persistedName);
+        } finally {
+            setRenaming(false);
         }
     };
 
@@ -209,13 +222,19 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
             .finally(() => setLoading(false));
     }, [accessToken, loadSketch, sketchId]);
 
-    const deleteSelectedNode = () => {
+    const requestNodeDeletion = () => {
         if (!selectedNode) return;
-        const nextNodes = nodes.filter((node) => node.id !== selectedNode.id);
-        const nextEdges = edges.filter((edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id);
+        setNodeToDelete(selectedNode);
+        setSelectedNodeId(null);
+    };
+
+    const deleteNode = () => {
+        if (!nodeToDelete) return;
+        const nextNodes = nodes.filter((node) => node.id !== nodeToDelete.id);
+        const nextEdges = edges.filter((edge) => edge.source !== nodeToDelete.id && edge.target !== nodeToDelete.id);
         setNodes(syncEc2Bindings(nextNodes, nextEdges));
         setEdges(nextEdges);
-        setSelectedNodeId(null);
+        setNodeToDelete(null);
     };
 
     const canvasReady = !loading && !loadError;
@@ -225,7 +244,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
 
         <div className="relative min-w-0">
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
-                <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color) disabled:cursor-wait" disabled={!canvasReady} onBlur={() => void saveName()} onChange={(event) => setName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} value={name} /></label>
+                <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color) disabled:cursor-wait" disabled={!canvasReady} onBlur={requestRename} onChange={(event) => setName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
                 <Link className="inline-flex items-center gap-2 border border-white/10 px-3 py-2 text-sm text-(--secondary-text-color) hover:bg-white/6 hover:text-(--primary-text-color)" href="/dashboard"><FolderOpen className="h-4 w-4" />Sketches</Link>
                 {canvasReady ? <PublishSketchButton connectionId={sketchConnectionId} onPublished={async (connectionId) => { setSketchConnectionId(connectionId); await reloadSketch(); }} sketchId={sketchId} /> : null}
@@ -235,5 +254,5 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
             {loadError ? <div className="grid h-full place-items-center px-4 pt-14 text-sm text-(--secondary-text-color)"><div className="text-center"><p>{loadError}</p><Link className="mt-3 inline-flex items-center gap-2 text-(--secondary-color) hover:text-(--primary-text-color)" href="/dashboard"><ArrowLeft className="h-4 w-4" />Back to sketches</Link></div></div> : null}
             {canvasReady ? <><ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}><Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} /></ReactFlow><AiComposer onBuild={loadSketch} /></> : null}
         </div>
-    </div>{canvasReady && selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}</>;
+    </div>{canvasReady && selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={requestNodeDeletion} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}<ConfirmModal confirmLabel="Rename sketch" confirming={renaming} description={`Rename this sketch to ${nameToConfirm ?? "the new name"}.`} onClose={() => { setNameToConfirm(null); setName(persistedName); }} onConfirm={() => void rename()} open={Boolean(nameToConfirm)} title="Rename sketch?" /><ConfirmModal confirmLabel="Delete node" description={`Delete ${nodeToDelete?.data.label ?? "this node"} from the sketch. Save the sketch to persist this change.`} onClose={() => setNodeToDelete(null)} onConfirm={deleteNode} open={Boolean(nodeToDelete)} title="Delete node?" variant="danger" /></>;
 }

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { ArrowRight, FilePlus2, Loader2, Trash2 } from "lucide-react";
 import { createSketch, deleteSketch, listSketches, type Sketch } from "@/lib/sketches";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function SketchIndex({ onOpenAwsSettings }: { onOpenAwsSettings: () => void }) {
     const router = useRouter();
@@ -13,6 +14,8 @@ export default function SketchIndex({ onOpenAwsSettings }: { onOpenAwsSettings: 
     const [sketches, setSketches] = useState<Sketch[]>([]);
     const [loading, setLoading] = useState(true);
     const [creating, setCreating] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [sketchToDelete, setSketchToDelete] = useState<Sketch | null>(null);
 
     useEffect(() => {
         if (status === "loading") return;
@@ -34,10 +37,16 @@ export default function SketchIndex({ onOpenAwsSettings }: { onOpenAwsSettings: 
         }
     };
 
-    const remove = async (sketch: Sketch) => {
-        if (!session?.accessToken || !window.confirm(`Delete ${sketch.name}?`)) return;
-        await deleteSketch(session.accessToken, sketch.id);
-        setSketches((current) => current.filter((entry) => entry.id !== sketch.id));
+    const remove = async () => {
+        if (!session?.accessToken || !sketchToDelete) return;
+        setDeleting(true);
+        try {
+            await deleteSketch(session.accessToken, sketchToDelete.id);
+            setSketches((current) => current.filter((entry) => entry.id !== sketchToDelete.id));
+            setSketchToDelete(null);
+        } finally {
+            setDeleting(false);
+        }
     };
 
     return <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -58,8 +67,9 @@ export default function SketchIndex({ onOpenAwsSettings }: { onOpenAwsSettings: 
             {sketches.map((sketch) => <div className="flex items-center gap-4 py-4" key={sketch.id}>
                 <Link className="min-w-0 flex-1" href={`/dashboard/sketches/${sketch.id}`}><p className="truncate text-sm font-medium text-(--primary-text-color)">{sketch.name}</p><p className="mt-1 font-mono text-[11px] uppercase text-(--secondary-text-color)">{sketch.status} · updated {new Date(sketch.updatedAt).toLocaleDateString()}</p></Link>
                 <Link aria-label={`Open ${sketch.name}`} className="p-2 text-(--secondary-text-color) hover:text-(--primary-text-color)" href={`/dashboard/sketches/${sketch.id}`} title="Open sketch"><ArrowRight className="h-4 w-4" /></Link>
-                <button aria-label={`Delete ${sketch.name}`} className="p-2 text-(--secondary-text-color) hover:text-(--danger-color)" onClick={() => void remove(sketch)} title="Delete sketch" type="button"><Trash2 className="h-4 w-4" /></button>
+                <button aria-label={`Delete ${sketch.name}`} className="p-2 text-(--secondary-text-color) hover:text-(--danger-color)" onClick={() => setSketchToDelete(sketch)} title="Delete sketch" type="button"><Trash2 className="h-4 w-4" /></button>
             </div>)}
         </div>
+        <ConfirmModal confirmLabel="Delete sketch" confirming={deleting} description={`Delete ${sketchToDelete?.name ?? "this sketch"} and all of its managed AWS resources. This cannot be undone.`} onClose={() => setSketchToDelete(null)} onConfirm={() => void remove()} open={Boolean(sketchToDelete)} title="Delete sketch?" variant="danger" />
     </section>;
 }
