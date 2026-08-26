@@ -1,14 +1,17 @@
 "use client";
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Archive, Box, Database, FunctionSquare, HardDrive, KeyRound, KeySquare, Network, Send, Server } from "lucide-react";
+import { Archive, Box, Copy, Database, FunctionSquare, HardDrive, KeyRound, KeySquare, Network, Send, Server } from "lucide-react";
 import type { AwsService } from "@cloudcanvas/graph-contract";
+import { pushToast } from "@/lib/toast";
+import { getPendingDeploymentChanges } from "@/lib/deploymentChanges";
+import DeploymentChangeInfo from "./DeploymentChangeInfo";
 
 export type ResourceNodeData = {
     label: string;
     service: AwsService;
     config: Record<string, unknown>;
-    deployment?: { status: string; lastError: string | null; actualState: Record<string, unknown> | null };
+    deployment?: { status: string; lastError: string | null; actualState: Record<string, unknown> | null; desiredConfig: Record<string, unknown> };
 };
 
 const serviceAppearance: Record<AwsService, { accent: string; icon: typeof Server; title: string }> = {
@@ -33,6 +36,15 @@ export function ResourceNode({ data, selected }: NodeProps) {
     const statusClass = status === "RUNNING" ? "bg-emerald-400" : status === "PROVISIONING" || status === "DELETING" ? "bg-amber-300" : status === "FAILED" ? "bg-rose-400" : status === "TERMINATED" ? "bg-zinc-500" : "bg-slate-400";
     const publicIpAddress = typeof resource.deployment?.actualState?.publicIpAddress === "string" ? resource.deployment.actualState.publicIpAddress : "";
     const privateIpAddress = typeof resource.deployment?.actualState?.privateIpAddress === "string" ? resource.deployment.actualState.privateIpAddress : "";
+    const changes = resource.deployment ? getPendingDeploymentChanges(resource.service, resource.config, resource.deployment.desiredConfig) : [];
+    const copyIpAddress = async (label: string, value: string) => {
+        try {
+            await navigator.clipboard.writeText(value);
+            pushToast({ message: `${label} copied.`, variant: "success" });
+        } catch {
+            pushToast({ message: `Unable to copy ${label.toLowerCase()}.`, variant: "error" });
+        }
+    };
 
     return <div className={`min-w-44 border bg-[#151821] shadow-lg ${selected ? "border-(--primary-color)" : "border-white/12"}`}>
         <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-text-color)" position={Position.Top} type="target" />
@@ -44,7 +56,8 @@ export function ResourceNode({ data, selected }: NodeProps) {
             </div>
         </div>
         {status ? <div className="flex items-center gap-1.5 border-t border-white/8 px-3 py-2 font-mono text-[10px] text-(--secondary-text-color)"><span className={`h-1.5 w-1.5 rounded-full ${statusClass}`} />{status.replaceAll("_", " ")}</div> : null}
-        {resource.service === "EC2_INSTANCE" && (publicIpAddress || privateIpAddress) ? <div className="space-y-1 border-t border-white/8 px-3 py-2 font-mono text-[10px]"><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Public IP</span><span className="text-(--primary-text-color)">{publicIpAddress || "Not assigned"}</span></div><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Private IP</span><span className="text-(--primary-text-color)">{privateIpAddress || "Not assigned"}</span></div></div> : null}
+        {changes.length ? <div className="flex items-center gap-1 border-t border-amber-300/20 bg-amber-300/8 px-3 py-1.5 font-mono text-[10px] text-amber-200">Changes pending <DeploymentChangeInfo changes={changes} /></div> : null}
+        {resource.service === "EC2_INSTANCE" && (publicIpAddress || privateIpAddress) ? <div className="space-y-1 border-t border-white/8 px-3 py-2 font-mono text-[10px]"><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Public IP</span><span className="flex items-center gap-1 text-(--primary-text-color)">{publicIpAddress || "Not assigned"}{publicIpAddress ? <button aria-label="Copy public IP" className="grid h-5 w-5 place-items-center text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={(event) => { event.stopPropagation(); void copyIpAddress("Public IP", publicIpAddress); }} title="Copy public IP" type="button"><Copy className="h-3 w-3" /></button> : null}</span></div><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Private IP</span><span className="flex items-center gap-1 text-(--primary-text-color)">{privateIpAddress || "Not assigned"}{privateIpAddress ? <button aria-label="Copy private IP" className="grid h-5 w-5 place-items-center text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={(event) => { event.stopPropagation(); void copyIpAddress("Private IP", privateIpAddress); }} title="Copy private IP" type="button"><Copy className="h-3 w-3" /></button> : null}</span></div></div> : null}
         <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-color)" position={Position.Bottom} type="source" />
     </div>;
 }

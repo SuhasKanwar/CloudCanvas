@@ -1,8 +1,14 @@
 import type {
     RunInstancesCommand,
     RunInstancesCommandOutput,
+    ModifyInstanceAttributeCommand,
+    ModifyInstanceAttributeCommandOutput,
+    MonitorInstancesCommand,
+    MonitorInstancesCommandOutput,
     TerminateInstancesCommand,
     TerminateInstancesCommandOutput,
+    UnmonitorInstancesCommand,
+    UnmonitorInstancesCommandOutput,
 } from "@aws-sdk/client-ec2";
 
 export type AwsCredentials = {
@@ -79,6 +85,9 @@ export type Ec2TerminationResult = {
 export type Ec2CommandSender = {
     run: (command: RunInstancesCommand) => Promise<RunInstancesCommandOutput>;
     terminate: (command: TerminateInstancesCommand) => Promise<TerminateInstancesCommandOutput>;
+    modify?: (command: ModifyInstanceAttributeCommand) => Promise<ModifyInstanceAttributeCommandOutput>;
+    monitor?: (command: MonitorInstancesCommand) => Promise<MonitorInstancesCommandOutput>;
+    unmonitor?: (command: UnmonitorInstancesCommand) => Promise<UnmonitorInstancesCommandOutput>;
 };
 
 export type AwsResourceCreateRequest =

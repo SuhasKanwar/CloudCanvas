@@ -44,6 +44,7 @@ export type AwsResourceSnapshot = {
     service: AwsService;
     externalId: string | null;
     status: string;
+    desiredConfig: Record<string, unknown>;
     actualState: Record<string, unknown> | null;
     lastError: string | null;
     updatedAt: string;

@@ -147,6 +147,14 @@ function stringArray(value: unknown) {
     return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0) : [];
 }
 
+const ec2LaunchOnlyConfigKeys = ["imageId", "launchTemplateId", "instanceType", "instanceCount", "keyName", "rootDeviceName", "rootVolumeSizeGiB", "rootVolumeType", "deleteRootVolumeOnTermination", "subnetId", "iamInstanceProfile", "userData", "ebsOptimized", "metadataHttpTokens", "name"] as const;
+
+function assertDeployedResourceUpdate(previousConfig: unknown, request: AwsResourceCreateRequest) {
+    if (request.service !== AwsService.EC2_INSTANCE || !isRecord(previousConfig)) return;
+    const changedKeys = ec2LaunchOnlyConfigKeys.filter((key) => JSON.stringify(previousConfig[key]) !== JSON.stringify(request.config[key]));
+    if (changedKeys.length) throw new Error(`EC2 ${changedKeys.join(", ")} cannot be changed after deployment. Create a replacement instance instead.`);
+}
+
 function isAdoptedResource(request: AwsResourceCreateRequest) {
     return (request.service === AwsService.EC2_INSTANCE || request.service === AwsService.SECURITY_GROUP || request.service === AwsService.KEY_PAIR) && request.config.mode === "existing";
 }
@@ -852,6 +860,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
             }
             if (!existingResource.managed) return res.status(409).json({ success: false, message: `Node ${nodeId} adopts an external resource and cannot update it.` });
             try {
+                assertDeployedResourceUpdate(existingResource.desiredConfig, resourceRequest);
                 const result = await awsResourceManager.updateResource(resourceRequest, existingResource.externalId, credentials, connection.region);
                 awsResourceManager.invalidateCatalog(connection.id, connection.region);
                 const updated = await prisma.awsResource.update({ where: { id: existingResource.id }, data: { desiredConfig: jsonValue(resourceRequest.config), actualState: jsonValue(result.data), lastError: null } });

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ImportKeyPairCommand, RunInstancesCommand, TerminateInstancesCommand } from "@aws-sdk/client-ec2";
+import { ImportKeyPairCommand, ModifyInstanceAttributeCommand, MonitorInstancesCommand, RunInstancesCommand, TerminateInstancesCommand } from "@aws-sdk/client-ec2";
 import { AttachRolePolicyCommand, DetachRolePolicyCommand } from "@aws-sdk/client-iam";
 import { decryptAwsSecret, encryptAwsSecret } from "./crypto.js";
 import { ec2InstanceDetails, Ec2Service } from "./resources/ec2.js";
@@ -126,6 +126,23 @@ test("maps EC2 termination into a TerminateInstances command", async () => {
     const result = await service.terminateInstances({ instanceIds: ["i-test"] });
     assert.deepEqual(command?.input.InstanceIds, ["i-test"]);
     assert.equal(result.instances[0]?.currentState, "shutting-down");
+});
+
+test("maps supported EC2 updates without changing the instance type or AMI", async () => {
+    const modified: ModifyInstanceAttributeCommand[] = [];
+    let monitored = false;
+    const service = new Ec2Service({
+        run: async () => ({ $metadata: {}, Instances: [] }),
+        terminate: async () => ({ $metadata: {}, TerminatingInstances: [] }),
+        modify: async (command) => { modified.push(command); return { $metadata: {} }; },
+        monitor: async (command) => { monitored = command instanceof MonitorInstancesCommand; return { $metadata: {} }; },
+    }, "ap-south-1");
+    const result = await service.updateInstance("i-123", { securityGroupIds: ["sg-123"], shutdownBehavior: "stop", disableApiTermination: true, monitoring: true });
+    assert.equal(modified[0]?.input.Groups?.[0], "sg-123");
+    assert.equal(modified[1]?.input.InstanceInitiatedShutdownBehavior?.Value, "stop");
+    assert.equal(modified[2]?.input.DisableApiTermination?.Value, true);
+    assert.equal(monitored, true);
+    assert.deepEqual(result.updated, ["security groups", "shutdown behavior", "termination protection", "detailed monitoring"]);
 });
 
 test("maps ECR repository create and delete", async () => {

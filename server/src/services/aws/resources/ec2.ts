@@ -1,7 +1,10 @@
 import { Buffer } from "node:buffer";
 import {
     RunInstancesCommand,
+    ModifyInstanceAttributeCommand,
+    MonitorInstancesCommand,
     TerminateInstancesCommand,
+    UnmonitorInstancesCommand,
     type Instance,
     type _InstanceType,
     type RunInstancesCommandInput,
@@ -120,5 +123,32 @@ export class Ec2Service {
                 currentState: instance.CurrentState?.Name,
             })) ?? [],
         };
+    }
+
+    async updateInstance(instanceId: string, request: Ec2InstanceRequest) {
+        if (!instanceId) throw new Error("An EC2 instance ID is required to update an instance.");
+        const updated: string[] = [];
+        if (request.securityGroupIds !== undefined) {
+            if (!this.send.modify) throw new Error("EC2 instance updates are not configured.");
+            await this.send.modify(new ModifyInstanceAttributeCommand({ InstanceId: instanceId, Groups: request.securityGroupIds }));
+            updated.push("security groups");
+        }
+        if (request.shutdownBehavior !== undefined) {
+            if (!this.send.modify) throw new Error("EC2 instance updates are not configured.");
+            await this.send.modify(new ModifyInstanceAttributeCommand({ InstanceId: instanceId, InstanceInitiatedShutdownBehavior: { Value: request.shutdownBehavior } }));
+            updated.push("shutdown behavior");
+        }
+        if (request.disableApiTermination !== undefined) {
+            if (!this.send.modify) throw new Error("EC2 instance updates are not configured.");
+            await this.send.modify(new ModifyInstanceAttributeCommand({ InstanceId: instanceId, DisableApiTermination: { Value: request.disableApiTermination } }));
+            updated.push("termination protection");
+        }
+        if (request.monitoring !== undefined) {
+            const send = request.monitoring ? this.send.monitor : this.send.unmonitor;
+            if (!send) throw new Error("EC2 instance updates are not configured.");
+            await send(new (request.monitoring ? MonitorInstancesCommand : UnmonitorInstancesCommand)({ InstanceIds: [instanceId] }));
+            updated.push("detailed monitoring");
+        }
+        return { region: this.region, instanceId, updated };
     }
 }

@@ -43,6 +43,9 @@ export class AWSResourceManager {
         return new Ec2Service({
             run: (command) => client.send(command),
             terminate: (command) => client.send(command),
+            modify: (command) => client.send(command),
+            monitor: (command) => client.send(command),
+            unmonitor: (command) => client.send(command),
         }, region).createInstance(request);
     }
 
@@ -51,6 +54,9 @@ export class AWSResourceManager {
         return new Ec2Service({
             run: (command) => client.send(command),
             terminate: (command) => client.send(command),
+            modify: (command) => client.send(command),
+            monitor: (command) => client.send(command),
+            unmonitor: (command) => client.send(command),
         }, region).terminateInstances({ instanceIds });
     }
 
@@ -229,6 +235,18 @@ export class AWSResourceManager {
     }
 
     async updateResource(request: AwsResourceCreateRequest, externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
+        if (request.service === AwsService.EC2_INSTANCE) {
+            const client = new EC2Client({ region, credentials });
+            await new Ec2Service({
+                run: (command) => client.send(command),
+                terminate: (command) => client.send(command),
+                modify: (command) => client.send(command),
+                monitor: (command) => client.send(command),
+                unmonitor: (command) => client.send(command),
+            }, region).updateInstance(externalId, request.config);
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: request.config.name ?? externalId, externalId, data: details.data };
+        }
         if (request.service !== AwsService.S3_BUCKET) throw new Error(`${request.service} configuration updates require an explicit resource operation.`);
         if (request.config.bucketName !== externalId) throw new Error("Changing an S3 bucket name requires a new resource.");
         const client = new S3Client({ region, credentials });
