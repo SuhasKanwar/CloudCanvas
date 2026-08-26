@@ -176,6 +176,11 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         setSelectedNodeId(null);
     }, [applyResourceSnapshots, setEdges, setNodes]);
 
+    const reloadSketch = useCallback(async () => {
+        if (!accessToken) return;
+        loadSketch(await getSketch(accessToken, sketchId));
+    }, [accessToken, loadSketch, sketchId]);
+
     useEffect(() => {
         if (!accessToken) return;
         void getSketch(accessToken, sketchId)
@@ -214,7 +219,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
                 <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
-                <PublishSketchButton connectionId={sketchConnectionId} onPublished={(connectionId) => { setSketchConnectionId(connectionId); void refreshDeployedResources(); }} sketchId={sketchId} />
+                <PublishSketchButton connectionId={sketchConnectionId} onPublished={async (connectionId) => { setSketchConnectionId(connectionId); await reloadSketch(); }} sketchId={sketchId} />
                 <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}Save</button>
             </div>
             <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
