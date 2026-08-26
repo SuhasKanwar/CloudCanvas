@@ -37,6 +37,23 @@ export type SketchEdge = {
     targetHandle: string | null;
 };
 
+export type AwsResourceSnapshot = {
+    id: string;
+    service: AwsService;
+    externalId: string | null;
+    status: string;
+    actualState: Record<string, unknown> | null;
+    lastError: string | null;
+    updatedAt: string;
+};
+
+export type ResourceRefreshOutcome = {
+    resourceId: string;
+    status: "refreshed" | "terminated" | "failed" | "skipped";
+    resource?: AwsResourceSnapshot;
+    error?: string;
+};
+
 export type AiSketchResponse =
     | { type: "text"; message: string }
     | { type: "build"; message: string; sketch: Sketch };
@@ -64,6 +81,15 @@ export async function createAiSketch(accessToken: string, query: string, session
 
 export async function publishSketch(accessToken: string, sketchId: string, connectionId: string): Promise<void> {
     await api.post(`/api/sketches/${sketchId}/deploy`, { connectionId }, authenticatedRequest(accessToken));
+}
+
+export async function refreshSketchResources(accessToken: string, sketchId: string): Promise<ResourceRefreshOutcome[]> {
+    const response = await api.post<ApiEnvelope<{ outcomes: ResourceRefreshOutcome[] }>>(
+        `/api/sketches/${sketchId}/resources/refresh`,
+        {},
+        authenticatedRequest(accessToken),
+    );
+    return response.data.data.outcomes;
 }
 
 export async function deleteSketch(accessToken: string, sketchId: string): Promise<void> {

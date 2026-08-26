@@ -11,6 +11,7 @@ import {
     deleteSketchNode,
     deleteAwsResource,
     deploySketch,
+    refreshSketchResources,
     getSketch,
     listSketches,
     updateSketch,
@@ -34,6 +35,7 @@ sketchRouter.delete("/:sketchId/nodes/:nodeId", deleteSketchNode);
 sketchRouter.post("/:sketchId/edges", createSketchEdge);
 sketchRouter.delete("/:sketchId/edges/:edgeId", deleteSketchEdge);
 sketchRouter.post("/:sketchId/deploy", deploySketch);
+sketchRouter.post("/:sketchId/resources/refresh", refreshSketchResources);
 sketchRouter.delete("/:sketchId/resources/:resourceId", deleteAwsResource);
 
 export default sketchRouter;

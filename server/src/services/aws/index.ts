@@ -1,13 +1,13 @@
-import { EC2Client } from "@aws-sdk/client-ec2";
-import { ECRClient } from "@aws-sdk/client-ecr";
-import { IAMClient } from "@aws-sdk/client-iam";
-import { S3Client } from "@aws-sdk/client-s3";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { LambdaClient } from "@aws-sdk/client-lambda";
-import { SNSClient } from "@aws-sdk/client-sns";
-import { SQSClient } from "@aws-sdk/client-sqs";
+import { DescribeInstancesCommand, DescribeKeyPairsCommand, DescribeSecurityGroupsCommand, EC2Client } from "@aws-sdk/client-ec2";
+import { DescribeRepositoriesCommand, ECRClient } from "@aws-sdk/client-ecr";
+import { GetRoleCommand, IAMClient } from "@aws-sdk/client-iam";
+import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
+import { DescribeTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { GetFunctionCommand, LambdaClient } from "@aws-sdk/client-lambda";
+import { GetTopicAttributesCommand, SNSClient } from "@aws-sdk/client-sns";
+import { GetQueueAttributesCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { AWS_REGION } from "../../lib/config.js";
-import { Ec2Service } from "./resources/ec2.js";
+import { ec2InstanceDetails, Ec2Service } from "./resources/ec2.js";
 import { EcrService } from "./resources/ecr.js";
 import { IamService } from "./resources/iam.js";
 import { LambdaService } from "./resources/lambda.js";
@@ -24,6 +24,7 @@ import type {
     AwsCredentials,
     AwsResourceCreateRequest,
     AwsResourceDeleteResult,
+    AwsResourceDetails,
     AwsResourceResult,
     Ec2InstanceRequest,
     Ec2InstanceResult,
@@ -76,6 +77,63 @@ export class AWSResourceManager {
 
     invalidateCatalog(connectionId: string, region = this.defaultRegion) {
         cacheService.del(this.catalogCacheKey(connectionId, region));
+    }
+
+    async getResourceDetails(service: AwsService, externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceDetails> {
+        if (service === AwsService.EC2_INSTANCE) {
+            const output = await new EC2Client({ region, credentials }).send(new DescribeInstancesCommand({ InstanceIds: [externalId] }));
+            const instance = output.Reservations?.flatMap((reservation) => reservation.Instances ?? []).find((entry) => entry.InstanceId === externalId);
+            if (!instance) throw new Error(`EC2 instance ${externalId} was not found.`);
+            return ec2InstanceDetails(instance, region, externalId);
+        }
+        if (service === AwsService.KEY_PAIR) {
+            const output = await new EC2Client({ region, credentials }).send(new DescribeKeyPairsCommand({ KeyNames: [externalId] }));
+            const keyPair = output.KeyPairs?.[0];
+            if (!keyPair) throw new Error(`EC2 key pair ${externalId} was not found.`);
+            return { service, region, externalId, state: "available", status: "RUNNING", data: { keyName: keyPair.KeyName, keyPairId: keyPair.KeyPairId, fingerprint: keyPair.KeyFingerprint, keyType: keyPair.KeyType, createTime: keyPair.CreateTime?.toISOString() } };
+        }
+        if (service === AwsService.SECURITY_GROUP) {
+            const output = await new EC2Client({ region, credentials }).send(new DescribeSecurityGroupsCommand({ GroupIds: [externalId] }));
+            const group = output.SecurityGroups?.[0];
+            if (!group) throw new Error(`Security group ${externalId} was not found.`);
+            return { service, region, externalId, state: "available", status: "RUNNING", data: { groupId: group.GroupId, groupName: group.GroupName, description: group.Description, vpcId: group.VpcId, ownerId: group.OwnerId, ingressRuleCount: group.IpPermissions?.length ?? 0, egressRuleCount: group.IpPermissionsEgress?.length ?? 0 } };
+        }
+        if (service === AwsService.ECR_REPOSITORY) {
+            const output = await new ECRClient({ region, credentials }).send(new DescribeRepositoriesCommand({ repositoryNames: [externalId] }));
+            const repository = output.repositories?.[0];
+            if (!repository) throw new Error(`ECR repository ${externalId} was not found.`);
+            return { service, region, externalId, state: "available", status: "RUNNING", data: { repositoryName: repository.repositoryName, repositoryArn: repository.repositoryArn, repositoryUri: repository.repositoryUri, createdAt: repository.createdAt?.toISOString(), imageTagMutability: repository.imageTagMutability, encryptionConfiguration: repository.encryptionConfiguration, imageScanningConfiguration: repository.imageScanningConfiguration } };
+        }
+        if (service === AwsService.S3_BUCKET) {
+            const output = await new S3Client({ region, credentials }).send(new HeadBucketCommand({ Bucket: externalId }));
+            return { service, region, externalId, state: "available", status: "RUNNING", data: { bucketName: externalId, bucketRegion: output.BucketRegion ?? region, accessPointAlias: output.AccessPointAlias ?? false } };
+        }
+        if (service === AwsService.LAMBDA_FUNCTION) {
+            const output = await new LambdaClient({ region, credentials }).send(new GetFunctionCommand({ FunctionName: externalId }));
+            const configuration = output.Configuration;
+            if (!configuration) throw new Error(`Lambda function ${externalId} was not found.`);
+            return { service, region, externalId, state: configuration.State ?? "unknown", status: configuration.State === "Pending" ? "PROVISIONING" : configuration.State === "Failed" ? "FAILED" : "RUNNING", data: { functionName: configuration.FunctionName, functionArn: configuration.FunctionArn, runtime: configuration.Runtime, handler: configuration.Handler, role: configuration.Role, memorySize: configuration.MemorySize, timeout: configuration.Timeout, lastModified: configuration.LastModified, version: configuration.Version, packageType: configuration.PackageType, architectures: configuration.Architectures, stateReason: configuration.StateReason, vpcConfig: configuration.VpcConfig } };
+        }
+        if (service === AwsService.DYNAMODB_TABLE) {
+            const output = await new DynamoDBClient({ region, credentials }).send(new DescribeTableCommand({ TableName: externalId }));
+            const table = output.Table;
+            if (!table) throw new Error(`DynamoDB table ${externalId} was not found.`);
+            return { service, region, externalId, state: table.TableStatus ?? "unknown", status: table.TableStatus === "CREATING" || table.TableStatus === "UPDATING" ? "PROVISIONING" : table.TableStatus === "DELETING" ? "DELETING" : table.TableStatus === "INACCESSIBLE_ENCRYPTION_CREDENTIALS" ? "FAILED" : "RUNNING", data: { tableName: table.TableName, tableArn: table.TableArn, tableStatus: table.TableStatus, creationDateTime: table.CreationDateTime?.toISOString(), itemCount: table.ItemCount, tableSizeBytes: table.TableSizeBytes, billingMode: table.BillingModeSummary?.BillingMode, keySchema: table.KeySchema, provisionedThroughput: table.ProvisionedThroughput, tableClass: table.TableClassSummary?.TableClass } };
+        }
+        if (service === AwsService.SQS_QUEUE) {
+            const output = await new SQSClient({ region, credentials }).send(new GetQueueAttributesCommand({ QueueUrl: externalId, AttributeNames: ["All"] }));
+            const attributes = output.Attributes ?? {};
+            return { service, region, externalId, state: "available", status: "RUNNING", data: { queueUrl: externalId, queueArn: attributes.QueueArn, createdTimestamp: attributes.CreatedTimestamp, lastModifiedTimestamp: attributes.LastModifiedTimestamp, approximateNumberOfMessages: attributes.ApproximateNumberOfMessages, approximateNumberOfMessagesNotVisible: attributes.ApproximateNumberOfMessagesNotVisible, visibilityTimeout: attributes.VisibilityTimeout, messageRetentionPeriod: attributes.MessageRetentionPeriod, receiveMessageWaitTimeSeconds: attributes.ReceiveMessageWaitTimeSeconds, sqsManagedSseEnabled: attributes.SqsManagedSseEnabled } };
+        }
+        if (service === AwsService.SNS_TOPIC) {
+            const output = await new SNSClient({ region, credentials }).send(new GetTopicAttributesCommand({ TopicArn: externalId }));
+            const attributes = output.Attributes ?? {};
+            return { service, region, externalId, state: "available", status: "RUNNING", data: { topicArn: attributes.TopicArn ?? externalId, displayName: attributes.DisplayName, owner: attributes.Owner, subscriptionsConfirmed: attributes.SubscriptionsConfirmed, subscriptionsPending: attributes.SubscriptionsPending, subscriptionsDeleted: attributes.SubscriptionsDeleted, fifoTopic: attributes.FifoTopic, contentBasedDeduplication: attributes.ContentBasedDeduplication } };
+        }
+        const output = await new IAMClient({ region, credentials }).send(new GetRoleCommand({ RoleName: externalId }));
+        const role = output.Role;
+        if (!role) throw new Error(`IAM role ${externalId} was not found.`);
+        return { service, region, externalId, state: "available", status: "RUNNING", data: { roleName: role.RoleName, roleId: role.RoleId, arn: role.Arn, path: role.Path, createDate: role.CreateDate?.toISOString(), maxSessionDuration: role.MaxSessionDuration, description: role.Description } };
     }
 
     async createResource(request: AwsResourceCreateRequest, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
@@ -291,6 +349,7 @@ export type {
     AwsCredentials,
     AwsResourceCreateRequest,
     AwsResourceDeleteResult,
+    AwsResourceDetails,
     AwsResourceResult,
     AwsServiceType,
     Ec2InstanceRequest,

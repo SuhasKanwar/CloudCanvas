@@ -107,3 +107,12 @@ export type AwsResourceDeleteResult = {
     externalId: string;
     data: unknown;
 };
+
+export type AwsResourceDetails = {
+    service: AwsServiceType;
+    region: string;
+    externalId: string;
+    state: string;
+    status: "PROVISIONING" | "DELETING" | "RUNNING" | "TERMINATED" | "FAILED";
+    data: Record<string, unknown>;
+};

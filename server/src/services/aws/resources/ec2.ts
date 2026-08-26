@@ -2,17 +2,48 @@ import { Buffer } from "node:buffer";
 import {
     RunInstancesCommand,
     TerminateInstancesCommand,
+    type Instance,
     type _InstanceType,
     type RunInstancesCommandInput,
     type TerminateInstancesCommandInput,
 } from "@aws-sdk/client-ec2";
-import type {
-    Ec2CommandSender,
-    Ec2InstanceRequest,
-    Ec2InstanceResult,
-    Ec2TerminationRequest,
-    Ec2TerminationResult,
+import {
+    AwsService,
+    type AwsResourceDetails,
+    type Ec2CommandSender,
+    type Ec2InstanceRequest,
+    type Ec2InstanceResult,
+    type Ec2TerminationRequest,
+    type Ec2TerminationResult,
 } from "../types.js";
+
+export function ec2InstanceDetails(instance: Instance, region: string, externalId: string): AwsResourceDetails {
+    const state = instance.State?.Name ?? "unknown";
+    return {
+        service: AwsService.EC2_INSTANCE,
+        region,
+        externalId,
+        state,
+        status: state === "terminated" ? "TERMINATED" : state === "pending" ? "PROVISIONING" : state === "shutting-down" ? "DELETING" : "RUNNING",
+        data: {
+            instanceId: instance.InstanceId,
+            state,
+            imageId: instance.ImageId,
+            instanceType: instance.InstanceType,
+            privateIpAddress: instance.PrivateIpAddress,
+            publicIpAddress: instance.PublicIpAddress,
+            privateDnsName: instance.PrivateDnsName,
+            publicDnsName: instance.PublicDnsName,
+            vpcId: instance.VpcId,
+            subnetId: instance.SubnetId,
+            availabilityZone: instance.Placement?.AvailabilityZone,
+            securityGroupIds: instance.SecurityGroups?.flatMap((group) => group.GroupId ? [group.GroupId] : []),
+            launchTime: instance.LaunchTime?.toISOString(),
+            architecture: instance.Architecture,
+            rootDeviceType: instance.RootDeviceType,
+        },
+    };
+}
 
 export class Ec2Service {
     constructor(private readonly send: Ec2CommandSender, private readonly region: string) {}

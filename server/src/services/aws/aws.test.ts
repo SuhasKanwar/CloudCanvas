@@ -3,7 +3,7 @@ import test from "node:test";
 import { ImportKeyPairCommand, RunInstancesCommand, TerminateInstancesCommand } from "@aws-sdk/client-ec2";
 import { AttachRolePolicyCommand, DetachRolePolicyCommand } from "@aws-sdk/client-iam";
 import { decryptAwsSecret, encryptAwsSecret } from "./crypto.js";
-import { Ec2Service } from "./resources/ec2.js";
+import { ec2InstanceDetails, Ec2Service } from "./resources/ec2.js";
 import { EcrService } from "./resources/ecr.js";
 import { IamService } from "./resources/iam.js";
 import { S3Service } from "./resources/s3.js";
@@ -23,6 +23,38 @@ test("caches and invalidates AWS catalog values", () => {
     assert.deepEqual(cache.get(key), { instanceTypes: ["t3.micro"] });
     cache.del(key);
     assert.equal(cache.get(key), undefined);
+});
+
+test("refreshes EC2 instance status and network details", async () => {
+    const details = ec2InstanceDetails({
+        InstanceId: "i-123",
+        State: { Name: "running" },
+        ImageId: "ami-123",
+        InstanceType: "t3.micro",
+        PrivateIpAddress: "10.0.1.15",
+        PublicIpAddress: "13.234.1.15",
+        VpcId: "vpc-123",
+        SubnetId: "subnet-123",
+        Placement: { AvailabilityZone: "ap-south-1a" },
+    }, "ap-south-1", "i-123");
+    assert.equal(details.status, "RUNNING");
+    assert.deepEqual(details.data, {
+        instanceId: "i-123",
+        state: "running",
+        imageId: "ami-123",
+        instanceType: "t3.micro",
+        privateIpAddress: "10.0.1.15",
+        publicIpAddress: "13.234.1.15",
+        privateDnsName: undefined,
+        publicDnsName: undefined,
+        vpcId: "vpc-123",
+        subnetId: "subnet-123",
+        availabilityZone: "ap-south-1a",
+        securityGroupIds: undefined,
+        launchTime: undefined,
+        architecture: undefined,
+        rootDeviceType: undefined,
+    });
 });
 
 test("encrypts and decrypts AWS secrets", () => {

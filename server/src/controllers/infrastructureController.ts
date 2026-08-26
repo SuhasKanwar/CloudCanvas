@@ -104,6 +104,40 @@ async function deleteResourceRecord(resource: AwsResourceForDeletion, userId: st
     }
 }
 
+async function refreshResourceRecord(resource: AwsResourceForDeletion) {
+    if (resource.status === AwsResourceStatus.TERMINATED || resource.status === AwsResourceStatus.DELETING) {
+        return { resourceId: resource.id, status: "skipped" as const };
+    }
+    if (!resource.externalId || !isAwsService(resource.service) || !AWS_ENCRYPTION_KEY) {
+        return { resourceId: resource.id, status: "skipped" as const };
+    }
+    try {
+        const credentials = {
+            accessKeyId: decryptAwsSecret(resource.connection.accessKeyIdEncrypted, AWS_ENCRYPTION_KEY),
+            secretAccessKey: decryptAwsSecret(resource.connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
+            ...(resource.connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(resource.connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
+        };
+        const details = await awsResourceManager.getResourceDetails(resource.service, resource.externalId, credentials, resource.region);
+        const updated = await prisma.awsResource.update({
+            where: { id: resource.id },
+            data: {
+                status: details.status,
+                actualState: jsonValue({ ...details.data, state: details.state, refreshedAt: new Date().toISOString() }),
+                lastError: null,
+            },
+        });
+        return { resourceId: resource.id, status: "refreshed" as const, resource: updated };
+    } catch (error) {
+        const message = errorMessage(error);
+        if (isMissingAwsResource(error)) {
+            const updated = await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.TERMINATED, lastError: null } });
+            return { resourceId: resource.id, status: "terminated" as const, resource: updated };
+        }
+        await prisma.awsResource.update({ where: { id: resource.id }, data: { lastError: message } });
+        return { resourceId: resource.id, status: "failed" as const, error: message };
+    }
+}
+
 function param(req: Request, name: string) {
     const value = req.params[name];
     return Array.isArray(value) ? value[0] ?? "" : value ?? "";
@@ -910,4 +944,24 @@ export async function deleteAwsResource(req: Request, res: Response<ApiResponse>
     const outcome = await deleteResourceRecord(resource, userId);
     if (outcome.status === "failed") return res.status(502).json({ success: false, message: `${resource.service} resource deletion failed.`, error: outcome.error });
     return res.json({ success: true, message: outcome.status === "already_deleted" ? "AWS resource was already deleted." : `${resource.service} resource deleted successfully.`, data: outcome });
+}
+
+export async function refreshSketchResources(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    const sketchId = param(req, "sketchId");
+    const sketch = await prisma.sketch.findFirst({ where: { id: sketchId, userId }, select: { id: true } });
+    if (!sketch) return res.status(404).json({ success: false, message: "Sketch not found." });
+    const resources = await prisma.awsResource.findMany({
+        where: { sketchId: sketch.id, userId, status: { not: AwsResourceStatus.TERMINATED } },
+        include: { connection: true },
+        orderBy: { updatedAt: "asc" },
+    });
+    if (!resources.length) return res.json({ success: true, message: "No deployed AWS resources require a status refresh.", data: { outcomes: [] } });
+
+    const outcomes: Array<Awaited<ReturnType<typeof refreshResourceRecord>>> = [];
+    for (let index = 0; index < resources.length; index += 4) {
+        outcomes.push(...await Promise.all(resources.slice(index, index + 4).map((resource) => refreshResourceRecord(resource))));
+    }
+    return res.json({ success: true, message: "AWS resource statuses refreshed successfully.", data: { outcomes } });
 }
