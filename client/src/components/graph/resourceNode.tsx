@@ -46,12 +46,12 @@ export function ResourceNode({ data, selected }: NodeProps) {
         }
     };
 
-    return <div className={`min-w-44 border bg-[#151821] shadow-lg ${selected ? "border-(--primary-color)" : "border-white/12"}`}>
+    return <div className={`min-w-48 overflow-hidden rounded-md border bg-[var(--surface-color)] shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition-shadow ${selected ? "border-(--primary-color) shadow-[0_0_0_1px_var(--primary-color),0_16px_36px_rgba(0,0,0,0.38)]" : "border-white/12"}`}>
         <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-text-color)" position={Position.Top} type="target" />
         <div className="flex items-center gap-3 px-3 py-3">
-            <span className={`grid h-8 w-8 place-items-center bg-white/6 ${appearance.accent}`}><Icon className="h-4 w-4" /></span>
+            <span className={`grid h-8 w-8 place-items-center rounded-md bg-white/6 ${appearance.accent}`}><Icon className="h-4 w-4" /></span>
             <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-(--primary-text-color)">{resource.label}</p>
+                <p className="truncate font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)">{resource.label}</p>
                 <p className="mt-0.5 font-mono text-[10px] text-(--secondary-text-color)">{appearance.title}</p>
             </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { useMemo, useSyncExternalStore, useState, useEffect } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { dismissToast, getToasts, pushToast, subscribe, type ToastInput, type ToastItem } from "@/lib/toast";
 
@@ -13,11 +13,7 @@ type ToastContextValue = {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
     const toasts = useSyncExternalStore(subscribe, getToasts, getToasts);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useSyncExternalStore(() => () => undefined, () => true, () => false);
 
     return (
         <>
@@ -53,13 +49,13 @@ function ToastCard({ toast }: { toast: ToastItem }) {
                 : "border-white/10 bg-black/30 text-(--primary-text-color)";
 
     return (
-        <div className={`pointer-events-auto animate-toast-enter rounded-2xl border p-4 shadow-[0_16px_40px_rgba(0,0,0,0.42)] backdrop-blur ${tone}`}>
+        <div className={`pointer-events-auto animate-toast-enter rounded-lg border p-4 shadow-[0_16px_40px_rgba(0,0,0,0.42)] backdrop-blur ${tone}`}>
             <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                     <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-(--secondary-text-color)">
                         {toast.variant}
                     </p>
-                    <p className="mt-2 text-sm leading-6">
+                    <p className="mt-2 font-(family-name:--font-display) text-sm leading-6">
                         {toast.message}
                     </p>
                 </div>

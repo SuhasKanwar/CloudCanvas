@@ -94,7 +94,7 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
     return (
         <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
             <section className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-xl items-center">
-                <div className="w-full rounded-4xl border border-white/10 bg-[color-mix(in_srgb,var(--surface-color)_92%,transparent)] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur md:p-8">
+                <div className="w-full rounded-lg border border-white/10 bg-[color-mix(in_srgb,var(--surface-color)_92%,transparent)] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur md:p-8">
                     <div className="flex items-center justify-between gap-4">
                         <Link href="/" className="inline-flex items-center gap-2 text-sm text-(--secondary-text-color) transition-colors hover:text-(--primary-text-color)">
                             CloudCanvas
@@ -108,7 +108,7 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
                         <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-(--secondary-color)">
                             {mode === "signup" ? "New workspace" : "Welcome back"}
                         </p>
-                        <h1 className="mt-3 text-3xl leading-tight text-(--primary-text-color) md:text-4xl">
+                        <h1 className="mt-3 text-3xl font-semibold leading-tight text-(--primary-text-color) md:text-4xl">
                             {content.title}
                         </h1>
                         <p className="mt-3 max-w-lg text-sm leading-6 text-(--secondary-text-color) md:text-base">
@@ -117,7 +117,7 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
                     </div>
 
                     <button
-                        className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-(--primary-text-color) transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-white/5 px-4 py-3 text-sm text-(--primary-text-color) transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                         onClick={handleGoogle}
                         type="button"
                     >
@@ -139,7 +139,7 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
                                     Name
                                 </span>
                                 <input
-                                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-(--primary-text-color) outline-none transition-colors placeholder:text-(--muted-text-color) focus:border-(--primary-color)"
+                                    className="w-full rounded-md border border-white/10 bg-black/20 px-4 py-3 text-sm text-(--primary-text-color) outline-none transition-colors placeholder:text-(--muted-text-color) focus:border-(--primary-color)"
                                     name="name"
                                     onChange={(event) => setName(event.target.value)}
                                     placeholder="Your name"
@@ -157,7 +157,7 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
                             </span>
                             <input
                                 autoComplete="email"
-                                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-(--primary-text-color) outline-none transition-colors placeholder:text-(--muted-text-color) focus:border-(--primary-color)"
+                                className="w-full rounded-md border border-white/10 bg-black/20 px-4 py-3 text-sm text-(--primary-text-color) outline-none transition-colors placeholder:text-(--muted-text-color) focus:border-(--primary-color)"
                                 name="email"
                                 onChange={(event) => setEmail(event.target.value)}
                                 placeholder="you@example.com"
@@ -174,7 +174,7 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
                             </span>
                             <input
                                 autoComplete={isSignup ? "new-password" : "current-password"}
-                                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-(--primary-text-color) outline-none transition-colors placeholder:text-(--muted-text-color) focus:border-(--primary-color)"
+                                className="w-full rounded-md border border-white/10 bg-black/20 px-4 py-3 text-sm text-(--primary-text-color) outline-none transition-colors placeholder:text-(--muted-text-color) focus:border-(--primary-color)"
                                 name="password"
                                 onChange={(event) => setPassword(event.target.value)}
                                 placeholder="••••••••"
@@ -185,14 +185,14 @@ export default function AuthPanel({ mode }: { mode: AuthMode }) {
                         </label>
 
                         {error ? (
-                            <p className="flex items-start gap-2 rounded-2xl border border-(--danger-color)/30 bg-(--danger-color)/10 px-4 py-3 text-sm text-(--primary-text-color)">
+                            <p className="flex items-start gap-2 rounded-md border border-(--danger-color)/30 bg-(--danger-color)/10 px-4 py-3 text-sm text-(--primary-text-color)">
                                 <BadgeInfo className="mt-0.5 h-4 w-4 shrink-0 text-(--danger-color)" />
                                 <span>{error}</span>
                             </p>
                         ) : null}
 
                         <button
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-(--primary-color) px-4 py-3 text-sm font-medium text-(--primary-bg-color) transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-(--primary-color) px-4 py-3 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
                             disabled={loading}
                             type="submit"
                         >

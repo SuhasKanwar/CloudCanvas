@@ -78,46 +78,46 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
     };
 
     return (
-        <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-6">
+        <section className="mx-auto w-full max-w-6xl px-4 py-9 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-end justify-between gap-5 border-b border-white/10 pb-8">
                 <div>
                     <button className="mb-4 inline-flex items-center gap-2 text-sm text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={onBack} type="button"><ArrowLeft className="h-4 w-4" />Back to canvas</button>
                     <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-(--secondary-color)">Workspace</p>
-                    <h1 className="mt-2 text-3xl text-(--primary-text-color)">AWS connections</h1>
+                    <h1 className="mt-3 text-3xl font-semibold text-(--primary-text-color)">AWS connections</h1>
                 </div>
                 <p className="max-w-md text-sm leading-6 text-(--secondary-text-color)">Configure the account used when a sketch is deployed.</p>
             </div>
 
-            <div className="grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="grid gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 <div>
                     <div className="flex items-center justify-between gap-4">
                         <h2 className="text-lg text-(--primary-text-color)">Saved accounts</h2>
                         {loading ? <Loader2 aria-label="Loading AWS connections" className="h-4 w-4 animate-spin text-(--secondary-text-color)" /> : null}
                     </div>
-                    <div className="mt-4 divide-y divide-white/10 border-y border-white/10">
+                    <div className="mt-4 divide-y divide-white/10 border-y border-white/10 bg-black/8">
                         {!loading && connections.length === 0 ? <p className="py-8 text-sm text-(--secondary-text-color)">No AWS account is configured.</p> : null}
                         {connections.map((connection) => (
-                            <div className="flex items-center justify-between gap-4 py-4" key={connection.id}>
+                            <div className="flex items-center justify-between gap-4 px-4 py-4 transition hover:bg-white/4" key={connection.id}>
                                 <div className="min-w-0">
-                                    <p className="truncate text-sm font-medium text-(--primary-text-color)">{connection.name}</p>
+                                    <p className="truncate font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)">{connection.name}</p>
                                     <p className="mt-1 flex items-center gap-2 font-mono text-xs text-(--secondary-text-color)">{connection.region}{connection.isActive ? <span className="inline-flex items-center gap-1 text-(--success-color)"><Check className="h-3 w-3" />Active</span> : null}</p>
                                 </div>
-                                <div className="flex items-center gap-1"><button className="px-2 py-1 text-xs text-(--secondary-text-color) hover:text-(--primary-text-color) disabled:opacity-40" disabled={connection.isActive} onClick={() => void activate(connection.id)} type="button">{connection.isActive ? "In use" : "Use"}</button><button aria-label={`Delete ${connection.name}`} className="shrink-0 p-2 text-(--secondary-text-color) transition-colors hover:text-(--danger-color)" onClick={() => setConnectionToDelete(connection)} type="button"><Trash2 className="h-4 w-4" /></button></div>
+                                <div className="flex items-center gap-1"><button className="rounded-md px-2.5 py-1.5 text-xs text-(--secondary-text-color) transition hover:bg-white/6 hover:text-(--primary-text-color) disabled:opacity-40" disabled={connection.isActive} onClick={() => void activate(connection.id)} type="button">{connection.isActive ? "In use" : "Use"}</button><button aria-label={`Delete ${connection.name}`} className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-(--secondary-text-color) transition hover:bg-(--danger-color)/10 hover:text-(--danger-color)" onClick={() => setConnectionToDelete(connection)} type="button"><Trash2 className="h-4 w-4" /></button></div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <form className="border border-white/10 p-5" onSubmit={submit}>
-                    <div className="flex items-center gap-2 text-sm font-medium text-(--primary-text-color)"><KeyRound className="h-4 w-4" />Add account</div>
+                <form className="rounded-lg border border-white/10 bg-[var(--surface-color)] p-5 shadow-xl shadow-black/15" onSubmit={submit}>
+                    <div className="flex items-center gap-2 font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)"><span className="grid h-8 w-8 place-items-center rounded-md bg-(--primary-color)/10 text-(--primary-color)"><KeyRound className="h-4 w-4" /></span>Add account</div>
                     <div className="mt-5 space-y-4">
                         <Field label="Connection name" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} />
-                        <label className="block text-xs text-(--secondary-text-color)"><span>Region</span><select className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-2 text-sm text-(--primary-text-color) outline-none focus:border-(--primary-color)" onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))} value={form.region}>{regions.map((region) => <option className="bg-[#151821]" key={region} value={region}>{region}</option>)}</select></label>
+                        <label className="block text-xs text-(--secondary-text-color)"><span>Region</span><select className="mt-2 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-(--primary-text-color) outline-none transition focus:border-(--primary-color)" onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))} value={form.region}>{regions.map((region) => <option className="bg-[#151821]" key={region} value={region}>{region}</option>)}</select></label>
                         <Field label="Access key ID" value={form.accessKeyId} onChange={(accessKeyId) => setForm((current) => ({ ...current, accessKeyId }))} />
                         <Field label="Secret access key" secret value={form.secretAccessKey} onChange={(secretAccessKey) => setForm((current) => ({ ...current, secretAccessKey }))} />
                         <Field label="Session token (optional)" secret value={form.sessionToken} onChange={(sessionToken) => setForm((current) => ({ ...current, sessionToken }))} required={false} />
                     </div>
-                    <button className="mt-5 inline-flex w-full items-center justify-center gap-2 bg-(--primary-color) px-4 py-3 text-sm font-medium text-(--primary-bg-color) disabled:cursor-not-allowed disabled:opacity-60" disabled={saving || !accessToken} type="submit">
+                    <button className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-(--primary-color) px-4 py-3 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60" disabled={saving || !accessToken} type="submit">
                         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                         Save connection
                     </button>
@@ -137,6 +137,6 @@ function Field({ label, onChange, required = true, secret = false, value }: {
 }) {
     return <label className="block text-xs text-(--secondary-text-color)">
         <span>{label}</span>
-        <input className="mt-2 w-full border border-white/10 bg-black/20 px-3 py-2 text-sm text-(--primary-text-color) outline-none focus:border-(--primary-color)" onChange={(event) => onChange(event.target.value)} required={required} type={secret ? "password" : "text"} value={value} />
+        <input className="mt-2 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-(--primary-text-color) outline-none transition focus:border-(--primary-color)" onChange={(event) => onChange(event.target.value)} required={required} type={secret ? "password" : "text"} value={value} />
     </label>;
 }

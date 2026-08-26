@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-    --primary-color: #58D5C9;
-    --secondary-color: #F7B267;
-    --accent-color: #A78BFA;
+    --primary-color: #4fd1c5;
+    --secondary-color: #f1ad63;
+    --accent-color: #a78bfa;
     --success-color: #8EE6A2;
     --warning-color: #FFD166;
-    --primary-bg-color: #080A0E;
-    --surface-color: #10141B;
-    --surface-muted-color: #151A22;
-    --surface-strong-color: #1D2530;
-    --border-color: #2A3341;
-    --primary-text-color: #F5F7FA;
-    --secondary-text-color: #9AA6B6;
-    --muted-text-color: #687386;
-    --glow-color: rgba(88, 213, 201, 0.34);
+    --primary-bg-color: #0b0d12;
+    --surface-color: #121720;
+    --surface-muted-color: #171d28;
+    --surface-strong-color: #202937;
+    --border-color: #303b4c;
+    --primary-text-color: #f2f5f8;
+    --secondary-text-color: #a6b2c2;
+    --muted-text-color: #718096;
+    --glow-color: rgba(79, 209, 197, 0.26);
     --shadow-color: rgba(0, 0, 0, 0.36);
     --grid-color: rgba(154, 166, 182, 0.1);
     --danger-color: #FF4F57;
@@ -26,33 +26,57 @@
     --blueprint-grid: rgba(42, 48, 53, 0.08);
     --blueprint-line: #767976;
     --blueprint-text: #202326;
-    --font-display: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-body: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: "Sora", "Avenir Next", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+    --font-body: "DM Sans", "Avenir Next", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+    --font-mono-family: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
 
 body {
   background-color: var(--primary-bg-color);
   background-image:
     linear-gradient(rgba(154, 166, 182, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(154, 166, 182, 0.08) 1px, transparent 1px),
-    radial-gradient(circle at top, rgba(88, 213, 201, 0.08), transparent 30rem);
-  background-size: 36px 36px, 36px 36px, 100% 100%;
+    linear-gradient(90deg, rgba(154, 166, 182, 0.08) 1px, transparent 1px);
+  background-size: 36px 36px, 36px 36px;
   color: var(--primary-text-color);
   font-family: var(--font-body);
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
 }
 
 a, button {
   cursor: pointer;
 }
 
+button, input, select, textarea {
+  font: inherit;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono-family);
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary-color) 32%, transparent);
+  color: var(--primary-text-color);
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 7px;
   background: var(--primary-bg-color);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 8px;
+  background: var(--border-color);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -65,7 +89,7 @@ a, button {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--primary-color) var(--primary-bg-color);
+  scrollbar-color: var(--border-color) var(--primary-bg-color);
 }
 
 html {
@@ -109,8 +133,8 @@ html {
 .react-flow__controls {
   overflow: hidden;
   border: 1px solid var(--border-color) !important;
-  border-radius: 4px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34) !important;
 }
 
 .react-flow__controls-button {
