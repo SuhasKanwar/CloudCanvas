@@ -486,7 +486,7 @@ export async function replaceSketchGraph(req: Request, res: Response<ApiResponse
             await tx.sketchNode.deleteMany({ where: { sketchId } });
             await tx.sketch.update({
                 where: { id: sketchId },
-                data: { name: req.graph!.name.trim(), description: req.graph!.description ?? null, version: { increment: 1 } },
+                data: { description: req.graph!.description ?? null, version: { increment: 1 } },
             });
             await persistPreparedGraph(tx, sketchId, req.graph!, prepared);
             return tx.sketch.findUniqueOrThrow({ where: { id: sketchId }, include: sketchInclude });
@@ -525,13 +525,24 @@ export async function updateSketch(req: Request, res: Response<ApiResponse>) {
     const sketch = await prisma.sketch.update({
         where: { id: existing.id },
         data: {
-            ...(typeof req.body?.name === "string" && { name: req.body.name.trim() }),
             ...(typeof req.body?.description === "string" && { description: req.body.description }),
             ...(status !== undefined && { status }),
             version: { increment: 1 },
         },
     });
     return res.json({ success: true, message: "Sketch updated successfully.", data: sketch });
+}
+
+export async function renameSketch(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
+    if (!name) return res.status(400).json({ success: false, message: "Sketch name is required." });
+    const existing = await prisma.sketch.findFirst({ where: { id: param(req, "sketchId"), userId }, select: { id: true } });
+    if (!existing) return res.status(404).json({ success: false, message: "Sketch not found." });
+
+    const sketch = await prisma.sketch.update({ where: { id: existing.id }, data: { name, version: { increment: 1 } } });
+    return res.json({ success: true, message: "Sketch renamed successfully.", data: sketch });
 }
 
 export async function deleteSketch(req: Request, res: Response<ApiResponse>) {

@@ -14,6 +14,7 @@ import {
     refreshSketchResources,
     getSketch,
     listSketches,
+    renameSketch,
     updateSketch,
     updateSketchNode,
 } from "../controllers/infrastructureController.js";
@@ -27,6 +28,7 @@ sketchRouter.post("/import", graphParser, importSketchGraph);
 sketchRouter.put("/:sketchId/import", graphParser, replaceSketchGraph);
 sketchRouter.get("/", listSketches);
 sketchRouter.get("/:sketchId", getSketch);
+sketchRouter.patch("/:sketchId/name", renameSketch);
 sketchRouter.patch("/:sketchId", updateSketch);
 sketchRouter.delete("/:sketchId", deleteSketch);
 sketchRouter.post("/:sketchId/nodes", createSketchNode);

@@ -82,6 +82,15 @@ export async function createSketch(accessToken: string, name = "Untitled infrast
     return response.data.data;
 }
 
+export async function renameSketch(accessToken: string, sketchId: string, name: string): Promise<Sketch> {
+    const response = await api.patch<ApiEnvelope<Sketch>>(
+        `/api/sketches/${sketchId}/name`,
+        { name },
+        authenticatedRequest(accessToken),
+    );
+    return response.data.data;
+}
+
 export async function createAiSketch(accessToken: string, query: string, sessionHistory: readonly AiChatMessage[] = []): Promise<AiSketchResponse> {
     const response = await api.post<ApiEnvelope<AiSketchResponse>>(
         "/api/sketches/ai",
