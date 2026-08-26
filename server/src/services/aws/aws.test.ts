@@ -14,6 +14,16 @@ import { SnsService } from "./resources/sns.js";
 import { AwsCatalogService } from "./catalog.js";
 import { SecurityGroupService } from "./resources/securityGroup.js";
 import { KeyPairService } from "./resources/keyPair.js";
+import CacheService from "../cacheService.js";
+
+test("caches and invalidates AWS catalog values", () => {
+    const cache = new CacheService(60);
+    const key = CacheService.generateCacheKey("aws-catalog", { connectionId: "connection-1", region: "ap-south-1" });
+    cache.set(key, { instanceTypes: ["t3.micro"] }, 120);
+    assert.deepEqual(cache.get(key), { instanceTypes: ["t3.micro"] });
+    cache.del(key);
+    assert.equal(cache.get(key), undefined);
+});
 
 test("encrypts and decrypts AWS secrets", () => {
     const encrypted = encryptAwsSecret("secret-value", "test-encryption-key");

@@ -19,6 +19,7 @@ import { SecurityGroupService } from "./resources/securityGroup.js";
 import { KeyPairService } from "./resources/keyPair.js";
 import { AwsService } from "./types.js";
 import { AwsCatalogService, type AwsResourceCatalog } from "./catalog.js";
+import { cacheService } from "../cacheService.js";
 import type {
     AwsCredentials,
     AwsResourceCreateRequest,
@@ -31,6 +32,10 @@ import type {
 
 export class AWSResourceManager {
     constructor(private readonly defaultRegion = AWS_REGION) {}
+
+    private catalogCacheKey(connectionId: string, region: string) {
+        return `aws-catalog:${connectionId}:${region}`;
+    }
 
     createEc2Instance(request: Ec2InstanceRequest, credentials: AwsCredentials, region = this.defaultRegion): Promise<Ec2InstanceResult> {
         const client = new EC2Client({ region, credentials });
@@ -48,10 +53,13 @@ export class AWSResourceManager {
         }, region).terminateInstances({ instanceIds });
     }
 
-    async getCatalog(credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceCatalog> {
+    async getCatalog(credentials: AwsCredentials, region = this.defaultRegion, connectionId?: string): Promise<AwsResourceCatalog> {
+        const cacheKey = connectionId ? this.catalogCacheKey(connectionId, region) : undefined;
+        const cachedCatalog = cacheKey ? cacheService.get<AwsResourceCatalog>(cacheKey) : undefined;
+        if (cachedCatalog) return cachedCatalog;
         const ec2 = new EC2Client({ region, credentials });
         const iam = new IAMClient({ region, credentials });
-        return new AwsCatalogService({
+        const catalog = await new AwsCatalogService({
             securityGroups: (command) => ec2.send(command),
             vpcs: (command) => ec2.send(command),
             subnets: (command) => ec2.send(command),
@@ -62,6 +70,12 @@ export class AWSResourceManager {
             keyPairs: (command) => ec2.send(command),
             instanceProfiles: (command) => iam.send(command),
         }).list();
+        if (cacheKey) cacheService.set(cacheKey, catalog, 120);
+        return catalog;
+    }
+
+    invalidateCatalog(connectionId: string, region = this.defaultRegion) {
+        cacheService.del(this.catalogCacheKey(connectionId, region));
     }
 
     async createResource(request: AwsResourceCreateRequest, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {

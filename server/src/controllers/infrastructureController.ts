@@ -86,12 +86,14 @@ async function deleteResourceRecord(resource: AwsResourceForDeletion, userId: st
             ...(resource.connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(resource.connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
         };
         const result = await awsResourceManager.deleteResource(resource.service, resource.externalId, credentials, resource.region);
+        awsResourceManager.invalidateCatalog(resource.connectionId, resource.region);
         await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.TERMINATED, actualState: jsonValue(result.data), lastError: null } });
         await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result.data), finishedAt: new Date() } });
         return { resourceId: resource.id, status: "deleted" as const, result };
     } catch (error) {
         const message = errorMessage(error);
         if (isMissingAwsResource(error)) {
+            awsResourceManager.invalidateCatalog(resource.connectionId, resource.region);
             await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.TERMINATED, lastError: null } });
             await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue({ alreadyDeleted: true }), finishedAt: new Date() } });
             return { resourceId: resource.id, status: "already_deleted" as const };
@@ -687,7 +689,7 @@ export async function getAwsResourceCatalog(req: Request, res: Response<ApiRespo
             secretAccessKey: decryptAwsSecret(connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
             ...(connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
         };
-        const catalog = await awsResourceManager.getCatalog(credentials, connection.region);
+        const catalog = await awsResourceManager.getCatalog(credentials, connection.region, connection.id);
         return res.json({ success: true, message: "AWS resource catalog fetched successfully.", data: catalog });
     } catch (error) {
         return res.status(502).json({ success: false, message: "AWS resource catalog could not be fetched.", error: errorMessage(error) });
@@ -711,7 +713,7 @@ export async function deleteAwsConnection(req: Request, res: Response<ApiRespons
     const userId = ownedUser(req, res);
     if (!userId) return;
     try {
-        const connection = await prisma.awsConnection.findFirst({ where: { id: param(req, "connectionId"), userId }, select: { id: true, isActive: true } });
+        const connection = await prisma.awsConnection.findFirst({ where: { id: param(req, "connectionId"), userId }, select: { id: true, region: true, isActive: true } });
         if (!connection) return res.status(404).json({ success: false, message: "AWS connection not found." });
         await prisma.$transaction(async (tx) => {
             await tx.awsConnection.delete({ where: { id: connection.id } });
@@ -720,6 +722,7 @@ export async function deleteAwsConnection(req: Request, res: Response<ApiRespons
                 if (next) await tx.awsConnection.update({ where: { id: next.id }, data: { isActive: true } });
             }
         });
+        awsResourceManager.invalidateCatalog(connection.id, connection.region);
         return res.json({ success: true, message: "AWS connection deleted successfully." });
     } catch (error) {
         return res.status(409).json({ success: false, message: "AWS connection is used by a resource or deployment.", error: errorMessage(error) });
@@ -816,6 +819,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
             if (!existingResource.managed) return res.status(409).json({ success: false, message: `Node ${nodeId} adopts an external resource and cannot update it.` });
             try {
                 const result = await awsResourceManager.updateResource(resourceRequest, existingResource.externalId, credentials, connection.region);
+                awsResourceManager.invalidateCatalog(connection.id, connection.region);
                 const updated = await prisma.awsResource.update({ where: { id: existingResource.id }, data: { desiredConfig: jsonValue(resourceRequest.config), actualState: jsonValue(result.data), lastError: null } });
                 if (isRecord(result.data)) outputsByNode.set(nodeId, result.data);
                 outcomes.push({ nodeId, status: "updated", resourceId: updated.id, result });
@@ -860,6 +864,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                 },
             });
             const result = await awsResourceManager.createResource(resourceRequest, credentials, connection.region);
+            awsResourceManager.invalidateCatalog(connection.id, connection.region);
             const updatedResource = await prisma.awsResource.update({
                 where: { id: resource.id },
                 data: {
