@@ -57,7 +57,9 @@ export const ModelName = {
   SketchEdge: 'SketchEdge',
   AwsConnection: 'AwsConnection',
   AwsResource: 'AwsResource',
-  Deployment: 'Deployment'
+  Deployment: 'Deployment',
+  SketchConversation: 'SketchConversation',
+  ChatMessage: 'ChatMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -184,6 +186,31 @@ export const DeploymentScalarFieldEnum = {
 } as const
 
 export type DeploymentScalarFieldEnum = (typeof DeploymentScalarFieldEnum)[keyof typeof DeploymentScalarFieldEnum]
+
+
+export const SketchConversationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sketchId: 'sketchId',
+  title: 'title',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SketchConversationScalarFieldEnum = (typeof SketchConversationScalarFieldEnum)[keyof typeof SketchConversationScalarFieldEnum]
+
+
+export const ChatMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  type: 'type',
+  content: 'content',
+  build: 'build',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -33,6 +33,16 @@ enum DeploymentStatus {
   FAILED
 }
 
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+enum ChatMessageType {
+  TEXT
+  BUILD
+}
+
 model User {
   id       String       @id @default(cuid())
   email    String       @unique
@@ -48,6 +58,7 @@ model User {
   awsConnections AwsConnection[]
   awsResources   AwsResource[]
   deployments    Deployment[]
+  conversations  SketchConversation[]
 
   @@index([email])
   @@index([createdAt])
@@ -68,6 +79,7 @@ model Sketch {
   edges       SketchEdge[]
   resources   AwsResource[]
   deployments Deployment[]
+  conversation SketchConversation?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -179,4 +191,35 @@ model Deployment {
   createdAt  DateTime      @default(now())
 
   @@index([userId, sketchId, createdAt])
+}
+
+model SketchConversation {
+  id        String @id @default(cuid())
+  userId    String
+  sketchId  String @unique
+  title     String?
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sketch   Sketch        @relation(fields: [sketchId], references: [id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+model ChatMessage {
+  id             String          @id @default(cuid())
+  conversationId String
+  role           ChatRole
+  type           ChatMessageType @default(TEXT)
+  content        String
+  build          Json?
+
+  conversation SketchConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId, createdAt])
 }

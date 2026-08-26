@@ -52,3 +52,13 @@ export type AwsResource = Prisma.AwsResourceModel
  * 
  */
 export type Deployment = Prisma.DeploymentModel
+/**
+ * Model SketchConversation
+ * 
+ */
+export type SketchConversation = Prisma.SketchConversationModel
+/**
+ * Model ChatMessage
+ * 
+ */
+export type ChatMessage = Prisma.ChatMessageModel

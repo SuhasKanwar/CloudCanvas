@@ -45,3 +45,19 @@ export const DeploymentStatus = {
 } as const
 
 export type DeploymentStatus = (typeof DeploymentStatus)[keyof typeof DeploymentStatus]
+
+
+export const ChatRole = {
+  USER: 'USER',
+  ASSISTANT: 'ASSISTANT'
+} as const
+
+export type ChatRole = (typeof ChatRole)[keyof typeof ChatRole]
+
+
+export const ChatMessageType = {
+  TEXT: 'TEXT',
+  BUILD: 'BUILD'
+} as const
+
+export type ChatMessageType = (typeof ChatMessageType)[keyof typeof ChatMessageType]

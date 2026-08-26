@@ -210,6 +210,7 @@ export type UserWhereInput = {
   awsConnections?: Prisma.AwsConnectionListRelationFilter
   awsResources?: Prisma.AwsResourceListRelationFilter
   deployments?: Prisma.DeploymentListRelationFilter
+  conversations?: Prisma.SketchConversationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -225,6 +226,7 @@ export type UserOrderByWithRelationInput = {
   awsConnections?: Prisma.AwsConnectionOrderByRelationAggregateInput
   awsResources?: Prisma.AwsResourceOrderByRelationAggregateInput
   deployments?: Prisma.DeploymentOrderByRelationAggregateInput
+  conversations?: Prisma.SketchConversationOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -243,6 +245,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   awsConnections?: Prisma.AwsConnectionListRelationFilter
   awsResources?: Prisma.AwsResourceListRelationFilter
   deployments?: Prisma.DeploymentListRelationFilter
+  conversations?: Prisma.SketchConversationListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -286,6 +289,7 @@ export type UserCreateInput = {
   awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -301,6 +305,7 @@ export type UserUncheckedCreateInput = {
   awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -316,6 +321,7 @@ export type UserUpdateInput = {
   awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -331,6 +337,7 @@ export type UserUncheckedUpdateInput = {
   awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -476,6 +483,20 @@ export type UserUpdateOneRequiredWithoutDeploymentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutDeploymentsInput, Prisma.UserUpdateWithoutDeploymentsInput>, Prisma.UserUncheckedUpdateWithoutDeploymentsInput>
 }
 
+export type UserCreateNestedOneWithoutConversationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConversationsInput
+  upsert?: Prisma.UserUpsertWithoutConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutConversationsInput, Prisma.UserUpdateWithoutConversationsInput>, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+}
+
 export type UserCreateWithoutSketchesInput = {
   id?: string
   email: string
@@ -488,6 +509,7 @@ export type UserCreateWithoutSketchesInput = {
   awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSketchesInput = {
@@ -502,6 +524,7 @@ export type UserUncheckedCreateWithoutSketchesInput = {
   awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSketchesInput = {
@@ -532,6 +555,7 @@ export type UserUpdateWithoutSketchesInput = {
   awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSketchesInput = {
@@ -546,6 +570,7 @@ export type UserUncheckedUpdateWithoutSketchesInput = {
   awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAwsConnectionsInput = {
@@ -560,6 +585,7 @@ export type UserCreateWithoutAwsConnectionsInput = {
   sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAwsConnectionsInput = {
@@ -574,6 +600,7 @@ export type UserUncheckedCreateWithoutAwsConnectionsInput = {
   sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAwsConnectionsInput = {
@@ -604,6 +631,7 @@ export type UserUpdateWithoutAwsConnectionsInput = {
   sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAwsConnectionsInput = {
@@ -618,6 +646,7 @@ export type UserUncheckedUpdateWithoutAwsConnectionsInput = {
   sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAwsResourcesInput = {
@@ -632,6 +661,7 @@ export type UserCreateWithoutAwsResourcesInput = {
   sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
   awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAwsResourcesInput = {
@@ -646,6 +676,7 @@ export type UserUncheckedCreateWithoutAwsResourcesInput = {
   sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
   awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
   deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAwsResourcesInput = {
@@ -676,6 +707,7 @@ export type UserUpdateWithoutAwsResourcesInput = {
   sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
   awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAwsResourcesInput = {
@@ -690,6 +722,7 @@ export type UserUncheckedUpdateWithoutAwsResourcesInput = {
   sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
   awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
   deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutDeploymentsInput = {
@@ -704,6 +737,7 @@ export type UserCreateWithoutDeploymentsInput = {
   sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
   awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutDeploymentsInput = {
@@ -718,6 +752,7 @@ export type UserUncheckedCreateWithoutDeploymentsInput = {
   sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
   awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
   awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
+  conversations?: Prisma.SketchConversationUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutDeploymentsInput = {
@@ -748,6 +783,7 @@ export type UserUpdateWithoutDeploymentsInput = {
   sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
   awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDeploymentsInput = {
@@ -762,6 +798,83 @@ export type UserUncheckedUpdateWithoutDeploymentsInput = {
   sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
   awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
   awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
+  conversations?: Prisma.SketchConversationUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutConversationsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutConversationsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  imageUrl?: string | null
+  password?: string | null
+  provider: $Enums.AuthProvider
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sketches?: Prisma.SketchUncheckedCreateNestedManyWithoutUserInput
+  awsConnections?: Prisma.AwsConnectionUncheckedCreateNestedManyWithoutUserInput
+  awsResources?: Prisma.AwsResourceUncheckedCreateNestedManyWithoutUserInput
+  deployments?: Prisma.DeploymentUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutConversationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+}
+
+export type UserUpsertWithoutConversationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutConversationsInput, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutConversationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutConversationsInput, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+}
+
+export type UserUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sketches?: Prisma.SketchUncheckedUpdateManyWithoutUserNestedInput
+  awsConnections?: Prisma.AwsConnectionUncheckedUpdateManyWithoutUserNestedInput
+  awsResources?: Prisma.AwsResourceUncheckedUpdateManyWithoutUserNestedInput
+  deployments?: Prisma.DeploymentUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -774,6 +887,7 @@ export type UserCountOutputType = {
   awsConnections: number
   awsResources: number
   deployments: number
+  conversations: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -781,6 +895,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   awsConnections?: boolean | UserCountOutputTypeCountAwsConnectionsArgs
   awsResources?: boolean | UserCountOutputTypeCountAwsResourcesArgs
   deployments?: boolean | UserCountOutputTypeCountDeploymentsArgs
+  conversations?: boolean | UserCountOutputTypeCountConversationsArgs
 }
 
 /**
@@ -821,6 +936,13 @@ export type UserCountOutputTypeCountDeploymentsArgs<ExtArgs extends runtime.Type
   where?: Prisma.DeploymentWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SketchConversationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -835,6 +957,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   awsConnections?: boolean | Prisma.User$awsConnectionsArgs<ExtArgs>
   awsResources?: boolean | Prisma.User$awsResourcesArgs<ExtArgs>
   deployments?: boolean | Prisma.User$deploymentsArgs<ExtArgs>
+  conversations?: boolean | Prisma.User$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -877,6 +1000,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   awsConnections?: boolean | Prisma.User$awsConnectionsArgs<ExtArgs>
   awsResources?: boolean | Prisma.User$awsResourcesArgs<ExtArgs>
   deployments?: boolean | Prisma.User$deploymentsArgs<ExtArgs>
+  conversations?: boolean | Prisma.User$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -889,6 +1013,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     awsConnections: Prisma.$AwsConnectionPayload<ExtArgs>[]
     awsResources: Prisma.$AwsResourcePayload<ExtArgs>[]
     deployments: Prisma.$DeploymentPayload<ExtArgs>[]
+    conversations: Prisma.$SketchConversationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1297,6 +1422,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   awsConnections<T extends Prisma.User$awsConnectionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$awsConnectionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AwsConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   awsResources<T extends Prisma.User$awsResourcesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$awsResourcesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AwsResourcePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deployments<T extends Prisma.User$deploymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$deploymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeploymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  conversations<T extends Prisma.User$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SketchConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1820,6 +1946,30 @@ export type User$deploymentsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.DeploymentScalarFieldEnum | Prisma.DeploymentScalarFieldEnum[]
+}
+
+/**
+ * User.conversations
+ */
+export type User$conversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SketchConversation
+   */
+  select?: Prisma.SketchConversationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SketchConversation
+   */
+  omit?: Prisma.SketchConversationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SketchConversationInclude<ExtArgs> | null
+  where?: Prisma.SketchConversationWhereInput
+  orderBy?: Prisma.SketchConversationOrderByWithRelationInput | Prisma.SketchConversationOrderByWithRelationInput[]
+  cursor?: Prisma.SketchConversationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SketchConversationScalarFieldEnum | Prisma.SketchConversationScalarFieldEnum[]
 }
 
 /**
