@@ -19,11 +19,13 @@ import {
     updateSketchNode,
 } from "../controllers/infrastructureController.js";
 import { graphParser } from "../services/graphParser.js";
+import conversationRouter from "./conversationRouter.js";
 
 const sketchRouter = Router();
 
 sketchRouter.post("/", createSketch);
 sketchRouter.post("/ai", createAiSketch);
+sketchRouter.use("/:sketchId/conversation", conversationRouter);
 sketchRouter.post("/import", graphParser, importSketchGraph);
 sketchRouter.put("/:sketchId/import", graphParser, replaceSketchGraph);
 sketchRouter.get("/", listSketches);
