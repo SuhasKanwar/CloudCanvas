@@ -73,7 +73,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         const snapshots = replace ? incoming : { ...resourcesByNodeIdRef.current, ...incoming };
         resourcesByNodeIdRef.current = snapshots;
         setResourcesByNodeId(snapshots);
-        setNodes((current) => current.map((node) => ({ ...node, data: { ...node.data, deployment: snapshots[node.id] ? { status: snapshots[node.id].status, lastError: snapshots[node.id].lastError } : undefined } })));
+        setNodes((current) => current.map((node) => ({ ...node, data: { ...node.data, deployment: snapshots[node.id] ? { status: snapshots[node.id].status, lastError: snapshots[node.id].lastError, actualState: snapshots[node.id].actualState } : undefined } })));
     }, [setNodes]);
 
     const refreshDeployedResources = useCallback(async () => {
@@ -164,7 +164,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             id: node.id,
             type: "resource" as const,
             position: { x: node.positionX, y: node.positionY },
-            data: { service: node.type, label: node.label ?? node.type, config: node.config, deployment: loadedResources[node.id] ? { status: loadedResources[node.id].status, lastError: loadedResources[node.id].lastError } : undefined },
+            data: { service: node.type, label: node.label ?? node.type, config: node.config, deployment: loadedResources[node.id] ? { status: loadedResources[node.id].status, lastError: loadedResources[node.id].lastError, actualState: loadedResources[node.id].actualState } : undefined },
         }));
         const loadedEdges: Edge[] = (sketch.edges ?? []).map((edge) => {
             const connection = normalizeEc2Connection({ source: edge.sourceNodeId, target: edge.targetNodeId, sourceHandle: edge.sourceHandle ?? null, targetHandle: edge.targetHandle ?? null }, loadedNodes);

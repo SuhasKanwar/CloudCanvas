@@ -8,7 +8,7 @@ export type ResourceNodeData = {
     label: string;
     service: AwsService;
     config: Record<string, unknown>;
-    deployment?: { status: string; lastError: string | null };
+    deployment?: { status: string; lastError: string | null; actualState: Record<string, unknown> | null };
 };
 
 const serviceAppearance: Record<AwsService, { accent: string; icon: typeof Server; title: string }> = {
@@ -31,6 +31,8 @@ export function ResourceNode({ data, selected }: NodeProps) {
 
     const status = resource.deployment?.status;
     const statusClass = status === "RUNNING" ? "bg-emerald-400" : status === "PROVISIONING" || status === "DELETING" ? "bg-amber-300" : status === "FAILED" ? "bg-rose-400" : status === "TERMINATED" ? "bg-zinc-500" : "bg-slate-400";
+    const publicIpAddress = typeof resource.deployment?.actualState?.publicIpAddress === "string" ? resource.deployment.actualState.publicIpAddress : "";
+    const privateIpAddress = typeof resource.deployment?.actualState?.privateIpAddress === "string" ? resource.deployment.actualState.privateIpAddress : "";
 
     return <div className={`min-w-44 border bg-[#151821] shadow-lg ${selected ? "border-(--primary-color)" : "border-white/12"}`}>
         <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-text-color)" position={Position.Top} type="target" />
@@ -42,6 +44,7 @@ export function ResourceNode({ data, selected }: NodeProps) {
             </div>
         </div>
         {status ? <div className="flex items-center gap-1.5 border-t border-white/8 px-3 py-2 font-mono text-[10px] text-(--secondary-text-color)"><span className={`h-1.5 w-1.5 rounded-full ${statusClass}`} />{status.replaceAll("_", " ")}</div> : null}
+        {resource.service === "EC2_INSTANCE" && (publicIpAddress || privateIpAddress) ? <div className="space-y-1 border-t border-white/8 px-3 py-2 font-mono text-[10px]"><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Public IP</span><span className="text-(--primary-text-color)">{publicIpAddress || "Not assigned"}</span></div><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Private IP</span><span className="text-(--primary-text-color)">{privateIpAddress || "Not assigned"}</span></div></div> : null}
         <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-color)" position={Position.Bottom} type="source" />
     </div>;
 }
