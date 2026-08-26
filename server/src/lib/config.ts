@@ -10,6 +10,7 @@ export const AI_SERVICE_TIMEOUT_MS: number = 120000;
 export const JWT_SECRET: string = process.env.JWT_SECRET || "secret";
 export const AWS_REGION: string = process.env.AWS_REGION || "ap-south-1";
 export const AWS_ENCRYPTION_KEY: string = process.env.AWS_ENCRYPTION_KEY || "";
+export const AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY: number = Math.max(1, Math.min(10, Number(process.env.AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY) || 4));
 
 export const LOGS_DIRECTORY: string = "logs";
 

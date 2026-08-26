@@ -18,6 +18,7 @@ export type Sketch = {
     updatedAt: string;
     nodes?: SketchNode[];
     edges?: SketchEdge[];
+    resources?: AwsResourceSnapshot[];
 };
 
 export type SketchNode = {
@@ -39,6 +40,7 @@ export type SketchEdge = {
 
 export type AwsResourceSnapshot = {
     id: string;
+    nodeId: string | null;
     service: AwsService;
     externalId: string | null;
     status: string;
@@ -87,7 +89,7 @@ export async function refreshSketchResources(accessToken: string, sketchId: stri
     const response = await api.post<ApiEnvelope<{ outcomes: ResourceRefreshOutcome[] }>>(
         `/api/sketches/${sketchId}/resources/refresh`,
         {},
-        authenticatedRequest(accessToken),
+        authenticatedRequest(accessToken, { silentToast: true }),
     );
     return response.data.data.outcomes;
 }

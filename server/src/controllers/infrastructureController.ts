@@ -4,7 +4,7 @@ import type { Runtime } from "@aws-sdk/client-lambda";
 import { Prisma } from "../generated/prisma/client.js";
 import { AwsResourceStatus, DeploymentStatus, SketchStatus } from "../generated/prisma/enums.js";
 import prisma from "../lib/prisma.js";
-import { AWS_ENCRYPTION_KEY, AWS_REGION } from "../lib/config.js";
+import { AWS_ENCRYPTION_KEY, AWS_REGION, AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY } from "../lib/config.js";
 import {
     awsResourceManager,
     decryptAwsSecret,
@@ -960,8 +960,8 @@ export async function refreshSketchResources(req: Request, res: Response<ApiResp
     if (!resources.length) return res.json({ success: true, message: "No deployed AWS resources require a status refresh.", data: { outcomes: [] } });
 
     const outcomes: Array<Awaited<ReturnType<typeof refreshResourceRecord>>> = [];
-    for (let index = 0; index < resources.length; index += 4) {
-        outcomes.push(...await Promise.all(resources.slice(index, index + 4).map((resource) => refreshResourceRecord(resource))));
+    for (let index = 0; index < resources.length; index += AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY) {
+        outcomes.push(...await Promise.all(resources.slice(index, index + AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY).map((resource) => refreshResourceRecord(resource))));
     }
     return res.json({ success: true, message: "AWS resource statuses refreshed successfully.", data: { outcomes } });
 }

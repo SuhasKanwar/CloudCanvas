@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { addEdge, applyEdgeChanges, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type EdgeChange, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -8,7 +8,8 @@ import { Check, Pencil, Plus, Save, Settings2 } from "lucide-react";
 import { stringify } from "yaml";
 import type { AwsService, GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
-import type { Sketch } from "@/lib/sketches";
+import { RESOURCE_STATUS_POLL_INTERVAL_MS } from "@/lib/config";
+import { refreshSketchResources, type AwsResourceSnapshot, type Sketch } from "@/lib/sketches";
 import AiComposer from "./AiComposer";
 import SketchLibrary from "./SketchLibrary";
 import PublishSketchButton from "./PublishSketchButton";
@@ -57,6 +58,8 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
     const [sketchConnectionId, setSketchConnectionId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [resourcesByNodeId, setResourcesByNodeId] = useState<Record<string, AwsResourceSnapshot>>({});
+    const resourcesByNodeIdRef = useRef<Record<string, AwsResourceSnapshot>>({});
 
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
     const selectedBindings = selectedNode?.data.service === "EC2_INSTANCE" ? {
@@ -64,6 +67,28 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         securityGroups: edges.map((edge) => edge.target === selectedNode.id ? nodes.find((node) => node.id === edge.source) : undefined).filter((node): node is ResourceFlowNode => node?.data.service === "SECURITY_GROUP"),
     } : undefined;
     const nodeTypeMap = useMemo(() => nodeTypes, []);
+
+    const applyResourceSnapshots = useCallback((resources: readonly AwsResourceSnapshot[], replace = false) => {
+        const incoming = Object.fromEntries(resources.flatMap((resource) => resource.nodeId ? [[resource.nodeId, resource]] : [])) as Record<string, AwsResourceSnapshot>;
+        const snapshots = replace ? incoming : { ...resourcesByNodeIdRef.current, ...incoming };
+        resourcesByNodeIdRef.current = snapshots;
+        setResourcesByNodeId(snapshots);
+        setNodes((current) => current.map((node) => ({ ...node, data: { ...node.data, deployment: snapshots[node.id] ? { status: snapshots[node.id].status, lastError: snapshots[node.id].lastError } : undefined } })));
+    }, [setNodes]);
+
+    const refreshDeployedResources = useCallback(async () => {
+        if (!session?.accessToken || !sketchId) return;
+        const outcomes = await refreshSketchResources(session.accessToken, sketchId);
+        const refreshed = outcomes.flatMap((outcome) => outcome.resource ? [outcome.resource] : []);
+        if (refreshed.length) applyResourceSnapshots(refreshed);
+    }, [applyResourceSnapshots, session?.accessToken, sketchId]);
+
+    useEffect(() => {
+        if (!sketchId || !session?.accessToken) return;
+        void refreshDeployedResources();
+        const interval = window.setInterval(() => void refreshDeployedResources(), RESOURCE_STATUS_POLL_INTERVAL_MS);
+        return () => window.clearInterval(interval);
+    }, [refreshDeployedResources, session?.accessToken, sketchId]);
 
     const addNode = (service: AwsService) => {
         const option = awsServiceOptions.find((entry) => entry.service === service);
@@ -134,17 +159,19 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         setSketchId(sketch.id);
         setSketchConnectionId(sketch.connectionId);
         setName(sketch.name);
+        const loadedResources = Object.fromEntries((sketch.resources ?? []).flatMap((resource) => resource.nodeId ? [[resource.nodeId, resource]] : [])) as Record<string, AwsResourceSnapshot>;
         const loadedNodes: ResourceFlowNode[] = (sketch.nodes ?? []).map((node) => ({
             id: node.id,
             type: "resource" as const,
             position: { x: node.positionX, y: node.positionY },
-            data: { service: node.type, label: node.label ?? node.type, config: node.config },
+            data: { service: node.type, label: node.label ?? node.type, config: node.config, deployment: loadedResources[node.id] ? { status: loadedResources[node.id].status, lastError: loadedResources[node.id].lastError } : undefined },
         }));
         const loadedEdges: Edge[] = (sketch.edges ?? []).map((edge) => {
             const connection = normalizeEc2Connection({ source: edge.sourceNodeId, target: edge.targetNodeId, sourceHandle: edge.sourceHandle ?? null, targetHandle: edge.targetHandle ?? null }, loadedNodes);
             return { id: edge.id, source: connection.source, target: connection.target, sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle, type: "smoothstep" };
         });
         setNodes(syncEc2Bindings(loadedNodes, loadedEdges));
+        applyResourceSnapshots(sketch.resources ?? [], true);
         setEdges(loadedEdges);
         setSelectedNodeId(null);
     };
@@ -157,6 +184,8 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         setEdges([]);
         setSelectedNodeId(null);
         setSaveError(null);
+        setResourcesByNodeId({});
+        resourcesByNodeIdRef.current = {};
     };
 
     const deleteSelectedNode = () => {
@@ -192,7 +221,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
                 <button aria-label="Create a new sketch" className="hidden rounded-md p-2 text-(--secondary-text-color) transition hover:bg-white/6 hover:text-(--primary-text-color) md:block" onClick={newSketch} title="New sketch" type="button"><Plus className="h-4 w-4" /></button>
                 <SketchLibrary onDelete={handleSketchDeleted} onLoad={loadSketch} />
-                <PublishSketchButton connectionId={sketchConnectionId} onPublished={setSketchConnectionId} sketchId={sketchId} />
+                <PublishSketchButton connectionId={sketchConnectionId} onPublished={(connectionId) => { setSketchConnectionId(connectionId); void refreshDeployedResources(); }} sketchId={sketchId} />
                 <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
             </div>
             <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
@@ -200,5 +229,5 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             </ReactFlow>
             <AiComposer onBuild={loadSketch} />
         </div>
-    </div>{selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} /></Modal> : null}</>;
+    </div>{selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}</>;
 }

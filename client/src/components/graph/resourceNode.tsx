@@ -8,6 +8,7 @@ export type ResourceNodeData = {
     label: string;
     service: AwsService;
     config: Record<string, unknown>;
+    deployment?: { status: string; lastError: string | null };
 };
 
 const serviceAppearance: Record<AwsService, { accent: string; icon: typeof Server; title: string }> = {
@@ -28,6 +29,9 @@ export function ResourceNode({ data, selected }: NodeProps) {
     const appearance = serviceAppearance[resource.service];
     const Icon = appearance.icon;
 
+    const status = resource.deployment?.status;
+    const statusClass = status === "RUNNING" ? "bg-emerald-400" : status === "PROVISIONING" || status === "DELETING" ? "bg-amber-300" : status === "FAILED" ? "bg-rose-400" : status === "TERMINATED" ? "bg-zinc-500" : "bg-slate-400";
+
     return <div className={`min-w-44 border bg-[#151821] shadow-lg ${selected ? "border-(--primary-color)" : "border-white/12"}`}>
         <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-text-color)" position={Position.Top} type="target" />
         <div className="flex items-center gap-3 px-3 py-3">
@@ -37,6 +41,7 @@ export function ResourceNode({ data, selected }: NodeProps) {
                 <p className="mt-0.5 font-mono text-[10px] text-(--secondary-text-color)">{appearance.title}</p>
             </div>
         </div>
+        {status ? <div className="flex items-center gap-1.5 border-t border-white/8 px-3 py-2 font-mono text-[10px] text-(--secondary-text-color)"><span className={`h-1.5 w-1.5 rounded-full ${statusClass}`} />{status.replaceAll("_", " ")}</div> : null}
         <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-color)" position={Position.Bottom} type="source" />
     </div>;
 }

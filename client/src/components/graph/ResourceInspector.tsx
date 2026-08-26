@@ -7,9 +7,10 @@ import type { Node } from "@xyflow/react";
 import { getAwsResourceCatalog, listAwsConnections, type AwsResourceCatalog } from "@/lib/aws";
 import Skeleton from "@/components/ui/Skeleton";
 import type { ResourceNodeData } from "./resourceNode";
+import type { AwsResourceSnapshot } from "@/lib/sketches";
 
 type Ec2Bindings = { keyPair?: string; securityGroups: string[] };
-type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void };
+type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; resource?: AwsResourceSnapshot; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void };
 type FieldProps = { label: string; value: string | number; onChange: (value: string) => void; type?: "number" | "text" };
 
 const inputClass = "mt-2 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-(--primary-text-color) outline-none transition placeholder:text-(--muted-text-color) hover:border-white/20 focus:border-(--primary-color) focus:ring-2 focus:ring-(--primary-color)/15";
@@ -149,13 +150,14 @@ function ConfigurationSkeleton() {
     return <div className="space-y-6" aria-label="Loading resource configuration"><div className="space-y-2"><Skeleton className="h-3 w-24" /><Skeleton className="h-11 w-full" /></div><div className="grid gap-5 sm:grid-cols-2"><div className="space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-11 w-full" /></div><div className="space-y-2"><Skeleton className="h-3 w-28" /><Skeleton className="h-11 w-full" /></div></div><div className="space-y-3 border-t border-white/10 pt-6"><Skeleton className="h-3 w-32" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></div>;
 }
 
-export default function ResourceInspector({ bindings, connectionId, node, onChange, onDelete }: Props) {
+export default function ResourceInspector({ bindings, connectionId, node, resource, onChange, onDelete }: Props) {
     const { data: session } = useSession();
     const { config, service } = node.data;
     const [catalog, setCatalog] = useState<AwsResourceCatalog | null>(null);
     const catalogRequired = service === "EC2_INSTANCE" || service === "SECURITY_GROUP" || service === "KEY_PAIR";
     const [catalogLoading, setCatalogLoading] = useState(catalogRequired);
     const update = (key: string, value: unknown) => onChange(node.data.label, key === "__all__" ? value as Record<string, unknown> : { ...config, [key]: value });
+    const stateEntries = Object.entries(resource?.actualState ?? {}).filter(([, value]) => typeof value === "string" || typeof value === "number" || typeof value === "boolean").slice(0, 12);
 
     useEffect(() => {
         const accessToken = session?.accessToken;
@@ -173,6 +175,7 @@ export default function ResourceInspector({ bindings, connectionId, node, onChan
         <div className="mt-6 max-w-4xl space-y-5">
             <label className="block"><span className="flex items-center gap-2 text-xs text-(--secondary-text-color)"><Tag className="h-3.5 w-3.5" />Node label</span><input className={inputClass} onChange={(event) => onChange(event.target.value, config)} value={node.data.label} /></label>
             <div className="rounded-md border border-white/8 bg-black/15 px-4 py-3"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--secondary-text-color)">{service.replaceAll("_", " ")}</p></div>
+            {resource ? <section className="border border-white/10 bg-black/15 p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-medium text-(--primary-text-color)">Deployment status</p><span className={`font-mono text-[10px] ${resource.status === "RUNNING" ? "text-emerald-300" : resource.status === "FAILED" ? "text-rose-300" : "text-amber-300"}`}>{resource.status.replaceAll("_", " ")}</span></div>{resource.lastError ? <p className="mt-3 text-xs leading-5 text-(--danger-color)">{resource.lastError}</p> : null}{stateEntries.length ? <dl className="mt-4 grid gap-x-5 gap-y-3 sm:grid-cols-2">{stateEntries.map(([key, value]) => <div key={key}><dt className="text-[11px] text-(--secondary-text-color)">{key.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase())}</dt><dd className="mt-0.5 break-all font-mono text-xs text-(--primary-text-color)">{String(value)}</dd></div>)}</dl> : null}</section> : null}
             {catalogLoading ? <ConfigurationSkeleton /> : <>
             {catalog?.warnings.length ? <p className="rounded-md border border-(--warning-color)/40 bg-(--warning-color)/8 p-3 text-xs leading-5 text-(--warning-color)">{catalog.warnings.join(" ")}</p> : null}
             {service === "EC2_INSTANCE" ? <Ec2Form bindings={bindings} catalog={catalog} config={config} update={update} /> : null}

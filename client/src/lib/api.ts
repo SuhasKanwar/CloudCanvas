@@ -2,13 +2,19 @@ import axios from "axios";
 import { HTTP_SERVER_BASE_URL } from "./config";
 import { pushToast } from "./toast";
 
+declare module "axios" {
+    interface AxiosRequestConfig {
+        silentToast?: boolean;
+    }
+}
+
 const api = axios.create({
     baseURL: HTTP_SERVER_BASE_URL,
     withCredentials: true,
 });
 
-export function authenticatedRequest(accessToken: string) {
-    return { headers: { Authorization: `Bearer ${accessToken}` } };
+export function authenticatedRequest(accessToken: string, options: { silentToast?: boolean } = {}) {
+    return { headers: { Authorization: `Bearer ${accessToken}` }, ...options };
 }
 
 let interceptorsInstalled = false;
@@ -20,7 +26,7 @@ if (!interceptorsInstalled) {
         (response) => {
             const message = response.data?.message;
 
-            if (response.config.method !== "get" && typeof message === "string" && message.trim()) {
+            if (!response.config.silentToast && response.config.method !== "get" && typeof message === "string" && message.trim()) {
                 pushToast({ message, variant: "success" });
             }
 
@@ -37,7 +43,7 @@ if (!interceptorsInstalled) {
                 error?.message ??
                 "Request failed.";
 
-            if (typeof message === "string" && message.trim()) {
+            if (!error?.config?.silentToast && typeof message === "string" && message.trim()) {
                 pushToast({ message, variant: "error" });
             }
 
