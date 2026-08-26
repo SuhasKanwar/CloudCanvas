@@ -73,6 +73,15 @@ export async function getSketch(accessToken: string, sketchId: string): Promise<
     return response.data.data;
 }
 
+export async function createSketch(accessToken: string, name = "Untitled infrastructure"): Promise<Sketch> {
+    const response = await api.post<ApiEnvelope<Sketch>>(
+        "/api/sketches",
+        { name },
+        authenticatedRequest(accessToken),
+    );
+    return response.data.data;
+}
+
 export async function createAiSketch(accessToken: string, query: string, sessionHistory: readonly AiChatMessage[] = []): Promise<AiSketchResponse> {
     const response = await api.post<ApiEnvelope<AiSketchResponse>>(
         "/api/sketches/ai",

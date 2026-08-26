@@ -4,14 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { addEdge, applyEdgeChanges, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type EdgeChange, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Check, Pencil, Plus, Save, Settings2 } from "lucide-react";
+import { ArrowLeft, Check, Pencil, Save, Settings2 } from "lucide-react";
+import Link from "next/link";
 import { stringify } from "yaml";
 import type { AwsService, GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
 import { RESOURCE_STATUS_POLL_INTERVAL_MS } from "@/lib/config";
-import { refreshSketchResources, type AwsResourceSnapshot, type Sketch } from "@/lib/sketches";
+import { getSketch, refreshSketchResources, type AwsResourceSnapshot, type Sketch } from "@/lib/sketches";
 import AiComposer from "./AiComposer";
-import SketchLibrary from "./SketchLibrary";
 import PublishSketchButton from "./PublishSketchButton";
 import ResourceInspector from "./ResourceInspector";
 import Modal from "@/components/ui/Modal";
@@ -48,18 +48,20 @@ function syncEc2Bindings(nodes: readonly ResourceFlowNode[], edges: readonly Edg
     });
 }
 
-export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: () => void }) {
+export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId: string; onOpenAwsSettings: () => void }) {
     const { data: session } = useSession();
+    const accessToken = session?.accessToken;
     const [nodes, setNodes, onNodesChange] = useNodesState<ResourceFlowNode>([]);
     const [edges, setEdges] = useEdgesState<Edge>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [name, setName] = useState("Untitled infrastructure");
-    const [sketchId, setSketchId] = useState<string | null>(null);
     const [sketchConnectionId, setSketchConnectionId] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [resourcesByNodeId, setResourcesByNodeId] = useState<Record<string, AwsResourceSnapshot>>({});
     const resourcesByNodeIdRef = useRef<Record<string, AwsResourceSnapshot>>({});
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
     const selectedBindings = selectedNode?.data.service === "EC2_INSTANCE" ? {
@@ -77,18 +79,18 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
     }, [setNodes]);
 
     const refreshDeployedResources = useCallback(async () => {
-        if (!session?.accessToken || !sketchId) return;
-        const outcomes = await refreshSketchResources(session.accessToken, sketchId);
+        if (!accessToken) return;
+        const outcomes = await refreshSketchResources(accessToken, sketchId);
         const refreshed = outcomes.flatMap((outcome) => outcome.resource ? [outcome.resource] : []);
         if (refreshed.length) applyResourceSnapshots(refreshed);
-    }, [applyResourceSnapshots, session?.accessToken, sketchId]);
+    }, [accessToken, applyResourceSnapshots, sketchId]);
 
     useEffect(() => {
-        if (!sketchId || !session?.accessToken) return;
+        if (!accessToken) return;
         void refreshDeployedResources();
         const interval = window.setInterval(() => void refreshDeployedResources(), RESOURCE_STATUS_POLL_INTERVAL_MS);
         return () => window.clearInterval(interval);
-    }, [refreshDeployedResources, session?.accessToken, sketchId]);
+    }, [accessToken, refreshDeployedResources, sketchId]);
 
     const addNode = (service: AwsService) => {
         const option = awsServiceOptions.find((entry) => entry.service === service);
@@ -127,7 +129,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
     };
 
     const saveGraph = async () => {
-        if (!session?.accessToken) return;
+        if (!accessToken) return;
         const graph: GraphDefinition = {
             schemaVersion: 1,
             name,
@@ -146,8 +148,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             setSaveError(null);
             const definition = stringify(graph);
             validateGraphYaml(definition);
-            const sketch = await importGraph(session.accessToken, definition, sketchId ?? undefined);
-            setSketchId(sketch.id);
+            await importGraph(accessToken, definition, sketchId);
         } catch (error) {
             setSaveError(error instanceof Error ? error.message : "Unable to save this graph.");
         } finally {
@@ -155,8 +156,7 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         }
     };
 
-    const loadSketch = (sketch: Sketch) => {
-        setSketchId(sketch.id);
+    const loadSketch = useCallback((sketch: Sketch) => {
         setSketchConnectionId(sketch.connectionId);
         setName(sketch.name);
         const loadedResources = Object.fromEntries((sketch.resources ?? []).flatMap((resource) => resource.nodeId ? [[resource.nodeId, resource]] : [])) as Record<string, AwsResourceSnapshot>;
@@ -174,19 +174,15 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         applyResourceSnapshots(sketch.resources ?? [], true);
         setEdges(loadedEdges);
         setSelectedNodeId(null);
-    };
+    }, [applyResourceSnapshots, setEdges, setNodes]);
 
-    const newSketch = () => {
-        setSketchId(null);
-        setSketchConnectionId(null);
-        setName("Untitled infrastructure");
-        setNodes([]);
-        setEdges([]);
-        setSelectedNodeId(null);
-        setSaveError(null);
-        setResourcesByNodeId({});
-        resourcesByNodeIdRef.current = {};
-    };
+    useEffect(() => {
+        if (!accessToken) return;
+        void getSketch(accessToken, sketchId)
+            .then(loadSketch)
+            .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : "Unable to load this sketch."))
+            .finally(() => setLoading(false));
+    }, [accessToken, loadSketch, sketchId]);
 
     const deleteSelectedNode = () => {
         if (!selectedNode) return;
@@ -197,9 +193,8 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
         setSelectedNodeId(null);
     };
 
-    const handleSketchDeleted = (deletedSketchId: string) => {
-        if (deletedSketchId === sketchId) newSketch();
-    };
+    if (loading) return <div className="grid h-full min-h-0 flex-1 place-items-center bg-[#101218] text-sm text-(--secondary-text-color)">Loading sketch…</div>;
+    if (loadError) return <div className="grid h-full min-h-0 flex-1 place-items-center bg-[#101218] text-sm text-(--secondary-text-color)"><div className="text-center"><p>{loadError}</p><Link className="mt-3 inline-flex items-center gap-2 text-(--secondary-color) hover:text-(--primary-text-color)" href="/dashboard"><ArrowLeft className="h-4 w-4" />Back to sketches</Link></div></div>;
 
     return <><div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[#101218] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)]">
         <aside className="min-h-0 overflow-auto border-r border-white/10 px-3 py-4">
@@ -219,10 +214,8 @@ export default function GraphEditor({ onOpenAwsSettings }: { onOpenAwsSettings: 
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
                 <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setName(event.target.value)} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
-                <button aria-label="Create a new sketch" className="hidden rounded-md p-2 text-(--secondary-text-color) transition hover:bg-white/6 hover:text-(--primary-text-color) md:block" onClick={newSketch} title="New sketch" type="button"><Plus className="h-4 w-4" /></button>
-                <SketchLibrary onDelete={handleSketchDeleted} onLoad={loadSketch} />
                 <PublishSketchButton connectionId={sketchConnectionId} onPublished={(connectionId) => { setSketchConnectionId(connectionId); void refreshDeployedResources(); }} sketchId={sketchId} />
-                <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}{sketchId ? "Save" : "Create"}</button>
+                <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}Save</button>
             </div>
             <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
                 <Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} />
