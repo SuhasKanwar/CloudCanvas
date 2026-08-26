@@ -1,33 +1,67 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { AnimatePresence, motion } from "motion/react";
-import { Bot, Loader2, PanelRightClose, Send, Sparkles } from "lucide-react";
-import { createAiSketch, type AiChatMessage, type Sketch } from "@/lib/sketches";
+import { Bot, CheckCircle2, Loader2, Mic, PanelRightClose, Send, Sparkles, Square, Volume2, Wand2 } from "lucide-react";
 
-export default function AiComposer({ onBuild }: { onBuild: (sketch: Sketch) => void }) {
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { getSketchConversation, sendSketchConversationMessage, type SketchConversationMessage } from "@/lib/sketches";
+
+function resizeInput(element: HTMLTextAreaElement) {
+    element.style.height = "auto";
+    element.style.height = `${Math.min(element.scrollHeight, 160)}px`;
+}
+
+export default function AiComposer({ sketchId }: { sketchId: string }) {
     const { data: session } = useSession();
+    const accessToken = session?.accessToken;
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
-    const [messages, setMessages] = useState<AiChatMessage[]>([]);
+    const [messages, setMessages] = useState<SketchConversationMessage[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [loadingConversation, setLoadingConversation] = useState(true);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const appendTranscript = useCallback((transcript: string) => setQuery((current) => current ? `${current} ${transcript}` : transcript), []);
+    const { isListening, isSupported: speechInputSupported, start, stop } = useSpeechRecognition(appendTranscript);
+    const { cancel, isSpeaking, isSupported: speechOutputSupported, speak } = useSpeechSynthesis();
+
+    const loadConversation = useCallback(async () => {
+        if (!accessToken) return;
+        setLoadingConversation(true);
+        try {
+            const conversation = await getSketchConversation(accessToken, sketchId);
+            setMessages(conversation.messages);
+            setError(null);
+        } catch (nextError) {
+            setError(nextError instanceof Error ? nextError.message : "Unable to load the AI conversation.");
+        } finally {
+            setLoadingConversation(false);
+        }
+    }, [accessToken, sketchId]);
+
+    useEffect(() => {
+        const timeout = window.setTimeout(() => void loadConversation(), 0);
+        return () => window.clearTimeout(timeout);
+    }, [loadConversation]);
+
+    useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [loading, messages, open]);
 
     const submit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const prompt = query.trim();
-        if (!session?.accessToken || !prompt || loading) return;
+        if (!accessToken || !prompt || loading) return;
         setQuery("");
         setError(null);
         setLoading(true);
-        setMessages((current) => [...current, { role: "user", content: prompt }]);
         try {
-            const response = await createAiSketch(session.accessToken, prompt, messages);
-            setMessages((current) => [...current, { role: "assistant", content: response.message }]);
-            if (response.type === "build") onBuild(response.sketch);
+            const response = await sendSketchConversationMessage(accessToken, sketchId, prompt);
+            setMessages((current) => [...current, response.userMessage, response.assistantMessage]);
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : "AI request failed.");
+            void loadConversation();
         } finally {
             setLoading(false);
         }
@@ -35,11 +69,17 @@ export default function AiComposer({ onBuild }: { onBuild: (sketch: Sketch) => v
 
     return <div className="absolute right-4 top-18 z-20">
         <AnimatePresence initial={false}>
-            {open ? <motion.aside animate={{ opacity: 1, x: 0 }} className="flex h-[min(40rem,calc(100dvh-7.5rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-lg border border-white/12 bg-[#121822]/95 shadow-2xl shadow-black/45 backdrop-blur-xl" exit={{ opacity: 0, x: 18 }} initial={{ opacity: 0, x: 18 }} transition={{ duration: 0.18, ease: "easeOut" }}>
-                <header className="flex items-center justify-between border-b border-white/10 px-4 py-3"><span className="flex items-center gap-2 font-serif text-base font-semibold text-(--primary-text-color)"><span className="grid h-7 w-7 place-items-center rounded-md bg-(--accent-color)/15 text-(--accent-color)"><Bot className="h-4 w-4" /></span>CloudCanvas AI</span><button aria-label="Collapse AI assistant" className="grid h-8 w-8 place-items-center rounded-md text-(--secondary-text-color) transition hover:bg-white/8 hover:text-(--primary-text-color)" onClick={() => setOpen(false)} type="button"><PanelRightClose className="h-4 w-4" /></button></header>
-                <div aria-live="polite" className="min-h-0 flex-1 space-y-3 overflow-auto p-4">{messages.map((message, index) => <motion.div animate={{ opacity: 1, y: 0 }} className={`max-w-[90%] rounded-md px-3 py-2.5 text-sm leading-6 ${message.role === "user" ? "ml-auto bg-(--secondary-color) text-[#201508]" : "border border-white/10 bg-white/5 text-(--primary-text-color)"}`} initial={{ opacity: 0, y: 5 }} key={`${message.role}-${index}`} transition={{ duration: 0.16 }}>{message.content}</motion.div>)}{loading ? <div className="flex items-center gap-2 text-xs text-(--secondary-text-color)"><Loader2 className="h-3.5 w-3.5 animate-spin text-(--secondary-color)" />Thinking</div> : null}{error ? <p className="rounded-md border border-(--danger-color)/35 bg-(--danger-color)/8 px-3 py-2 text-xs leading-5 text-(--danger-color)">{error}</p> : null}</div>
-                <form className="border-t border-white/10 p-3" onSubmit={submit}><div className="flex items-end gap-2 rounded-md border border-white/12 bg-black/20 p-2 focus-within:border-(--primary-color) focus-within:ring-2 focus-within:ring-(--primary-color)/12"><textarea aria-label="Ask CloudCanvas AI" className="min-h-10 flex-1 resize-none bg-transparent px-1 py-1.5 text-sm text-(--primary-text-color) outline-none placeholder:text-(--muted-text-color)" onChange={(event) => setQuery(event.target.value)} placeholder="Ask CloudCanvas AI" rows={2} value={query} /><button aria-label="Send AI request" className="grid h-9 w-9 place-items-center rounded-md bg-(--primary-color) text-(--primary-bg-color) transition hover:brightness-110 disabled:opacity-40" disabled={loading || !query.trim()} type="submit"><Send className="h-4 w-4" /></button></div></form>
-            </motion.aside> : <motion.button animate={{ opacity: 1, scale: 1 }} aria-label="Open CloudCanvas AI" className="inline-flex items-center gap-2 rounded-md border border-(--accent-color)/35 bg-[#151821]/95 px-3 py-2 text-sm font-medium text-(--primary-text-color) shadow-lg shadow-black/25 backdrop-blur transition hover:border-(--accent-color) hover:bg-[#1a202b]" initial={{ opacity: 0, scale: 0.96 }} onClick={() => setOpen(true)} type="button"><Sparkles className="h-4 w-4 text-(--accent-color)" />AI assistant</motion.button>}
+            {open ? <motion.aside animate={{ opacity: 1, x: 0 }} className="flex h-[min(43rem,calc(100dvh-7.5rem))] w-[min(27rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-none border border-white/12 bg-[var(--surface-color)] shadow-2xl shadow-black/45" exit={{ opacity: 0, x: 18 }} initial={{ opacity: 0, x: 18 }} transition={{ duration: 0.18, ease: "easeOut" }}>
+                <header className="flex items-center justify-between border-b border-white/10 px-4 py-3"><div className="flex items-center gap-2"><span className="grid h-8 w-8 place-items-center rounded-none border border-(--accent-color)/30 bg-(--accent-color)/10 text-(--accent-color)"><Bot className="h-4 w-4" /></span><div><p className="font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)">CloudCanvas AI</p><p className="text-[11px] text-(--secondary-text-color)">Sketch conversation</p></div></div><button aria-label="Collapse AI assistant" className="grid h-8 w-8 place-items-center rounded-none text-(--secondary-text-color) transition hover:bg-white/8 hover:text-(--primary-text-color)" onClick={() => setOpen(false)} type="button"><PanelRightClose className="h-4 w-4" /></button></header>
+                <div aria-live="polite" className="min-h-0 flex-1 space-y-4 overflow-auto p-4" ref={scrollRef}>{loadingConversation ? <div className="flex items-center gap-2 text-xs text-(--secondary-text-color)"><Loader2 className="h-3.5 w-3.5 animate-spin text-(--primary-color)" />Loading conversation</div> : null}{!loadingConversation && messages.length === 0 ? <div className="border-l-2 border-(--accent-color) bg-white/4 px-3 py-3 text-sm leading-6 text-(--secondary-text-color)">Ask about the infrastructure in this sketch, or describe the architecture you want to build.</div> : null}{messages.map((message) => <ChatMessage key={message.id} message={message} onSpeak={speechOutputSupported ? speak : undefined} speaking={isSpeaking} />)}{loading ? <div className="flex items-center gap-2 text-xs text-(--secondary-text-color)"><Loader2 className="h-3.5 w-3.5 animate-spin text-(--secondary-color)" />Thinking</div> : null}{error ? <p className="border-l-2 border-(--danger-color) bg-(--danger-color)/8 px-3 py-2 text-xs leading-5 text-(--danger-color)">{error}</p> : null}</div>
+                <form className="border-t border-white/10 bg-black/12 p-3" onSubmit={submit}><div className="border border-white/12 bg-black/20 transition focus-within:border-(--primary-color)"><textarea aria-label="Ask CloudCanvas AI" className="block min-h-12 max-h-40 w-full resize-none bg-transparent px-3 py-3 text-sm leading-6 text-(--primary-text-color) outline-none placeholder:text-(--muted-text-color)" onChange={(event) => { setQuery(event.target.value); resizeInput(event.currentTarget); }} onInput={(event) => resizeInput(event.currentTarget)} placeholder="Ask about this sketch" rows={1} value={query} /><div className="flex items-center justify-between border-t border-white/8 px-2 py-2"><div>{speechInputSupported ? <button aria-label={isListening ? "Stop voice input" : "Start voice input"} className={`grid h-8 w-8 place-items-center rounded-none transition ${isListening ? "bg-(--danger-color)/18 text-(--danger-color)" : "text-(--secondary-text-color) hover:bg-white/7 hover:text-(--primary-text-color)"}`} onClick={isListening ? stop : start} type="button">{isListening ? <Square className="h-3 w-3" /> : <Mic className="h-4 w-4" />}</button> : null}</div><button aria-label="Send AI request" className="inline-flex h-8 items-center gap-2 rounded-none bg-(--primary-color) px-3 text-xs font-medium text-(--primary-bg-color) transition hover:brightness-110 disabled:opacity-40" disabled={loading || !query.trim()} type="submit"><Send className="h-3.5 w-3.5" />Send</button></div></div>{isSpeaking ? <button className="mt-2 text-[11px] text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={cancel} type="button">Stop reading response</button> : null}</form>
+            </motion.aside> : <motion.button animate={{ opacity: 1, scale: 1 }} aria-label="Open CloudCanvas AI" className="inline-flex items-center gap-2 rounded-none border border-(--accent-color)/35 bg-[var(--surface-color)] px-3 py-2 text-sm font-medium text-(--primary-text-color) shadow-lg shadow-black/25 transition hover:border-(--accent-color) hover:bg-white/6" initial={{ opacity: 0, scale: 0.96 }} onClick={() => setOpen(true)} type="button"><Sparkles className="h-4 w-4 text-(--accent-color)" />AI assistant</motion.button>}
         </AnimatePresence>
     </div>;
+}
+
+function ChatMessage({ message, onSpeak, speaking }: { message: SketchConversationMessage; onSpeak?: (text: string) => void; speaking: boolean }) {
+    const isUser = message.role === "USER";
+    const nodeCount = message.type === "BUILD" && Array.isArray(message.build?.nodes) ? message.build.nodes.length : 0;
+    return <motion.article animate={{ opacity: 1, y: 0 }} className={`max-w-[92%] border px-3 py-2.5 text-sm leading-6 ${isUser ? "ml-auto border-(--secondary-color)/45 bg-(--secondary-color) text-[#201508]" : "border-white/10 bg-white/4 text-(--primary-text-color)"}`} initial={{ opacity: 0, y: 5 }} transition={{ duration: 0.16 }}><div className="mb-1 flex items-center justify-between gap-4 text-[10px] font-medium uppercase tracking-[0.12em] opacity-65"><span>{isUser ? "You" : "CloudCanvas"}</span>{message.type === "BUILD" ? <span className="inline-flex items-center gap-1"><Wand2 className="h-3 w-3" />{nodeCount} node{nodeCount === 1 ? "" : "s"}</span> : null}</div><p className="whitespace-pre-wrap">{message.content}</p>{!isUser && onSpeak ? <button aria-label="Read response aloud" className="mt-2 inline-flex items-center gap-1 text-[11px] opacity-70 transition hover:opacity-100" disabled={speaking} onClick={() => onSpeak(message.content)} type="button"><Volume2 className="h-3.5 w-3.5" />Listen</button> : null}{message.type === "BUILD" ? <div className="mt-3 flex items-center gap-2 border-t border-current/15 pt-2 text-xs"><CheckCircle2 className="h-3.5 w-3.5" />Blueprint saved to this conversation</div> : null}</motion.article>;
 }

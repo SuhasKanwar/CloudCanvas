@@ -61,6 +61,24 @@ export type AiSketchResponse =
     | { type: "text"; message: string }
     | { type: "build"; message: string; sketch: Sketch };
 
+export type SketchConversationMessage = {
+    id: string;
+    role: "USER" | "ASSISTANT";
+    type: "TEXT" | "BUILD";
+    content: string;
+    build: Record<string, unknown> | null;
+    createdAt: string;
+};
+
+export type SketchConversation = {
+    id: string;
+    sketchId: string;
+    userId: string;
+    title: string | null;
+    createdAt: string;
+    updatedAt: string;
+};
+
 type ApiEnvelope<T> = { data: T };
 
 export async function listSketches(accessToken: string): Promise<Sketch[]> {
@@ -95,6 +113,23 @@ export async function createAiSketch(accessToken: string, query: string, session
     const response = await api.post<ApiEnvelope<AiSketchResponse>>(
         "/api/sketches/ai",
         { query, session_history: sessionHistory },
+        authenticatedRequest(accessToken),
+    );
+    return response.data.data;
+}
+
+export async function getSketchConversation(accessToken: string, sketchId: string): Promise<{ conversation: SketchConversation; messages: SketchConversationMessage[] }> {
+    const response = await api.get<ApiEnvelope<{ conversation: SketchConversation; messages: SketchConversationMessage[] }>>(
+        `/api/sketches/${sketchId}/conversation`,
+        authenticatedRequest(accessToken),
+    );
+    return response.data.data;
+}
+
+export async function sendSketchConversationMessage(accessToken: string, sketchId: string, content: string): Promise<{ conversationId: string; userMessage: SketchConversationMessage; assistantMessage: SketchConversationMessage }> {
+    const response = await api.post<ApiEnvelope<{ conversationId: string; userMessage: SketchConversationMessage; assistantMessage: SketchConversationMessage }>>(
+        `/api/sketches/${sketchId}/conversation/messages`,
+        { content },
         authenticatedRequest(accessToken),
     );
     return response.data.data;
