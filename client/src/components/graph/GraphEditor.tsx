@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { addEdge, applyEdgeChanges, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type EdgeChange, type Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { ArrowLeft, Check, Pencil, Save, Settings2 } from "lucide-react";
+import { ArrowLeft, Check, FolderOpen, Loader2, Pencil, Save } from "lucide-react";
 import Link from "next/link";
 import { stringify } from "yaml";
 import type { AwsService, GraphDefinition } from "@cloudcanvas/graph-contract";
@@ -17,6 +17,7 @@ import PublishSketchButton from "./PublishSketchButton";
 import ResourceInspector from "./ResourceInspector";
 import Modal from "@/components/ui/Modal";
 import { awsServiceOptions, defaultResourceConfig, ResourceNode, type ResourceNodeData } from "./resourceNode";
+import ResourceSidebar from "./ResourceSidebar";
 
 type ResourceFlowNode = Node<ResourceNodeData, "resource">;
 
@@ -217,34 +218,22 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         setSelectedNodeId(null);
     };
 
-    if (loading) return <div className="grid h-full min-h-0 flex-1 place-items-center bg-[#101218] text-sm text-(--secondary-text-color)">Loading sketch…</div>;
-    if (loadError) return <div className="grid h-full min-h-0 flex-1 place-items-center bg-[#101218] text-sm text-(--secondary-text-color)"><div className="text-center"><p>{loadError}</p><Link className="mt-3 inline-flex items-center gap-2 text-(--secondary-color) hover:text-(--primary-text-color)" href="/dashboard"><ArrowLeft className="h-4 w-4" />Back to sketches</Link></div></div>;
+    const canvasReady = !loading && !loadError;
 
     return <><div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[#101218] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)]">
-        <aside className="min-h-0 overflow-auto border-r border-white/10 px-3 py-4">
-            <p className="px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-(--secondary-text-color)">AWS services</p>
-            <div className="mt-3 space-y-1">
-                {awsServiceOptions.map((option) => {
-                    const Icon = option.icon;
-                    return <button className="flex w-full items-center gap-3 rounded-md px-2.5 py-2.5 text-left text-sm text-(--secondary-text-color) transition hover:bg-white/6 hover:text-(--primary-text-color)" key={option.service} onClick={() => addNode(option.service)} type="button">
-                        <Icon className={`h-4 w-4 ${option.accent}`} /><span>{option.title}</span>
-                    </button>;
-                })}
-            </div>
-                <button className="mt-6 flex w-full items-center gap-2 border-t border-white/10 px-2 pt-4 text-sm text-(--secondary-text-color) transition hover:text-(--primary-text-color)" onClick={onOpenAwsSettings} type="button"><Settings2 className="h-4 w-4" />AWS settings</button>
-        </aside>
+        <ResourceSidebar disabled={!canvasReady} onAdd={addNode} onOpenAwsSettings={onOpenAwsSettings} />
 
         <div className="relative min-w-0">
             <div className="absolute inset-x-0 top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-[#151821]/95 px-4 backdrop-blur">
-                <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color)" onBlur={() => void saveName()} onChange={(event) => setName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} value={name} /></label>
+                <label className="flex min-w-0 flex-1 items-center gap-2 border border-transparent px-2 py-1.5 focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none placeholder:text-(--muted-text-color) disabled:cursor-wait" disabled={!canvasReady} onBlur={() => void saveName()} onChange={(event) => setName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
-                <PublishSketchButton connectionId={sketchConnectionId} onPublished={async (connectionId) => { setSketchConnectionId(connectionId); await reloadSketch(); }} sketchId={sketchId} />
-                <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}Save</button>
+                <Link className="inline-flex items-center gap-2 border border-white/10 px-3 py-2 text-sm text-(--secondary-text-color) hover:bg-white/6 hover:text-(--primary-text-color)" href="/dashboard"><FolderOpen className="h-4 w-4" />Sketches</Link>
+                {canvasReady ? <PublishSketchButton connectionId={sketchConnectionId} onPublished={async (connectionId) => { setSketchConnectionId(connectionId); await reloadSketch(); }} sketchId={sketchId} /> : null}
+                <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={!canvasReady || saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}Save</button>
             </div>
-            <ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}>
-                <Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} />
-            </ReactFlow>
-            <AiComposer onBuild={loadSketch} />
+            {loading ? <div className="grid h-full place-items-center pt-14 text-sm text-(--secondary-text-color)"><span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Loading sketch</span></div> : null}
+            {loadError ? <div className="grid h-full place-items-center px-4 pt-14 text-sm text-(--secondary-text-color)"><div className="text-center"><p>{loadError}</p><Link className="mt-3 inline-flex items-center gap-2 text-(--secondary-color) hover:text-(--primary-text-color)" href="/dashboard"><ArrowLeft className="h-4 w-4" />Back to sketches</Link></div></div> : null}
+            {canvasReady ? <><ReactFlow edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={onNodesChange} proOptions={{ hideAttribution: true }}><Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} /></ReactFlow><AiComposer onBuild={loadSketch} /></> : null}
         </div>
-    </div>{selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}</>;
+    </div>{canvasReady && selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={deleteSelectedNode} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}</>;
 }
