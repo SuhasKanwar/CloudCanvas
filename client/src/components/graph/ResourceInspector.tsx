@@ -166,7 +166,7 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
     const update = (key: string, value: unknown) => onChange(node.data.label, key === "__all__" ? value as Record<string, unknown> : { ...config, [key]: value });
     const stateEntries = Object.entries(resource?.actualState ?? {}).filter(([, value]) => typeof value === "string" || typeof value === "number" || typeof value === "boolean").slice(0, 12);
     const deployed = resource?.status === "RUNNING";
-    const changes = resource ? getPendingDeploymentChanges(service, config, resource.desiredConfig) : [];
+    const changes = deployed && resource ? getPendingDeploymentChanges(service, config, resource.desiredConfig) : [];
     const formLocked = deployed && service !== "EC2_INSTANCE" && service !== "S3_BUCKET";
 
     useEffect(() => {

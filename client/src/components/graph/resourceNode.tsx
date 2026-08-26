@@ -36,7 +36,7 @@ export function ResourceNode({ data, selected }: NodeProps) {
     const statusClass = status === "RUNNING" ? "bg-emerald-400" : status === "PROVISIONING" || status === "DELETING" ? "bg-amber-300" : status === "FAILED" ? "bg-rose-400" : status === "TERMINATED" ? "bg-zinc-500" : "bg-slate-400";
     const publicIpAddress = typeof resource.deployment?.actualState?.publicIpAddress === "string" ? resource.deployment.actualState.publicIpAddress : "";
     const privateIpAddress = typeof resource.deployment?.actualState?.privateIpAddress === "string" ? resource.deployment.actualState.privateIpAddress : "";
-    const changes = resource.deployment ? getPendingDeploymentChanges(resource.service, resource.config, resource.deployment.desiredConfig) : [];
+    const changes = resource.deployment?.status === "RUNNING" ? getPendingDeploymentChanges(resource.service, resource.config, resource.deployment.desiredConfig) : [];
     const copyIpAddress = async (label: string, value: string) => {
         try {
             await navigator.clipboard.writeText(value);

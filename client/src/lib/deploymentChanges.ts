@@ -18,6 +18,14 @@ const mutableFields: Partial<Record<AwsService, ChangeField[]>> = {
     ],
 };
 
+function valuesMatch(currentValue: unknown, deployedValue: unknown) {
+    if (Array.isArray(currentValue) && Array.isArray(deployedValue) && currentValue.every((value) => typeof value === "string") && deployedValue.every((value) => typeof value === "string")) {
+        if (currentValue.some((value) => value.startsWith("${"))) return true;
+        return JSON.stringify([...currentValue].sort()) === JSON.stringify([...deployedValue].sort());
+    }
+    return JSON.stringify(currentValue) === JSON.stringify(deployedValue);
+}
+
 export function getPendingDeploymentChanges(service: AwsService, currentConfig: Record<string, unknown>, deployedConfig: Record<string, unknown>) {
-    return (mutableFields[service] ?? []).filter(({ key }) => JSON.stringify(currentConfig[key]) !== JSON.stringify(deployedConfig[key]));
+    return (mutableFields[service] ?? []).filter(({ key }) => !valuesMatch(currentConfig[key], deployedConfig[key]));
 }
