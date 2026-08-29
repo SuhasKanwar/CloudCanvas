@@ -91,6 +91,14 @@ export async function getSketchConversation(req: Request, res: Response<ApiRespo
     return res.json({ success: true, message: "Conversation loaded.", data: { conversation, messages } });
 }
 
+export async function clearSketchConversation(req: Request, res: Response<ApiResponse>) {
+    const sketch = await findOwnedSketch(req);
+    if (!sketch) return res.status(req.userId ? 404 : 401).json({ success: false, message: req.userId ? "Sketch not found." : "Authentication token is missing." });
+
+    await prisma.sketchConversation.deleteMany({ where: { sketchId: sketch.id, userId: sketch.userId } });
+    return res.json({ success: true, message: "Conversation cleared." });
+}
+
 export async function sendSketchConversationMessage(req: Request, res: Response<ApiResponse>) {
     const sketch = await findOwnedSketch(req);
     if (!sketch) return res.status(req.userId ? 404 : 401).json({ success: false, message: req.userId ? "Sketch not found." : "Authentication token is missing." });

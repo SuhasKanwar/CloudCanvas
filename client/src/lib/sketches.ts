@@ -127,6 +127,10 @@ export async function getSketchConversation(accessToken: string, sketchId: strin
     return response.data.data;
 }
 
+export async function clearSketchConversation(accessToken: string, sketchId: string): Promise<void> {
+    await api.delete(`/api/sketches/${sketchId}/conversation`, authenticatedRequest(accessToken));
+}
+
 export async function sendSketchConversationMessage(accessToken: string, sketchId: string, content: string): Promise<{ conversationId: string; userMessage: SketchConversationMessage; assistantMessage: SketchConversationMessage }> {
     const response = await api.post<ApiEnvelope<{ conversationId: string; userMessage: SketchConversationMessage; assistantMessage: SketchConversationMessage }>>(
         `/api/sketches/${sketchId}/conversation/messages`,
