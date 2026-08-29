@@ -8,6 +8,7 @@ from requests.exceptions import Timeout
 from config import NVIDIA_API_KEY
 from config.models import NVIDIA
 from config.prompts import NVIDIA_SYSTEM_PROMPT
+from tools.aws_catalog import get_aws_catalog
 from tools.cloudcanvas import get_cloudcanvas_resource_support
 from tools.search import search_tool
 from utils.exception import CloudCanvasException
@@ -32,7 +33,7 @@ class Nvidia:
                     "chat_template_kwargs": NVIDIA["CHAT_TEMPLATE_KWARGS"],
                 },
                 timeout=NVIDIA["REQUEST_TIMEOUT_SECONDS"],
-            ).bind_tools([search_tool, get_cloudcanvas_resource_support])
+            ).bind_tools([search_tool, get_cloudcanvas_resource_support, get_aws_catalog])
             self.prompt_template = ChatPromptTemplate.from_messages([
                 ("system", self.system_prompt),
                 ("system", "Relevant context (may be partial):\n{context}"),

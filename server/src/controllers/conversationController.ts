@@ -50,12 +50,12 @@ function toAiHistory(messages: readonly { role: ChatRole; content: string }[]): 
 }
 
 async function awsCatalogContext(userId: string, connectionId: string | null) {
-    if (!AWS_ENCRYPTION_KEY) return "";
     const connection = await prisma.awsConnection.findFirst({
         where: connectionId ? { id: connectionId, userId } : { userId, isActive: true },
         select: { id: true, region: true, accessKeyIdEncrypted: true, secretAccessKeyEncrypted: true, sessionTokenEncrypted: true },
     });
-    if (!connection) return "";
+    if (!connection) return { connectionId: null, context: "" };
+    if (!AWS_ENCRYPTION_KEY) return { connectionId: connection.id, context: "" };
     try {
         const credentials = {
             accessKeyId: decryptAwsSecret(connection.accessKeyIdEncrypted, AWS_ENCRYPTION_KEY),
@@ -63,7 +63,7 @@ async function awsCatalogContext(userId: string, connectionId: string | null) {
             ...(connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
         };
         const catalog = await awsResourceManager.getCatalog(credentials, connection.region, connection.id);
-        return JSON.stringify({
+        const context = JSON.stringify({
             region: connection.region,
             vpcs: catalog.vpcs.slice(0, 25),
             subnets: catalog.subnets.slice(0, 40),
@@ -74,9 +74,16 @@ async function awsCatalogContext(userId: string, connectionId: string | null) {
             instanceProfiles: catalog.instanceProfiles.slice(0, 25),
             launchTemplates: catalog.launchTemplates.slice(0, 25),
         });
+        return { connectionId: connection.id, context };
     } catch {
-        return "";
+        return { connectionId: connection.id, context: "" };
     }
+}
+
+function requestToken(req: Request) {
+    const authorization = req.get("Authorization");
+    if (authorization?.startsWith("Bearer ")) return authorization.slice("Bearer ".length);
+    return typeof req.cookies?.Authorization === "string" ? req.cookies.Authorization : null;
 }
 
 export async function getSketchConversation(req: Request, res: Response<ApiResponse>) {
@@ -125,8 +132,14 @@ export async function sendSketchConversationMessage(req: Request, res: Response<
     });
 
     try {
-        const context = await awsCatalogContext(sketch.userId, sketch.connectionId);
-        const response = await aiService.query({ query: content, session_history: history, context });
+        const awsContext = await awsCatalogContext(sketch.userId, sketch.connectionId);
+        const token = requestToken(req);
+        const response = await aiService.query({
+            query: content,
+            session_history: history,
+            context: awsContext.context,
+            ...(awsContext.connectionId && token && { connection_id: awsContext.connectionId, tool_token: token }),
+        });
         const assistantMessage = await prisma.chatMessage.create({
             data: response.data.type === "build"
                 ? { conversationId: conversation.id, role: ChatRole.ASSISTANT, type: ChatMessageType.BUILD, content: response.data.message, build: jsonValue(response.data.build) }

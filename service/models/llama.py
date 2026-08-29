@@ -7,6 +7,7 @@ from langchain_groq import ChatGroq
 from config import GROQ_API_KEY
 from config.models import LLAMA
 from config.prompts import LLAMA_SYSTEM_PROMPT
+from tools.aws_catalog import get_aws_catalog
 from tools.cloudcanvas import get_cloudcanvas_resource_support
 from tools.search import search_tool
 from utils.exception import CloudCanvasException
@@ -24,7 +25,7 @@ class Llama:
                 api_key=GROQ_API_KEY,
                 model=self.model_name,
                 temperature=LLAMA["TEMPERATURE"],
-            ).bind_tools([search_tool, get_cloudcanvas_resource_support])
+            ).bind_tools([search_tool, get_cloudcanvas_resource_support, get_aws_catalog])
             self.prompt_template = ChatPromptTemplate.from_messages([
                 ("system", self.system_prompt),
                 ("system", "Relevant context (may be partial):\n{context}"),

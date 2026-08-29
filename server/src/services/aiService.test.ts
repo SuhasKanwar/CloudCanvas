@@ -31,6 +31,22 @@ test("parses text responses", async () => {
     assert.equal(response.data.type, "text");
 });
 
+test("forwards complete AWS tool context", async () => {
+    const client = {
+        post: async (_path: string, body: unknown) => {
+            assert.deepEqual(body, {
+                query: "List AMIs",
+                session_history: [],
+                context: "",
+                connection_id: "connection-1",
+                tool_token: "token",
+            });
+            return { data: { success: true, message: "ok", data: { type: "text", message: "done" } } };
+        },
+    } as unknown as AxiosInstance;
+    await new AIService(client).query({ query: "List AMIs", connection_id: "connection-1", tool_token: "token" });
+});
+
 test("parses build responses and validates edge references", async () => {
     const response: AiQuerySuccess = {
         success: true,

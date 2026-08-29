@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch
 
@@ -8,6 +9,7 @@ from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
 from models.llama import Llama
 from models.nvidia import Nvidia
 from schemas.agent import AwsService, BuildResponse
+from tools.aws_catalog import aws_tool_context, get_aws_catalog
 from utils.exception import CloudCanvasException
 
 
@@ -85,6 +87,18 @@ class AgentShapeTests(unittest.TestCase):
             },
         })
         self.assertEqual(len(response.build.nodes), 3)
+
+    def test_aws_catalog_tool_filters_live_catalog_choices(self):
+        catalog = {
+            "warnings": [],
+            "images": [
+                {"id": "ami-linux", "category": "amazon-linux", "architecture": "x86_64", "title": "Amazon Linux 2023"},
+                {"id": "ami-windows", "category": "windows", "architecture": "x86_64", "title": "Windows Server 2025"},
+            ],
+        }
+        with aws_tool_context("connection-1", "token"), patch("tools.aws_catalog._catalog", return_value=catalog):
+            result = json.loads(get_aws_catalog.invoke({"category": "images", "os_family": "amazon-linux"}))
+        self.assertEqual([image["id"] for image in result["images"]], ["ami-linux"])
 
 
 if __name__ == "__main__":

@@ -68,6 +68,8 @@ export type AiQueryRequest = {
     query: string;
     session_history?: readonly AiChatMessage[];
     context?: string;
+    connection_id?: string;
+    tool_token?: string;
 };
 
 export type AiServiceErrorCode =
@@ -214,12 +216,19 @@ export class AIService {
         if (request.context !== undefined && !isString(request.context)) {
             throw new AIServiceError("AI context must be text.", "invalid_request");
         }
+        if ((request.connection_id !== undefined && !isString(request.connection_id)) || (request.tool_token !== undefined && !isString(request.tool_token))) {
+            throw new AIServiceError("AI AWS tool context is invalid.", "invalid_request");
+        }
+        if (Boolean(request.connection_id) !== Boolean(request.tool_token)) {
+            throw new AIServiceError("AI AWS tool context requires both a connection and token.", "invalid_request");
+        }
 
         try {
             const response = await this.client.post<unknown>(AI_QUERY_PATH, {
                 query: request.query.trim(),
                 session_history: request.session_history ?? [],
                 context: request.context ?? "",
+                ...(request.connection_id && request.tool_token && { connection_id: request.connection_id, tool_token: request.tool_token }),
             }, { timeout: this.timeoutMs });
             return parseSuccessResponse(response.data);
         } catch (error) {

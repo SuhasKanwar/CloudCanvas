@@ -296,6 +296,8 @@ class QueryRequest(CloudCanvasModel):
     query: str = Field(min_length=1)
     session_history: list[ChatMessage] = Field(default_factory=list)
     context: str = ""
+    connection_id: str | None = None
+    tool_token: str | None = None
 
 
 class QueryResponse(CloudCanvasModel):
