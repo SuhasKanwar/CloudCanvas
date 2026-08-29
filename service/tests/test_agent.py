@@ -10,6 +10,7 @@ from models.llama import Llama
 from models.nvidia import Nvidia
 from schemas.agent import AwsService, BuildResponse
 from tools.aws_catalog import aws_tool_context, get_aws_catalog
+from tools.cloudcanvas import get_cloudcanvas_resource_support
 from utils.exception import CloudCanvasException
 
 
@@ -99,6 +100,11 @@ class AgentShapeTests(unittest.TestCase):
         with aws_tool_context("connection-1", "token"), patch("tools.aws_catalog._catalog", return_value=catalog):
             result = json.loads(get_aws_catalog.invoke({"category": "images", "os_family": "amazon-linux"}))
         self.assertEqual([image["id"] for image in result["images"]], ["ami-linux"])
+
+    def test_cloudcanvas_support_tool_describes_every_server_resource(self):
+        for service in AwsService:
+            response = get_cloudcanvas_resource_support.invoke({"resource": service.value})
+            self.assertTrue(response.startswith(f"{service.value}: "), service.value)
 
 
 if __name__ == "__main__":
