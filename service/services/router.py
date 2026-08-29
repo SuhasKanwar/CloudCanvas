@@ -14,7 +14,11 @@ class ModelRouter:
             api_key=GROQ_API_KEY,
             model=self.model_name,
             temperature=0,
-        ).with_structured_output(RouteDecision)
+        ).with_structured_output(
+            RouteDecision,
+            method=ROUTER_MODEL["STRUCTURED_OUTPUT_METHOD"],
+            strict=ROUTER_MODEL["STRUCTURED_OUTPUT_STRICT"],
+        )
 
     def route_request(self, prompt: str) -> RouteDecision:
         if not GROQ_API_KEY:
@@ -32,7 +36,11 @@ class AwsRouter:
             api_key=GROQ_API_KEY,
             model=self.model_name,
             temperature=0,
-        ).with_structured_output(BuildResponse)
+        ).with_structured_output(
+            BuildResponse,
+            method=AWS_ROUTER_MODEL["STRUCTURED_OUTPUT_METHOD"],
+            strict=AWS_ROUTER_MODEL["STRUCTURED_OUTPUT_STRICT"],
+        )
 
     def create_sketch(self, prompt: str, session_history: list[dict], context: str = "") -> BuildResponse:
         if not GROQ_API_KEY:

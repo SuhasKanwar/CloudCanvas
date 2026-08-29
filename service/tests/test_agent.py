@@ -8,7 +8,8 @@ from agents.graph import agent_app
 from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
 from models.llama import Llama
 from models.nvidia import Nvidia
-from schemas.agent import AwsService, BuildResponse
+from schemas.agent import AwsService, BuildResponse, RouteDecision
+from services.router import AwsRouter, ModelRouter
 from tools.aws_catalog import aws_tool_context, get_aws_catalog
 from tools.cloudcanvas import get_cloudcanvas_resource_support
 from utils.exception import CloudCanvasException
@@ -32,14 +33,24 @@ class AgentShapeTests(unittest.TestCase):
                 "SNS_TOPIC",
             },
         )
-        self.assertEqual(ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "RouteDecision")
-        self.assertEqual(AWS_ROUTER_MODEL["RESPONSE_FORMAT"]["json_schema"]["name"], "BuildResponse")
+        self.assertEqual(ROUTER_MODEL["STRUCTURED_OUTPUT_METHOD"], "json_schema")
+        self.assertEqual(AWS_ROUTER_MODEL["STRUCTURED_OUTPUT_METHOD"], "json_schema")
         self.assertEqual(NVIDIA["MODEL_NAME"], "nvidia/nemotron-3.5-lightning-30b-a3b")
 
     def test_nvidia_client_requires_an_api_key(self):
         with patch("models.nvidia.NVIDIA_API_KEY", ""):
             with self.assertRaises(CloudCanvasException):
                 Nvidia()
+
+    def test_groq_routers_do_not_force_schema_tool_calls(self):
+        for router_type, schema in ((ModelRouter, RouteDecision), (AwsRouter, BuildResponse)):
+            with self.subTest(router=router_type.__name__), patch("services.router.ChatGroq") as chat_groq:
+                router_type()
+                chat_groq.return_value.with_structured_output.assert_called_once_with(
+                    schema,
+                    method="json_schema",
+                    strict=False,
+                )
 
     def test_nvidia_client_maps_read_timeouts_to_gateway_timeout(self):
         client = Nvidia.__new__(Nvidia)
