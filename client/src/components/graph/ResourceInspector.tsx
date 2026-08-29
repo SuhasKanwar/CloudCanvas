@@ -28,14 +28,14 @@ function InstanceTypeField({ options, value, onChange }: { options: AwsResourceC
     return <div><label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option.name} label={[`${option.vcpus ?? "?"} vCPU`, option.memoryMiB ? `${Math.round(option.memoryMiB / 1024)} GiB` : ""].filter(Boolean).join(" · ")} value={option.name} />)}</datalist></label>{details.length ? <p className="mt-2 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-(--secondary-text-color)">{details.join(" · ")}</p> : null}</div>;
 }
 
-function AmiField({ images, value, onChange }: { images: AwsResourceCatalog["images"]; value: string; onChange: (image: AwsResourceCatalog["images"][number] | null) => void }) {
-    const [category, setCategory] = useState<"amazon-linux" | "windows">("amazon-linux");
+function AmiField({ category: initialCategory, images, value, onCategoryChange, onChange }: { category: "amazon-linux" | "windows"; images: AwsResourceCatalog["images"]; value: string; onCategoryChange: (category: "amazon-linux" | "windows") => void; onChange: (image: AwsResourceCatalog["images"][number] | null) => void }) {
+    const [category, setCategory] = useState<"amazon-linux" | "windows">(initialCategory);
     const options = images.filter((image) => image.category === category);
     return <div>
         <span className="text-xs text-(--secondary-text-color)">Application and OS image</span>
         <div className="mt-2 grid grid-cols-2 gap-2">
-            <button className={`flex min-h-16 items-center gap-2 border p-3 text-left text-xs ${category === "amazon-linux" ? "border-(--secondary-color) bg-(--secondary-color)/10 text-(--primary-text-color)" : "border-white/10 text-(--secondary-text-color) hover:bg-white/6"}`} onClick={() => setCategory("amazon-linux")} type="button"><Terminal className="h-4 w-4 shrink-0 text-amber-300" /><span>Amazon Linux</span></button>
-            <button className={`flex min-h-16 items-center gap-2 border p-3 text-left text-xs ${category === "windows" ? "border-(--secondary-color) bg-(--secondary-color)/10 text-(--primary-text-color)" : "border-white/10 text-(--secondary-text-color) hover:bg-white/6"}`} onClick={() => setCategory("windows")} type="button"><Monitor className="h-4 w-4 shrink-0 text-sky-300" /><span>Windows Server</span></button>
+            <button className={`flex min-h-16 items-center gap-2 border p-3 text-left text-xs ${category === "amazon-linux" ? "border-(--secondary-color) bg-(--secondary-color)/10 text-(--primary-text-color)" : "border-white/10 text-(--secondary-text-color) hover:bg-white/6"}`} onClick={() => { setCategory("amazon-linux"); onCategoryChange("amazon-linux"); }} type="button"><Terminal className="h-4 w-4 shrink-0 text-amber-300" /><span>Amazon Linux</span></button>
+            <button className={`flex min-h-16 items-center gap-2 border p-3 text-left text-xs ${category === "windows" ? "border-(--secondary-color) bg-(--secondary-color)/10 text-(--primary-text-color)" : "border-white/10 text-(--secondary-text-color) hover:bg-white/6"}`} onClick={() => { setCategory("windows"); onCategoryChange("windows"); }} type="button"><Monitor className="h-4 w-4 shrink-0 text-sky-300" /><span>Windows Server</span></button>
         </div>
         <div className="mt-2 max-h-72 overflow-auto border border-white/10 bg-black/20">
             {options.length ? options.map((image) => {
@@ -76,7 +76,7 @@ function Ec2Form({ bindings, catalog, config, deployed, update }: { bindings?: E
         {deployed ? <p className="border border-amber-300/25 bg-amber-300/8 p-3 text-xs leading-5 text-amber-100">AMI, instance type, key pair, storage, subnet, instance profile, user data, and metadata options are fixed after launch. Change the supported controls below, then publish the sketch.</p> : null}
         <fieldset disabled={deployed} className="space-y-5 disabled:opacity-55">
         <Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} />
-        <AmiField images={catalog?.images ?? []} onChange={(image) => update("__all__", { ...config, imageId: image?.id ?? "", ...(image && { rootDeviceName: image.rootDeviceName }) })} value={String(config.imageId ?? "")} />
+        <AmiField category={config.imageFamily === "windows" ? "windows" : "amazon-linux"} images={catalog?.images ?? []} onCategoryChange={(imageFamily) => update("imageFamily", imageFamily)} onChange={(image) => update("__all__", { ...config, imageId: image?.id ?? "", ...(image && { rootDeviceName: image.rootDeviceName }) })} value={String(config.imageId ?? "")} />
         <Field label="Custom AMI ID" onChange={(value) => update("imageId", value)} value={String(config.imageId ?? "")} />
         <Select label="Launch template" onChange={(value) => update("launchTemplateId", value)} options={[["", "No launch template"], ...(catalog?.launchTemplates ?? []).map((template) => [template.id, template.name])]} value={String(config.launchTemplateId ?? "")} />
         <InstanceTypeField onChange={(value) => update("instanceType", value)} options={catalog?.instanceTypes ?? []} value={String(config.instanceType ?? "t3.micro")} />

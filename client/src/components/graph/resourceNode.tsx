@@ -68,7 +68,7 @@ export const awsServiceOptions = Object.entries(serviceAppearance).map(([service
 }));
 
 export function defaultResourceConfig(service: AwsService): Record<string, unknown> {
-    if (service === "EC2_INSTANCE") return { mode: "create", imageId: "", instanceType: "t3.micro", instanceCount: 1, rootVolumeType: "gp3", deleteRootVolumeOnTermination: true, shutdownBehavior: "stop", metadataHttpTokens: "required" };
+    if (service === "EC2_INSTANCE") return { mode: "create", imageId: "", imageFamily: "amazon-linux", instanceType: "t3.micro", instanceCount: 1, rootVolumeType: "gp3", deleteRootVolumeOnTermination: true, shutdownBehavior: "stop", metadataHttpTokens: "required" };
     if (service === "KEY_PAIR") return { mode: "existing", keyName: "" };
     if (service === "SECURITY_GROUP") return { mode: "create", groupName: "cloudcanvas-security-group", description: "Managed by CloudCanvas", vpcId: "", ingressRules: [] };
     if (service === "ECR_REPOSITORY") return { repositoryName: "cloudcanvas-repository", imageTagMutability: "MUTABLE" };

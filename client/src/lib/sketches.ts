@@ -1,4 +1,5 @@
 import type { AwsService } from "@cloudcanvas/graph-contract";
+import type { GraphDefinition } from "@cloudcanvas/graph-contract";
 
 import api, { authenticatedRequest } from "./api";
 
@@ -66,7 +67,7 @@ export type SketchConversationMessage = {
     role: "USER" | "ASSISTANT";
     type: "TEXT" | "BUILD";
     content: string;
-    build: Record<string, unknown> | null;
+    build: Omit<GraphDefinition, "schemaVersion"> | null;
     createdAt: string;
 };
 
