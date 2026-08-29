@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parseGraphDefinition, validateGraphDefinition } from "./graphParser.js";
+import { parseGraphDefinition, prepareGraphForPersistence, validateGraphDefinition } from "./graphParser.js";
 
 test("parses YAML before it reaches a sketch controller", () => {
     const graph = parseGraphDefinition(`schemaVersion: 1
@@ -36,4 +36,23 @@ test("accepts an EC2 key pair graph node", () => {
         edges: [],
     });
     assert.equal(graph.nodes[0]?.type, "KEY_PAIR");
+});
+
+test("persists incomplete AI resource drafts before deployment configuration", () => {
+    const graph = validateGraphDefinition({
+        schemaVersion: 1,
+        name: "web server",
+        nodes: [
+            { id: "key", type: "KEY_PAIR", config: {} },
+            { id: "security", type: "SECURITY_GROUP", config: { mode: "create" } },
+            { id: "instance", type: "EC2_INSTANCE", config: { imageFamily: "amazon-linux", keyName: "${key.keyName}", securityGroupIds: ["${security.securityGroupId}"] } },
+        ],
+        edges: [
+            { sourceNodeId: "key", targetNodeId: "instance" },
+            { sourceNodeId: "security", targetNodeId: "instance" },
+        ],
+    });
+
+    const prepared = prepareGraphForPersistence(graph);
+    assert.deepEqual(prepared.map((node) => node.config), graph.nodes.map((node) => node.config));
 });

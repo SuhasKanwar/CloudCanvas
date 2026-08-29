@@ -14,7 +14,7 @@ import {
 } from "../services/aws/index.js";
 import { createGraphPlan, remapConfigReferences, resolveConfigReferences } from "../services/aws/graph.js";
 import { AIServiceError, aiService, type AiChatMessage } from "../services/aiService.js";
-import { validateGraphDefinition } from "../services/graphParser.js";
+import { prepareGraphForPersistence, validateGraphDefinition } from "../services/graphParser.js";
 import type { GraphDefinition } from "@cloudcanvas/graph-contract";
 import type { ApiResponse } from "../types/response.js";
 import { isAwsService } from "../utils/aws.js";
@@ -318,23 +318,7 @@ function isChatHistory(value: unknown): value is AiChatMessage[] {
     ));
 }
 
-function prepareGraph(graph: GraphDefinition) {
-    const nodes = graph.nodes.map((node) => {
-        if (!isRecord(node.config)) throw new Error(`Invalid config for graph node ${node.id}.`);
-        const request = buildResourceRequest(node.type, node.config);
-        return {
-            sourceId: node.id,
-            type: request.service,
-            label: node.label ?? null,
-            positionX: node.positionX,
-            positionY: node.positionY,
-            config: request.config,
-        };
-    });
-    return nodes;
-}
-
-type PreparedGraphNode = ReturnType<typeof prepareGraph>[number];
+type PreparedGraphNode = ReturnType<typeof prepareGraphForPersistence>[number];
 
 async function persistPreparedGraph(tx: Prisma.TransactionClient, sketchId: string, graph: GraphDefinition, prepared: PreparedGraphNode[]) {
     const nodeIds = new Map<string, string>();
@@ -376,7 +360,7 @@ async function persistPreparedGraph(tx: Prisma.TransactionClient, sketchId: stri
 }
 
 async function persistGraph(userId: string, graph: GraphDefinition) {
-    const prepared = prepareGraph(graph);
+    const prepared = prepareGraphForPersistence(graph);
     return prisma.$transaction(async (tx) => {
         const sketch = await tx.sketch.create({
             data: { userId, name: graph.name.trim(), description: graph.description ?? null },
@@ -480,7 +464,7 @@ export async function replaceSketchGraph(req: Request, res: Response<ApiResponse
         return res.status(409).json({ success: false, message: "Delete deployed AWS resources before replacing this sketch graph." });
     }
     try {
-        const prepared = prepareGraph(req.graph);
+        const prepared = prepareGraphForPersistence(req.graph);
         const sketch = await prisma.$transaction(async (tx) => {
             await tx.sketchEdge.deleteMany({ where: { sketchId } });
             await tx.sketchNode.deleteMany({ where: { sketchId } });
