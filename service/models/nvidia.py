@@ -8,6 +8,7 @@ from requests.exceptions import Timeout
 from config import NVIDIA_API_KEY
 from config.models import NVIDIA
 from config.prompts import NVIDIA_SYSTEM_PROMPT
+from tools.cloudcanvas import get_cloudcanvas_resource_support
 from tools.search import search_tool
 from utils.exception import CloudCanvasException
 from utils.logger import logger
@@ -31,7 +32,7 @@ class Nvidia:
                     "chat_template_kwargs": NVIDIA["CHAT_TEMPLATE_KWARGS"],
                 },
                 timeout=NVIDIA["REQUEST_TIMEOUT_SECONDS"],
-            ).bind_tools([search_tool])
+            ).bind_tools([search_tool, get_cloudcanvas_resource_support])
             self.prompt_template = ChatPromptTemplate.from_messages([
                 ("system", self.system_prompt),
                 ("system", "Relevant context (may be partial):\n{context}"),
@@ -49,11 +50,12 @@ class Nvidia:
         prompt: str,
         session_history: list[dict],
         messages: list[BaseMessage] | None = None,
+        context: str = "",
     ) -> object:
         try:
             return self.chain.invoke({
                 "history": [*session_history, HumanMessage(content=prompt), *(messages or [])],
-                "context": "",
+                "context": context,
             })
         except Timeout as error:
             logger.warning("NVIDIA model %s timed out", self.model_name)

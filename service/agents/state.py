@@ -9,6 +9,7 @@ from schemas.agent import AgentResponse, Route
 class AgentState(TypedDict, total=False):
     query: str
     session_history: list[dict]
+    context: str
     route: Route
     route_reasoning: str
     messages: Annotated[list[BaseMessage], add_messages]

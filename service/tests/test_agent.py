@@ -18,6 +18,8 @@ class AgentShapeTests(unittest.TestCase):
             {service.value for service in AwsService},
             {
                 "EC2_INSTANCE",
+                "KEY_PAIR",
+                "SECURITY_GROUP",
                 "ECR_REPOSITORY",
                 "S3_BUCKET",
                 "IAM_ROLE",
@@ -64,6 +66,25 @@ class AgentShapeTests(unittest.TestCase):
             },
         })
         self.assertEqual(response.build.nodes[0].type, AwsService.S3_BUCKET)
+
+    def test_build_response_supports_ec2_dependencies_without_invented_ids(self):
+        response = BuildResponse.model_validate({
+            "type": "build",
+            "message": "Choose an AMI and key pair before deployment.",
+            "build": {
+                "name": "web server",
+                "nodes": [
+                    {"type": "SECURITY_GROUP", "id": "security-group", "config": {"mode": "create", "groupName": "web", "description": "Web access"}},
+                    {"type": "KEY_PAIR", "id": "key-pair", "config": {"mode": "existing"}},
+                    {"type": "EC2_INSTANCE", "id": "instance", "config": {"imageFamily": "amazon-linux", "instanceType": "t3.micro", "keyName": "${key-pair.keyName}", "securityGroupIds": ["${security-group.securityGroupId}"]}},
+                ],
+                "edges": [
+                    {"sourceNodeId": "security-group", "targetNodeId": "instance"},
+                    {"sourceNodeId": "key-pair", "targetNodeId": "instance"},
+                ],
+            },
+        })
+        self.assertEqual(len(response.build.nodes), 3)
 
 
 if __name__ == "__main__":

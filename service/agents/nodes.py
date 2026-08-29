@@ -32,7 +32,9 @@ def route_node(state: AgentState) -> dict:
 
 
 def aws_router_node(state: AgentState) -> dict:
-    response: BuildResponse = aws_router_client().create_sketch(state["query"])
+    response: BuildResponse = aws_router_client().create_sketch(
+        state["query"], state.get("session_history", []), state.get("context", ""),
+    )
     return {"final_response": response}
 
 
@@ -41,6 +43,7 @@ def nvidia_node(state: AgentState) -> dict:
         state["query"],
         state.get("session_history", []),
         state.get("messages", []),
+        state.get("context", ""),
     )
     if not isinstance(response, AIMessage):
         response = AIMessage(content=str(response))

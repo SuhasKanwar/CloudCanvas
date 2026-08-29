@@ -10,7 +10,7 @@ from utils.logger import logger
 router = APIRouter(prefix="/api/agent", tags=["Agent"])
 
 
-@router.post("/query", response_model=QueryResponse)
+@router.post("/query", response_model=QueryResponse, response_model_exclude_none=True)
 async def execute_query(request: QueryRequest) -> QueryResponse:
     try:
         result = agent_app.invoke(
@@ -19,6 +19,7 @@ async def execute_query(request: QueryRequest) -> QueryResponse:
                 "session_history": [
                     message.model_dump() for message in request.session_history
                 ],
+                "context": request.context,
             },
             config={"recursion_limit": AGENT_CONFIG["MAX_RECURSION_LIMIT"]},
         )

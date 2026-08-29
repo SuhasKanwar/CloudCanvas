@@ -20,6 +20,8 @@ class RouteDecision(CloudCanvasModel):
 
 class AwsService(str, Enum):
     EC2_INSTANCE = "EC2_INSTANCE"
+    KEY_PAIR = "KEY_PAIR"
+    SECURITY_GROUP = "SECURITY_GROUP"
     ECR_REPOSITORY = "ECR_REPOSITORY"
     S3_BUCKET = "S3_BUCKET"
     IAM_ROLE = "IAM_ROLE"
@@ -46,14 +48,52 @@ class BillingMode(str, Enum):
 
 
 class Ec2Config(CloudCanvasModel):
-    imageId: str
+    mode: Literal["create", "existing"] | None = None
+    imageId: str | None = None
+    imageFamily: Literal["amazon-linux", "windows"] | None = None
+    launchTemplateId: str | None = None
+    instanceId: str | None = None
     instanceType: str | None = None
+    instanceCount: int | None = None
     keyName: str | None = None
     securityGroupIds: list[str] | None = None
     subnetId: str | None = None
+    rootDeviceName: str | None = None
+    rootVolumeSizeGiB: int | None = None
+    rootVolumeType: Literal["gp3", "gp2"] | None = None
+    deleteRootVolumeOnTermination: bool | None = None
+    iamInstanceProfile: str | None = None
     name: str | None = None
     userData: str | None = None
+    monitoring: bool | None = None
+    ebsOptimized: bool | None = None
+    disableApiTermination: bool | None = None
+    shutdownBehavior: Literal["stop", "terminate"] | None = None
+    metadataHttpTokens: Literal["optional", "required"] | None = None
     dryRun: bool | None = None
+
+
+class KeyPairConfig(CloudCanvasModel):
+    mode: Literal["existing", "import"] | None = None
+    keyName: str | None = None
+    publicKeyMaterial: str | None = None
+
+
+class SecurityGroupIngressRule(CloudCanvasModel):
+    protocol: Literal["tcp", "udp", "icmp", "-1"]
+    fromPort: int | None = None
+    toPort: int | None = None
+    cidrIpv4: str
+    description: str | None = None
+
+
+class SecurityGroupConfig(CloudCanvasModel):
+    mode: Literal["create", "existing"] | None = None
+    groupId: str | None = None
+    groupName: str | None = None
+    description: str | None = None
+    vpcId: str | None = None
+    ingressRules: list[SecurityGroupIngressRule] | None = None
 
 
 class EcrConfig(CloudCanvasModel):
@@ -64,13 +104,22 @@ class EcrConfig(CloudCanvasModel):
 
 class S3Config(CloudCanvasModel):
     bucketName: str
+    versioning: bool | None = None
+    blockPublicAccess: bool | None = None
+    encryption: Literal["SSE-S3", "SSE-KMS"] | None = None
+    kmsKeyArn: str | None = None
+    enforceHttps: bool | None = None
 
 
 class IamConfig(CloudCanvasModel):
     roleName: str
-    assumeRolePolicyDocument: str
+    trustedService: Literal["ec2.amazonaws.com", "lambda.amazonaws.com", "ecs-tasks.amazonaws.com"] | None = None
+    assumeRolePolicyDocument: str | None = None
+    managedPolicyArns: list[str] | None = None
     description: str | None = None
     path: str | None = None
+    maxSessionDuration: int | None = None
+    permissionsBoundaryArn: str | None = None
 
 
 class LambdaConfig(CloudCanvasModel):
@@ -121,6 +170,24 @@ class Ec2Node(CloudCanvasModel):
     positionX: float = 0
     positionY: float = 0
     config: Ec2Config
+
+
+class KeyPairNode(CloudCanvasModel):
+    type: Literal[AwsService.KEY_PAIR] = AwsService.KEY_PAIR
+    id: str
+    label: str | None = None
+    positionX: float = 0
+    positionY: float = 0
+    config: KeyPairConfig
+
+
+class SecurityGroupNode(CloudCanvasModel):
+    type: Literal[AwsService.SECURITY_GROUP] = AwsService.SECURITY_GROUP
+    id: str
+    label: str | None = None
+    positionX: float = 0
+    positionY: float = 0
+    config: SecurityGroupConfig
 
 
 class EcrNode(CloudCanvasModel):
@@ -187,7 +254,7 @@ class SnsNode(CloudCanvasModel):
 
 
 AwsNode: TypeAlias = Annotated[
-    Ec2Node | EcrNode | S3Node | IamNode | LambdaNode | DynamoDbNode | SqsNode | SnsNode,
+    Ec2Node | KeyPairNode | SecurityGroupNode | EcrNode | S3Node | IamNode | LambdaNode | DynamoDbNode | SqsNode | SnsNode,
     Field(discriminator="type"),
 ]
 
@@ -202,7 +269,7 @@ class SketchEdge(CloudCanvasModel):
 class SketchSpec(CloudCanvasModel):
     name: str
     description: str | None = None
-    nodes: list[AwsNode]
+    nodes: list[AwsNode] = Field(min_length=1)
     edges: list[SketchEdge] = Field(default_factory=list)
 
 
@@ -228,6 +295,7 @@ class ChatMessage(CloudCanvasModel):
 class QueryRequest(CloudCanvasModel):
     query: str = Field(min_length=1)
     session_history: list[ChatMessage] = Field(default_factory=list)
+    context: str = ""
 
 
 class QueryResponse(CloudCanvasModel):

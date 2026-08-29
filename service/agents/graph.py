@@ -10,6 +10,7 @@ from agents.nodes import (
 )
 from agents.state import AgentState
 from schemas.agent import Route
+from tools.cloudcanvas import get_cloudcanvas_resource_support
 from tools.search import search_tool
 
 
@@ -18,7 +19,7 @@ def compile_graph():
     workflow.add_node("router", route_node)
     workflow.add_node("aws_router", aws_router_node)
     workflow.add_node("nvidia", nvidia_node)
-    workflow.add_node("tools", ToolNode([search_tool]))
+    workflow.add_node("tools", ToolNode([search_tool, get_cloudcanvas_resource_support]))
     workflow.add_edge(START, "router")
     workflow.add_conditional_edges(
         "router",

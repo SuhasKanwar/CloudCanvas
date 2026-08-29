@@ -14,7 +14,7 @@ function fakeClient(response: unknown): AxiosInstance {
     return {
         post: async (path: string, body: unknown) => {
             assert.equal(path, AI_QUERY_PATH);
-            assert.deepEqual(body, { query: "Explain S3", session_history: [] });
+            assert.deepEqual(body, { query: "Explain S3", session_history: [], context: "" });
             return { data: response };
         },
     } as unknown as AxiosInstance;
@@ -52,6 +52,30 @@ test("parses build responses and validates edge references", async () => {
         },
     };
     const result = await new AIService(fakeClient(response)).query({ query: "Explain S3" });
+    assert.equal(result.data.type, "build");
+});
+
+test("accepts EC2 dependency nodes before account-specific selections are complete", async () => {
+    const result = await new AIService(fakeClient({
+        success: true,
+        message: "ok",
+        data: {
+            type: "build",
+            message: "Configure the AMI and key pair before deployment.",
+            build: {
+                name: "web server",
+                nodes: [
+                    { type: AwsService.SECURITY_GROUP, id: "security-group", positionX: 0, positionY: 0, config: { mode: "create", groupName: "web", description: "Web access" } },
+                    { type: AwsService.KEY_PAIR, id: "key-pair", positionX: 0, positionY: 0, config: { mode: "existing" } },
+                    { type: AwsService.EC2_INSTANCE, id: "instance", positionX: 0, positionY: 0, config: { imageFamily: "amazon-linux", keyName: "${key-pair.keyName}", securityGroupIds: ["${security-group.securityGroupId}"] } },
+                ],
+                edges: [
+                    { sourceNodeId: "security-group", targetNodeId: "instance" },
+                    { sourceNodeId: "key-pair", targetNodeId: "instance" },
+                ],
+            },
+        },
+    })).query({ query: "Explain S3" });
     assert.equal(result.data.type, "build");
 });
 

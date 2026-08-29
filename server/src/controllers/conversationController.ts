@@ -2,8 +2,10 @@ import type { Request, Response } from "express";
 
 import { Prisma } from "../generated/prisma/client.js";
 import { ChatMessageType, ChatRole } from "../generated/prisma/enums.js";
+import { AWS_ENCRYPTION_KEY } from "../lib/config.js";
 import prisma from "../lib/prisma.js";
 import { AIServiceError, aiService, type AiChatMessage } from "../services/aiService.js";
+import { awsResourceManager, decryptAwsSecret } from "../services/aws/index.js";
 import type { ApiResponse } from "../types/response.js";
 
 const MAX_MESSAGE_LENGTH = 8_000;
@@ -28,7 +30,7 @@ async function findOwnedSketch(req: Request) {
     const sketchId = typeof req.params.sketchId === "string" ? req.params.sketchId : "";
     return prisma.sketch.findFirst({
         where: { id: sketchId, userId: req.userId },
-        select: { id: true, userId: true },
+        select: { id: true, userId: true, connectionId: true },
     });
 }
 
@@ -45,6 +47,36 @@ function toAiHistory(messages: readonly { role: ChatRole; content: string }[]): 
         role: message.role === ChatRole.USER ? "user" : "assistant",
         content: message.content,
     }));
+}
+
+async function awsCatalogContext(userId: string, connectionId: string | null) {
+    if (!AWS_ENCRYPTION_KEY) return "";
+    const connection = await prisma.awsConnection.findFirst({
+        where: connectionId ? { id: connectionId, userId } : { userId, isActive: true },
+        select: { id: true, region: true, accessKeyIdEncrypted: true, secretAccessKeyEncrypted: true, sessionTokenEncrypted: true },
+    });
+    if (!connection) return "";
+    try {
+        const credentials = {
+            accessKeyId: decryptAwsSecret(connection.accessKeyIdEncrypted, AWS_ENCRYPTION_KEY),
+            secretAccessKey: decryptAwsSecret(connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
+            ...(connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
+        };
+        const catalog = await awsResourceManager.getCatalog(credentials, connection.region, connection.id);
+        return JSON.stringify({
+            region: connection.region,
+            vpcs: catalog.vpcs.slice(0, 25),
+            subnets: catalog.subnets.slice(0, 40),
+            securityGroups: catalog.securityGroups.slice(0, 40),
+            keyPairs: catalog.keyPairs.slice(0, 40).map(({ name }) => ({ name })),
+            images: catalog.images.slice(0, 24).map(({ id, category, title, architecture, rootDeviceName }) => ({ id, category, title, architecture, rootDeviceName })),
+            instanceTypes: catalog.instanceTypes.slice(0, 80),
+            instanceProfiles: catalog.instanceProfiles.slice(0, 25),
+            launchTemplates: catalog.launchTemplates.slice(0, 25),
+        });
+    } catch {
+        return "";
+    }
 }
 
 export async function getSketchConversation(req: Request, res: Response<ApiResponse>) {
@@ -85,7 +117,8 @@ export async function sendSketchConversationMessage(req: Request, res: Response<
     });
 
     try {
-        const response = await aiService.query({ query: content, session_history: history });
+        const context = await awsCatalogContext(sketch.userId, sketch.connectionId);
+        const response = await aiService.query({ query: content, session_history: history, context });
         const assistantMessage = await prisma.chatMessage.create({
             data: response.data.type === "build"
                 ? { conversationId: conversation.id, role: ChatRole.ASSISTANT, type: ChatMessageType.BUILD, content: response.data.message, build: jsonValue(response.data.build) }

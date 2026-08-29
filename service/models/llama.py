@@ -7,6 +7,7 @@ from langchain_groq import ChatGroq
 from config import GROQ_API_KEY
 from config.models import LLAMA
 from config.prompts import LLAMA_SYSTEM_PROMPT
+from tools.cloudcanvas import get_cloudcanvas_resource_support
 from tools.search import search_tool
 from utils.exception import CloudCanvasException
 from utils.logger import logger
@@ -23,7 +24,7 @@ class Llama:
                 api_key=GROQ_API_KEY,
                 model=self.model_name,
                 temperature=LLAMA["TEMPERATURE"],
-            ).bind_tools([search_tool])
+            ).bind_tools([search_tool, get_cloudcanvas_resource_support])
             self.prompt_template = ChatPromptTemplate.from_messages([
                 ("system", self.system_prompt),
                 ("system", "Relevant context (may be partial):\n{context}"),
@@ -41,11 +42,12 @@ class Llama:
         prompt: str,
         session_history: list[dict],
         messages: list[BaseMessage] | None = None,
+        context: str = "",
     ) -> object:
         try:
             return self.chain.invoke({
                 "history": [*session_history, HumanMessage(content=prompt), *(messages or [])],
-                "context": "",
+                "context": context,
             })
         except Exception as error:
             logger.exception("Llama model %s failed to generate a response", self.model_name)

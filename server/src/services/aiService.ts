@@ -4,6 +4,7 @@ import { microserviceApi } from "../lib/api.js";
 import { AI_SERVICE_TIMEOUT_MS } from "../lib/config.js";
 import { isAwsService } from "../utils/aws.js";
 import { isFiniteNumber, isNullableStringField, isRecord, isString } from "../utils/validation.js";
+import { validateGraphObject } from "@cloudcanvas/graph-contract";
 import { AwsService, type AwsResourceCreateRequest } from "./aws/index.js";
 
 export const AI_QUERY_PATH = "/api/agent/query";
@@ -66,6 +67,7 @@ export type AiQuerySuccess = {
 export type AiQueryRequest = {
     query: string;
     session_history?: readonly AiChatMessage[];
+    context?: string;
 };
 
 export type AiServiceErrorCode =
@@ -166,6 +168,11 @@ function parseAiAgentResponse(value: unknown): AiAgentResponse | null {
         edges,
     };
     if (build.description !== undefined) sketch.description = build.description as string | null;
+    try {
+        validateGraphObject({ schemaVersion: 1, ...sketch });
+    } catch {
+        return null;
+    }
     return { type: "build", message: value.message, build: sketch };
 }
 
@@ -204,11 +211,15 @@ export class AIService {
         if (request.session_history !== undefined && (!Array.isArray(request.session_history) || !request.session_history.every(isAiChatMessage))) {
             throw new AIServiceError("AI session history contains an invalid message.", "invalid_request");
         }
+        if (request.context !== undefined && !isString(request.context)) {
+            throw new AIServiceError("AI context must be text.", "invalid_request");
+        }
 
         try {
             const response = await this.client.post<unknown>(AI_QUERY_PATH, {
                 query: request.query.trim(),
                 session_history: request.session_history ?? [],
+                context: request.context ?? "",
             }, { timeout: this.timeoutMs });
             return parseSuccessResponse(response.data);
         } catch (error) {

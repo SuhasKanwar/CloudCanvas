@@ -1,4 +1,4 @@
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_groq import ChatGroq
 
 from config import GROQ_API_KEY
@@ -34,10 +34,17 @@ class AwsRouter:
             temperature=0,
         ).with_structured_output(BuildResponse)
 
-    def create_sketch(self, prompt: str) -> BuildResponse:
+    def create_sketch(self, prompt: str, session_history: list[dict], context: str = "") -> BuildResponse:
         if not GROQ_API_KEY:
             raise RuntimeError("GROQ_API_KEY is not configured")
+        history = [
+            HumanMessage(content=message["content"]) if message.get("role") == "user" else AIMessage(content=message["content"])
+            for message in session_history
+            if message.get("role") in {"user", "assistant"} and isinstance(message.get("content"), str)
+        ]
         return self.model.invoke([
             SystemMessage(content=AWS_ROUTER_SYSTEM_PROMPT),
+            *( [SystemMessage(content=f"Connected AWS catalog:\n{context}")] if context else [] ),
+            *history,
             HumanMessage(content=prompt),
         ])
