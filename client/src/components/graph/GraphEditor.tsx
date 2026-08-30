@@ -252,7 +252,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         <ResourceSidebar disabled={!canvasReady} onAdd={addNode} onOpenAwsSettings={onOpenAwsSettings} />
 
         <div className="relative min-w-0">
-            <div className="absolute inset-x-0 top-0 z-10 flex h-16 items-center gap-3 border-b border-white/10 bg-[var(--surface-color)]/95 px-4 backdrop-blur">
+            <div className="absolute inset-x-0 top-0 z-30 flex h-16 items-center gap-3 border-b border-white/10 bg-[var(--surface-color)]/95 px-4 backdrop-blur">
                 <label className="flex min-w-0 flex-1 items-center gap-2 rounded-md border border-transparent px-3 py-2 transition focus-within:border-white/15 focus-within:bg-black/15"><Pencil className="h-3.5 w-3.5 shrink-0 text-(--secondary-text-color)" /><input aria-label="Sketch name" className="min-w-0 flex-1 bg-transparent font-(family-name:--font-display) text-sm font-semibold outline-none placeholder:text-(--muted-text-color) disabled:cursor-wait" disabled={!canvasReady} onBlur={requestRename} onChange={(event) => setName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }} value={name} /></label>
                 {saveError ? <span className="hidden max-w-64 truncate text-xs text-(--danger-color) lg:block">{saveError}</span> : null}
                 <Link className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/10 px-3 py-2 text-sm text-(--secondary-text-color) transition hover:border-white/20 hover:bg-white/6 hover:text-(--primary-text-color)" href="/dashboard"><FolderOpen className="h-4 w-4" />Sketches</Link>
