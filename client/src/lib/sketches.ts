@@ -110,6 +110,14 @@ export async function renameSketch(accessToken: string, sketchId: string, name: 
     return response.data.data;
 }
 
+export async function updateSketchNodePosition(accessToken: string, sketchId: string, nodeId: string, position: { x: number; y: number }): Promise<void> {
+    await api.patch(
+        `/api/sketches/${sketchId}/nodes/${nodeId}`,
+        { positionX: position.x, positionY: position.y },
+        authenticatedRequest(accessToken, { silentToast: true }),
+    );
+}
+
 export async function createAiSketch(accessToken: string, query: string, sessionHistory: readonly AiChatMessage[] = []): Promise<AiSketchResponse> {
     const response = await api.post<ApiEnvelope<AiSketchResponse>>(
         "/api/sketches/ai",
