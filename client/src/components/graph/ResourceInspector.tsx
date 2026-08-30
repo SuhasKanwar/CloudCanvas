@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Check, Code2, Link2, Monitor, Plus, Tag, Terminal, Trash2 } from "lucide-react";
+import { Check, CloudCog, Code2, Link2, Monitor, Plus, Tag, Terminal, Trash2 } from "lucide-react";
 import type { Node } from "@xyflow/react";
 import { getAwsResourceCatalog, listAwsConnections, type AwsResourceCatalog } from "@/lib/aws";
 import Skeleton from "@/components/ui/Skeleton";
@@ -12,7 +12,7 @@ import { getPendingDeploymentChanges } from "@/lib/deploymentChanges";
 import DeploymentChangeInfo from "./DeploymentChangeInfo";
 
 type Ec2Bindings = { keyPair?: string; securityGroups: string[] };
-type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; resource?: AwsResourceSnapshot; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void };
+type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; resource?: AwsResourceSnapshot; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void; onOpenAwsSettings: () => void };
 type FieldProps = { label: string; value: string | number; onChange: (value: string) => void; type?: "number" | "text" };
 
 const inputClass = "mt-2 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2.5 text-sm text-(--primary-text-color) outline-none transition placeholder:text-(--muted-text-color) hover:border-white/20 focus:border-(--primary-color) focus:ring-2 focus:ring-(--primary-color)/15";
@@ -157,10 +157,11 @@ function ConfigurationSkeleton() {
     return <div className="space-y-6" aria-label="Loading resource configuration"><div className="space-y-2"><Skeleton className="h-3 w-24" /><Skeleton className="h-11 w-full" /></div><div className="grid gap-5 sm:grid-cols-2"><div className="space-y-2"><Skeleton className="h-3 w-20" /><Skeleton className="h-11 w-full" /></div><div className="space-y-2"><Skeleton className="h-3 w-28" /><Skeleton className="h-11 w-full" /></div></div><div className="space-y-3 border-t border-white/10 pt-6"><Skeleton className="h-3 w-32" /><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div></div>;
 }
 
-export default function ResourceInspector({ bindings, connectionId, node, resource, onChange, onDelete }: Props) {
+export default function ResourceInspector({ bindings, connectionId, node, resource, onChange, onDelete, onOpenAwsSettings }: Props) {
     const { data: session } = useSession();
     const { config, service } = node.data;
     const [catalog, setCatalog] = useState<AwsResourceCatalog | null>(null);
+    const [catalogError, setCatalogError] = useState<string | null>(null);
     const catalogRequired = service === "EC2_INSTANCE" || service === "SECURITY_GROUP" || service === "KEY_PAIR";
     const [catalogLoading, setCatalogLoading] = useState(catalogRequired);
     const update = (key: string, value: unknown) => onChange(node.data.label, key === "__all__" ? value as Record<string, unknown> : { ...config, [key]: value });
@@ -175,8 +176,9 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
         let active = true;
         void listAwsConnections(accessToken).then((connections) => {
             const connection = connections.find((entry) => entry.id === connectionId) ?? connections.find((entry) => entry.isActive) ?? connections[0];
-            return connection ? getAwsResourceCatalog(accessToken, connection.id) : null;
-        }).then((data) => { if (active) setCatalog(data); }).catch(() => { if (active) setCatalog(null); }).finally(() => { if (active) setCatalogLoading(false); });
+            if (!connection) throw new Error("Connect an AWS account to load regional AMIs, instance types, networks, and key pairs.");
+            return getAwsResourceCatalog(accessToken, connection.id);
+        }).then((data) => { if (active) setCatalog(data); }).catch((error: unknown) => { if (active) { setCatalog(null); setCatalogError(error instanceof Error ? error.message : "AWS resource information could not be loaded."); } }).finally(() => { if (active) setCatalogLoading(false); });
         return () => { active = false; };
     }, [catalogRequired, connectionId, session?.accessToken]);
 
@@ -187,9 +189,10 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
             <div className="rounded-md border border-white/8 bg-black/15 px-4 py-3"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-(--secondary-text-color)">{service.replaceAll("_", " ")}</p></div>
             {resource ? <section className="border border-white/10 bg-black/15 p-4"><div className="flex items-center justify-between gap-3"><p className="text-sm font-medium text-(--primary-text-color)">Deployment status</p><span className={`font-mono text-[10px] ${resource.status === "RUNNING" ? "text-emerald-300" : resource.status === "FAILED" ? "text-rose-300" : "text-amber-300"}`}>{resource.status.replaceAll("_", " ")}</span></div>{resource.lastError ? <p className="mt-3 text-xs leading-5 text-(--danger-color)">{resource.lastError}</p> : null}{deployed ? <p className={`mt-3 flex items-center gap-1 text-xs ${changes.length ? "text-amber-200" : "text-(--secondary-text-color)"}`}>{changes.length ? <>Changes pending. Publish this sketch to apply the supported updates. <DeploymentChangeInfo changes={changes} /></> : "No unpublished configuration changes."}</p> : null}{stateEntries.length ? <dl className="mt-4 grid gap-x-5 gap-y-3 sm:grid-cols-2">{stateEntries.map(([key, value]) => <div key={key}><dt className="text-[11px] text-(--secondary-text-color)">{key.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase())}</dt><dd className="mt-0.5 break-all font-mono text-xs text-(--primary-text-color)">{String(value)}</dd></div>)}</dl> : null}</section> : null}
             {catalogLoading ? <ConfigurationSkeleton /> : <>
+            {catalogRequired && catalogError ? <div className="border border-(--warning-color)/35 bg-(--warning-color)/8 p-4"><div className="flex items-start gap-3"><CloudCog className="mt-0.5 h-4 w-4 shrink-0 text-(--warning-color)" /><div><p className="text-sm font-medium text-(--primary-text-color)">AWS catalog unavailable</p><p className="mt-1 text-xs leading-5 text-(--secondary-text-color)">{catalogError}</p><button className="mt-3 border border-(--warning-color)/40 px-3 py-2 text-xs font-medium text-(--warning-color) transition hover:bg-(--warning-color)/10" onClick={onOpenAwsSettings} type="button">Configure AWS connection</button></div></div></div> : null}
             {catalog?.warnings.length ? <p className="rounded-md border border-(--warning-color)/40 bg-(--warning-color)/8 p-3 text-xs leading-5 text-(--warning-color)">{catalog.warnings.join(" ")}</p> : null}
             {formLocked ? <p className="border border-amber-300/25 bg-amber-300/8 p-3 text-xs leading-5 text-amber-100">This resource type does not support configuration updates yet. Delete and replace it to change its deployment settings.</p> : null}
-            <fieldset disabled={formLocked} className="space-y-5 disabled:opacity-55">
+            {!catalogRequired || catalog ? <fieldset disabled={formLocked} className="space-y-5 disabled:opacity-55">
             {service === "EC2_INSTANCE" ? <Ec2Form bindings={bindings} catalog={catalog} config={config} deployed={deployed} update={update} /> : null}
             {service === "KEY_PAIR" ? <KeyPairForm catalog={catalog} config={config} update={update} /> : null}
             {service === "SECURITY_GROUP" ? <SecurityGroupForm catalog={catalog} config={config} update={update} /> : null}
@@ -200,7 +203,7 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
             {service === "DYNAMODB_TABLE" ? <DynamoDbForm config={config} update={update} /> : null}
             {service === "SQS_QUEUE" ? <><Field label="Queue name" onChange={(value) => update("queueName", value)} value={String(config.queueName ?? "")} /><Field label="Visibility timeout (seconds)" onChange={(value) => update("visibilityTimeoutSeconds", Number(value) || 0)} type="number" value={Number(config.visibilityTimeoutSeconds ?? 30)} /><Field label="Message retention (seconds)" onChange={(value) => update("messageRetentionPeriodSeconds", Number(value) || 60)} type="number" value={Number(config.messageRetentionPeriodSeconds ?? 345600)} /></> : null}
             {service === "SNS_TOPIC" ? <><Field label="Topic name" onChange={(value) => update("topicName", value)} value={String(config.topicName ?? "")} /><Toggle checked={config.fifoTopic === true} label="FIFO topic" onChange={(value) => update("fifoTopic", value)} /></> : null}
-            </fieldset>
+            </fieldset> : null}
             </>}
         </div>
     </div>;
