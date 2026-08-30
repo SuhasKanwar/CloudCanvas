@@ -49,7 +49,7 @@ export default function SketchIndex({ onOpenAwsSettings }: { onOpenAwsSettings: 
         }
     };
 
-    return <section className="mx-auto w-full max-w-6xl px-4 py-9 sm:px-6 lg:px-8">
+    return <section className="dashboard-enter mx-auto w-full max-w-6xl px-4 py-9 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-5 border-b border-white/10 pb-8">
             <div>
                 <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-(--secondary-color)">Workspace</p>
@@ -61,10 +61,10 @@ export default function SketchIndex({ onOpenAwsSettings }: { onOpenAwsSettings: 
                 <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={creating || !session?.accessToken} onClick={() => void create()} type="button">{creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />}New sketch</button>
             </div>
         </div>
-        <div className="mt-7 divide-y divide-white/10 border-y border-white/10 bg-black/8">
+        <div className="dashboard-stagger mt-7 divide-y divide-white/10 border-y border-white/10 bg-black/8">
             {loading ? <div className="flex items-center gap-2 py-10 text-sm text-(--secondary-text-color)"><Loader2 className="h-4 w-4 animate-spin" />Loading sketches</div> : null}
             {!loading && sketches.length === 0 ? <div className="py-12 text-center"><p className="text-sm text-(--secondary-text-color)">No sketches yet.</p><button className="mt-4 text-sm text-(--secondary-color) hover:text-(--primary-text-color)" onClick={() => void create()} type="button">Create your first sketch</button></div> : null}
-            {sketches.map((sketch) => <div className="flex items-center gap-4 px-4 py-4 transition hover:bg-white/4 sm:px-5" key={sketch.id}>
+            {sketches.map((sketch) => <div className="dashboard-interactive flex items-center gap-4 px-4 py-4 hover:bg-white/4 sm:px-5" key={sketch.id}>
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/10 bg-[var(--surface-strong-color)] text-(--secondary-color)"><FilePlus2 className="h-4 w-4" /></span><Link className="min-w-0 flex-1" href={`/dashboard/sketches/${sketch.id}`}><p className="truncate font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)">{sketch.name}</p><p className="mt-1 font-mono text-[11px] uppercase text-(--secondary-text-color)">{sketch.status} · updated {new Date(sketch.updatedAt).toLocaleDateString()}</p></Link>
                 <Link aria-label={`Open ${sketch.name}`} className="grid h-9 w-9 place-items-center rounded-md text-(--secondary-text-color) transition hover:bg-white/7 hover:text-(--primary-text-color)" href={`/dashboard/sketches/${sketch.id}`} title="Open sketch"><ArrowRight className="h-4 w-4" /></Link>
                 <button aria-label={`Delete ${sketch.name}`} className="grid h-9 w-9 place-items-center rounded-md text-(--secondary-text-color) transition hover:bg-(--danger-color)/10 hover:text-(--danger-color)" onClick={() => setSketchToDelete(sketch)} title="Delete sketch" type="button"><Trash2 className="h-4 w-4" /></button>

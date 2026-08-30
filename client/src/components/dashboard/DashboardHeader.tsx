@@ -22,7 +22,7 @@ export default function DashboardHeader() {
         }
     };
 
-    return <header className="relative z-40 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-[var(--surface-color)]/95 px-4 backdrop-blur sm:px-6">
+    return <header className="dashboard-header-enter relative z-40 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-[var(--surface-color)]/95 px-4 backdrop-blur sm:px-6">
         <Link className="flex items-center gap-3" href="/">
             <span className="grid h-9 w-9 place-items-center rounded-md border border-white/10 bg-black/15"><Image alt="CloudCanvas" className="h-7 w-7 object-contain" height={28} priority src="/logo.png" width={28} /></span>
             <span className="font-(family-name:--font-display) text-lg font-semibold text-(--primary-text-color)">CloudCanvas</span>

@@ -78,7 +78,7 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
     };
 
     return (
-        <section className="mx-auto w-full max-w-6xl px-4 py-9 sm:px-6 lg:px-8">
+        <section className="dashboard-enter mx-auto w-full max-w-6xl px-4 py-9 sm:px-6 lg:px-8">
             <div className="flex flex-wrap items-end justify-between gap-5 border-b border-white/10 pb-8">
                 <div>
                     <button className="mb-4 inline-flex items-center gap-2 text-sm text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={onBack} type="button"><ArrowLeft className="h-4 w-4" />Back to canvas</button>
@@ -94,10 +94,10 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
                         <h2 className="text-lg text-(--primary-text-color)">Saved accounts</h2>
                         {loading ? <Loader2 aria-label="Loading AWS connections" className="h-4 w-4 animate-spin text-(--secondary-text-color)" /> : null}
                     </div>
-                    <div className="mt-4 divide-y divide-white/10 border-y border-white/10 bg-black/8">
+                    <div className="dashboard-stagger mt-4 divide-y divide-white/10 border-y border-white/10 bg-black/8">
                         {!loading && connections.length === 0 ? <p className="py-8 text-sm text-(--secondary-text-color)">No AWS account is configured.</p> : null}
                         {connections.map((connection) => (
-                            <div className="flex items-center justify-between gap-4 px-4 py-4 transition hover:bg-white/4" key={connection.id}>
+                            <div className="dashboard-interactive flex items-center justify-between gap-4 px-4 py-4 hover:bg-white/4" key={connection.id}>
                                 <div className="min-w-0">
                                     <p className="truncate font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)">{connection.name}</p>
                                     <p className="mt-1 flex items-center gap-2 font-mono text-xs text-(--secondary-text-color)">{connection.region}{connection.isActive ? <span className="inline-flex items-center gap-1 text-(--success-color)"><Check className="h-3 w-3" />Active</span> : null}</p>
@@ -108,7 +108,7 @@ export default function AwsConnectionsPanel({ onBack }: { onBack: () => void }) 
                     </div>
                 </div>
 
-                <form className="rounded-lg border border-white/10 bg-[var(--surface-color)] p-5 shadow-xl shadow-black/15" onSubmit={submit}>
+                <form className="dashboard-enter rounded-lg border border-white/10 bg-[var(--surface-color)] p-5 shadow-xl shadow-black/15" onSubmit={submit}>
                     <div className="flex items-center gap-2 font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)"><span className="grid h-8 w-8 place-items-center rounded-md bg-(--primary-color)/10 text-(--primary-color)"><KeyRound className="h-4 w-4" /></span>Add account</div>
                     <div className="mt-5 space-y-4">
                         <Field label="Connection name" value={form.name} onChange={(name) => setForm((current) => ({ ...current, name }))} />
