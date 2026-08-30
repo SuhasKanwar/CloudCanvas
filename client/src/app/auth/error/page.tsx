@@ -15,7 +15,7 @@ const errorMessages: Record<string, string> = {
 export default async function AuthErrorPage({
     searchParams,
 }: {
-    searchParams?: { error?: string };
+    searchParams?: Promise<{ error?: string }>;
 }) {
     const session = await getAuthSession();
 
@@ -23,7 +23,7 @@ export default async function AuthErrorPage({
         redirect("/dashboard");
     }
 
-    const code = searchParams?.error ?? "Default";
+    const code = (await searchParams)?.error ?? "Default";
     const message = errorMessages[code] ?? errorMessages.Default;
 
     return (
