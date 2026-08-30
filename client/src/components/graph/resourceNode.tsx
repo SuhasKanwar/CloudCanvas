@@ -46,19 +46,21 @@ export function ResourceNode({ data, selected }: NodeProps) {
         }
     };
 
-    return <div className={`canvas-node-enter min-w-48 overflow-hidden rounded-md border bg-[var(--surface-color)] shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition-shadow ${selected ? "border-(--primary-color) shadow-[0_0_0_1px_var(--primary-color),0_16px_36px_rgba(0,0,0,0.38)]" : "border-white/12"}`}>
-        <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-text-color)" position={Position.Top} type="target" />
-        <div className="flex items-center gap-3 px-3 py-3">
-            <span className={`grid h-8 w-8 place-items-center rounded-md bg-white/6 ${appearance.accent}`}><Icon className="h-4 w-4" /></span>
-            <div className="min-w-0">
-                <p className="truncate font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)">{resource.label}</p>
-                <p className="mt-0.5 font-mono text-[10px] text-(--secondary-text-color)">{appearance.title}</p>
+    return <div className={`canvas-node-enter min-w-48 rounded-md border bg-[var(--surface-color)] shadow-[0_12px_30px_rgba(0,0,0,0.3)] transition-shadow ${selected ? "border-(--primary-color) shadow-[0_0_0_1px_var(--primary-color),0_16px_36px_rgba(0,0,0,0.38)]" : "border-white/12"}`}>
+        <Handle className="!h-3 !w-3 !border-2 !border-[var(--surface-color)] !bg-(--secondary-text-color)" position={Position.Top} type="target" />
+        <div className="overflow-hidden rounded-[inherit]">
+            <div className="flex items-center gap-3 px-3 py-3">
+                <span className={`grid h-8 w-8 place-items-center rounded-md bg-white/6 ${appearance.accent}`}><Icon className="h-4 w-4" /></span>
+                <div className="min-w-0">
+                    <p className="truncate font-(family-name:--font-display) text-sm font-semibold text-(--primary-text-color)">{resource.label}</p>
+                    <p className="mt-0.5 font-mono text-[10px] text-(--secondary-text-color)">{appearance.title}</p>
+                </div>
             </div>
+            {status ? <div className="flex items-center gap-1.5 border-t border-white/8 px-3 py-2 font-mono text-[10px] text-(--secondary-text-color)"><span className={`h-1.5 w-1.5 rounded-full ${statusClass}`} />{status.replaceAll("_", " ")}</div> : null}
+            {changes.length ? <div className="flex items-center gap-1 border-t border-amber-300/20 bg-amber-300/8 px-3 py-1.5 font-mono text-[10px] text-amber-200">Changes pending <DeploymentChangeInfo changes={changes} /></div> : null}
+            {resource.service === "EC2_INSTANCE" && (publicIpAddress || privateIpAddress) ? <div className="space-y-1 border-t border-white/8 px-3 py-2 font-mono text-[10px]"><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Public IP</span><span className="flex items-center gap-1 text-(--primary-text-color)">{publicIpAddress || "Not assigned"}{publicIpAddress ? <button aria-label="Copy public IP" className="grid h-5 w-5 place-items-center text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={(event) => { event.stopPropagation(); void copyIpAddress("Public IP", publicIpAddress); }} title="Copy public IP" type="button"><Copy className="h-3 w-3" /></button> : null}</span></div><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Private IP</span><span className="flex items-center gap-1 text-(--primary-text-color)">{privateIpAddress || "Not assigned"}{privateIpAddress ? <button aria-label="Copy private IP" className="grid h-5 w-5 place-items-center text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={(event) => { event.stopPropagation(); void copyIpAddress("Private IP", privateIpAddress); }} title="Copy private IP" type="button"><Copy className="h-3 w-3" /></button> : null}</span></div></div> : null}
         </div>
-        {status ? <div className="flex items-center gap-1.5 border-t border-white/8 px-3 py-2 font-mono text-[10px] text-(--secondary-text-color)"><span className={`h-1.5 w-1.5 rounded-full ${statusClass}`} />{status.replaceAll("_", " ")}</div> : null}
-        {changes.length ? <div className="flex items-center gap-1 border-t border-amber-300/20 bg-amber-300/8 px-3 py-1.5 font-mono text-[10px] text-amber-200">Changes pending <DeploymentChangeInfo changes={changes} /></div> : null}
-        {resource.service === "EC2_INSTANCE" && (publicIpAddress || privateIpAddress) ? <div className="space-y-1 border-t border-white/8 px-3 py-2 font-mono text-[10px]"><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Public IP</span><span className="flex items-center gap-1 text-(--primary-text-color)">{publicIpAddress || "Not assigned"}{publicIpAddress ? <button aria-label="Copy public IP" className="grid h-5 w-5 place-items-center text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={(event) => { event.stopPropagation(); void copyIpAddress("Public IP", publicIpAddress); }} title="Copy public IP" type="button"><Copy className="h-3 w-3" /></button> : null}</span></div><div className="flex items-center justify-between gap-3"><span className="text-(--secondary-text-color)">Private IP</span><span className="flex items-center gap-1 text-(--primary-text-color)">{privateIpAddress || "Not assigned"}{privateIpAddress ? <button aria-label="Copy private IP" className="grid h-5 w-5 place-items-center text-(--secondary-text-color) hover:text-(--primary-text-color)" onClick={(event) => { event.stopPropagation(); void copyIpAddress("Private IP", privateIpAddress); }} title="Copy private IP" type="button"><Copy className="h-3 w-3" /></button> : null}</span></div></div> : null}
-        <Handle className="!h-2 !w-2 !border-0 !bg-(--secondary-color)" position={Position.Bottom} type="source" />
+        <Handle className="!h-3 !w-3 !border-2 !border-[var(--surface-color)] !bg-(--secondary-color)" position={Position.Bottom} type="source" />
     </div>;
 }
 
