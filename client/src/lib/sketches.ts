@@ -118,6 +118,22 @@ export async function updateSketchNodePosition(accessToken: string, sketchId: st
     );
 }
 
+export async function createSketchNode(accessToken: string, sketchId: string, node: SketchNode): Promise<void> {
+    await api.post(`/api/sketches/${sketchId}/nodes`, node, authenticatedRequest(accessToken, { silentToast: true }));
+}
+
+export async function deleteSketchNode(accessToken: string, sketchId: string, nodeId: string): Promise<void> {
+    await api.delete(`/api/sketches/${sketchId}/nodes/${nodeId}`, authenticatedRequest(accessToken, { silentToast: true }));
+}
+
+export async function createSketchEdge(accessToken: string, sketchId: string, edge: SketchEdge): Promise<void> {
+    await api.post(`/api/sketches/${sketchId}/edges`, edge, authenticatedRequest(accessToken, { silentToast: true }));
+}
+
+export async function deleteSketchEdge(accessToken: string, sketchId: string, edgeId: string): Promise<void> {
+    await api.delete(`/api/sketches/${sketchId}/edges/${edgeId}`, authenticatedRequest(accessToken, { silentToast: true }));
+}
+
 export async function createAiSketch(accessToken: string, query: string, sessionHistory: readonly AiChatMessage[] = []): Promise<AiSketchResponse> {
     const response = await api.post<ApiEnvelope<AiSketchResponse>>(
         "/api/sketches/ai",
