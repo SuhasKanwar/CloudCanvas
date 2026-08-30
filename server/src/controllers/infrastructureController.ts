@@ -143,6 +143,14 @@ function param(req: Request, name: string) {
     return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
+function optionalCanvasEntityId(value: unknown) {
+    if (value === undefined) return undefined;
+    if (typeof value !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(value)) {
+        throw new Error("Canvas entity ID must contain only letters, numbers, underscores, or hyphens.");
+    }
+    return value;
+}
+
 function stringArray(value: unknown) {
     return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0) : [];
 }
@@ -554,24 +562,25 @@ export async function createSketchNode(req: Request, res: Response<ApiResponse>)
     if (!userId) return;
     const sketch = await prisma.sketch.findFirst({ where: { id: param(req, "sketchId"), userId }, select: { id: true } });
     if (!sketch) return res.status(404).json({ success: false, message: "Sketch not found." });
-    if (typeof req.body?.type !== "string" || !req.body.type.trim() || !isRecord(req.body.config)) {
+    if (typeof req.body?.type !== "string" || !isAwsService(req.body.type.trim()) || !isRecord(req.body.config)) {
         return res.status(400).json({ success: false, message: "Node type and config are required." });
     }
-    let resourceRequest: AwsResourceCreateRequest;
+    let id: string | undefined;
     try {
-        resourceRequest = buildResourceRequest(req.body.type.trim(), req.body.config);
+        id = optionalCanvasEntityId(req.body.id);
     } catch (error) {
         return res.status(400).json({ success: false, message: errorMessage(error) });
     }
 
     const node = await prisma.sketchNode.create({
         data: {
+            ...(id && { id }),
             sketchId: sketch.id,
-            type: resourceRequest.service,
+            type: req.body.type.trim(),
             label: typeof req.body.label === "string" ? req.body.label : null,
             positionX: typeof req.body.positionX === "number" ? req.body.positionX : 0,
             positionY: typeof req.body.positionY === "number" ? req.body.positionY : 0,
-            config: jsonValue(resourceRequest.config),
+            config: jsonValue(req.body.config),
         },
     });
     await touchSketch(sketch.id);
@@ -644,6 +653,12 @@ export async function createSketchEdge(req: Request, res: Response<ApiResponse>)
         return res.status(400).json({ success: false, message: "Source and target node IDs are required." });
     }
     const sketchId = param(req, "sketchId");
+    let id: string | undefined;
+    try {
+        id = optionalCanvasEntityId(req.body.id);
+    } catch (error) {
+        return res.status(400).json({ success: false, message: errorMessage(error) });
+    }
     const sketch = await prisma.sketch.findFirst({
         where: { id: sketchId, userId },
         include: { nodes: { select: { id: true } }, edges: { select: { sourceNodeId: true, targetNodeId: true } } },
@@ -656,6 +671,7 @@ export async function createSketchEdge(req: Request, res: Response<ApiResponse>)
     }
     const edge = await prisma.sketchEdge.create({
         data: {
+            ...(id && { id }),
             sketchId,
             sourceNodeId,
             targetNodeId,
