@@ -131,13 +131,10 @@ function isAiSketchEdge(value: unknown): value is AiSketchEdge {
 }
 
 function parseAiSketchEdge(value: Record<string, unknown>): AiSketchEdge {
-    const edge: AiSketchEdge = {
+    return {
         sourceNodeId: value.sourceNodeId as string,
         targetNodeId: value.targetNodeId as string,
     };
-    if (value.sourceHandle !== undefined) edge.sourceHandle = value.sourceHandle as string | null;
-    if (value.targetHandle !== undefined) edge.targetHandle = value.targetHandle as string | null;
-    return edge;
 }
 
 function parseAiAgentResponse(value: unknown): AiAgentResponse | null {

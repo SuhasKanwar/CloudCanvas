@@ -95,6 +95,32 @@ export function createGraphPlan(nodes: readonly GraphNode[], edges: readonly Gra
     return { order, sourcesByTarget };
 }
 
+export function layoutOverlappingGraphNodes(nodes: readonly GraphNode[], edges: readonly GraphEdge[]): GraphNode[] {
+    if (new Set(nodes.map((node) => `${node.positionX}:${node.positionY}`)).size === nodes.length) return [...nodes];
+
+    const plan = createGraphPlan(nodes, edges);
+    const rankById = new Map<string, number>();
+    for (const nodeId of plan.order) {
+        const sources = [...(plan.sourcesByTarget.get(nodeId) ?? [])];
+        rankById.set(nodeId, sources.length ? Math.max(...sources.map((sourceId) => rankById.get(sourceId) ?? 0)) + 1 : 0);
+    }
+    const layers = new Map<number, string[]>();
+    for (const nodeId of plan.order) {
+        const rank = rankById.get(nodeId) ?? 0;
+        layers.set(rank, [...(layers.get(rank) ?? []), nodeId]);
+    }
+    const widestLayer = Math.max(...[...layers.values()].map((layer) => layer.length), 1);
+    const positionById = new Map<string, { x: number; y: number }>();
+    for (const [rank, layer] of layers) {
+        const offset = (widestLayer - layer.length) * 130;
+        layer.forEach((nodeId, index) => positionById.set(nodeId, { x: 120 + offset + index * 260, y: 100 + rank * 180 }));
+    }
+    return nodes.map((node) => {
+        const position = positionById.get(node.id);
+        return position ? { ...node, positionX: position.x, positionY: position.y } : node;
+    });
+}
+
 function validateReferences(value: unknown, targetNodeId: string, sourcesByTarget: Map<string, Set<string>>): void {
     if (typeof value === "string") {
         if (!value.includes("${")) return;

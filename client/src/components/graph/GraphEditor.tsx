@@ -8,7 +8,7 @@ import "@xyflow/react/dist/style.css";
 import { ArrowLeft, Check, FolderOpen, Loader2, Pencil, Save } from "lucide-react";
 import Link from "next/link";
 import { stringify } from "yaml";
-import type { AwsService, GraphDefinition } from "@cloudcanvas/graph-contract";
+import { layoutOverlappingGraphNodes, type AwsService, type GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
 import { RESOURCE_STATUS_POLL_INTERVAL_MS } from "@/lib/config";
 import { getSketch, refreshSketchResources, renameSketch, type AwsResourceSnapshot, type Sketch } from "@/lib/sketches";
@@ -168,7 +168,8 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         setName(sketch.name);
         setPersistedName(sketch.name);
         const loadedResources = Object.fromEntries((sketch.resources ?? []).flatMap((resource) => resource.nodeId ? [[resource.nodeId, resource]] : [])) as Record<string, AwsResourceSnapshot>;
-        const loadedNodes: ResourceFlowNode[] = (sketch.nodes ?? []).map((node) => ({
+        const graphNodes = layoutOverlappingGraphNodes(sketch.nodes ?? [], (sketch.edges ?? []).map((edge) => ({ sourceNodeId: edge.sourceNodeId, targetNodeId: edge.targetNodeId })));
+        const loadedNodes: ResourceFlowNode[] = graphNodes.map((node) => ({
             id: node.id,
             type: "resource" as const,
             position: { x: node.positionX, y: node.positionY },
@@ -176,7 +177,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         }));
         const loadedEdges: Edge[] = (sketch.edges ?? []).map((edge) => {
             const connection = normalizeEc2Connection({ source: edge.sourceNodeId, target: edge.targetNodeId, sourceHandle: edge.sourceHandle ?? null, targetHandle: edge.targetHandle ?? null }, loadedNodes);
-            return { id: edge.id, source: connection.source, target: connection.target, sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle, type: "smoothstep" };
+            return { id: edge.id, source: connection.source, target: connection.target, sourceHandle: null, targetHandle: null, type: "smoothstep" };
         });
         setNodes(syncEc2Bindings(loadedNodes, loadedEdges));
         applyResourceSnapshots(sketch.resources ?? [], true);

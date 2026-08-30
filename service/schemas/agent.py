@@ -262,8 +262,6 @@ AwsNode: TypeAlias = Annotated[
 class SketchEdge(CloudCanvasModel):
     sourceNodeId: str
     targetNodeId: str
-    sourceHandle: str | None = None
-    targetHandle: str | None = None
 
 
 class SketchSpec(CloudCanvasModel):

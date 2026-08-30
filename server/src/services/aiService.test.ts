@@ -86,13 +86,14 @@ test("accepts EC2 dependency nodes before account-specific selections are comple
                     { type: AwsService.EC2_INSTANCE, id: "instance", positionX: 0, positionY: 0, config: { imageFamily: "amazon-linux", keyName: "${key-pair.keyName}", securityGroupIds: ["${security-group.securityGroupId}"] } },
                 ],
                 edges: [
-                    { sourceNodeId: "security-group", targetNodeId: "instance" },
+                    { sourceNodeId: "security-group", targetNodeId: "instance", sourceHandle: "securityGroupId" },
                     { sourceNodeId: "key-pair", targetNodeId: "instance" },
                 ],
             },
         },
     })).query({ query: "Explain S3" });
     assert.equal(result.data.type, "build");
+    if (result.data.type === "build") assert.equal("sourceHandle" in result.data.build.edges[0]!, false);
 });
 
 test("turns malformed responses into typed errors", async () => {

@@ -8,7 +8,7 @@ from agents.graph import agent_app
 from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
 from models.llama import Llama
 from models.nvidia import Nvidia
-from schemas.agent import AwsService, BuildResponse, RouteDecision
+from schemas.agent import AwsService, BuildResponse, RouteDecision, SketchEdge
 from services.router import AwsRouter, ModelRouter
 from tools.aws_catalog import aws_tool_context, get_aws_catalog
 from tools.cloudcanvas import get_cloudcanvas_resource_support
@@ -36,6 +36,7 @@ class AgentShapeTests(unittest.TestCase):
         self.assertEqual(ROUTER_MODEL["STRUCTURED_OUTPUT_METHOD"], "json_schema")
         self.assertEqual(AWS_ROUTER_MODEL["STRUCTURED_OUTPUT_METHOD"], "json_schema")
         self.assertEqual(NVIDIA["MODEL_NAME"], "nvidia/nemotron-3.5-lightning-30b-a3b")
+        self.assertEqual(set(SketchEdge.model_fields), {"sourceNodeId", "targetNodeId"})
 
     def test_nvidia_client_requires_an_api_key(self):
         with patch("models.nvidia.NVIDIA_API_KEY", ""):
