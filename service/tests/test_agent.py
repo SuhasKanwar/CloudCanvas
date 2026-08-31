@@ -1,7 +1,9 @@
 import json
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+import httpx
+from groq import APIStatusError
 from requests.exceptions import ReadTimeout
 
 from agents.graph import agent_app
@@ -9,7 +11,7 @@ from config.models import AWS_ROUTER_MODEL, NVIDIA, ROUTER_MODEL
 from models.llama import Llama
 from models.nvidia import Nvidia
 from schemas.agent import AwsService, BuildResponse, RouteDecision, SketchEdge
-from services.router import AwsRouter, ModelRouter
+from services.router import AwsRouter, ModelRouter, compact_catalog_context
 from tools.aws_catalog import aws_tool_context, get_aws_catalog
 from tools.cloudcanvas import get_cloudcanvas_resource_support
 from utils.exception import CloudCanvasException
@@ -52,6 +54,37 @@ class AgentShapeTests(unittest.TestCase):
                     method="json_schema",
                     strict=False,
                 )
+
+    def test_catalog_context_stays_valid_and_represents_each_collection(self):
+        context = json.dumps({
+            "region": "ap-south-1",
+            "images": [{"id": f"ami-{index}", "title": "Amazon Linux" * 10} for index in range(20)],
+            "instanceTypes": [{"name": f"t3.{index}", "memory": "1 GiB"} for index in range(20)],
+            "keyPairs": [{"name": f"key-{index}"} for index in range(20)],
+        })
+        compact = compact_catalog_context(context, 700)
+        parsed = json.loads(compact)
+        self.assertLessEqual(len(compact), 700)
+        self.assertEqual(parsed["region"], "ap-south-1")
+        self.assertTrue(all(parsed[key] for key in ("images", "instanceTypes", "keyPairs")))
+
+    def test_aws_router_retries_oversized_requests_without_optional_context(self):
+        oversized = APIStatusError(
+            "request too large",
+            response=httpx.Response(413, request=httpx.Request("POST", "https://api.groq.com")),
+            body={"error": {"type": "tokens"}},
+        )
+        expected = BuildResponse.model_validate({
+            "message": "Draft created.",
+            "build": {"name": "server", "nodes": [{"id": "ec2", "type": "EC2_INSTANCE", "config": {}}]},
+        })
+        router = AwsRouter.__new__(AwsRouter)
+        router.model = Mock()
+        router.model.invoke.side_effect = [oversized, expected]
+        with patch("services.router.GROQ_API_KEY", "test-key"):
+            response = router.create_sketch("add an ec2 instance and a key pair", [], "x" * 5000)
+        self.assertEqual(response, expected)
+        self.assertEqual(len(router.model.invoke.call_args_list[1].args[0]), 2)
 
     def test_nvidia_client_maps_read_timeouts_to_gateway_timeout(self):
         client = Nvidia.__new__(Nvidia)

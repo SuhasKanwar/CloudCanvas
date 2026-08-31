@@ -23,4 +23,6 @@ AWS_ROUTER_MODEL = {
     "MODEL_NAME": "openai/gpt-oss-120b",
     "STRUCTURED_OUTPUT_METHOD": "json_schema",
     "STRUCTURED_OUTPUT_STRICT": False,
+    "MAX_HISTORY_TOKENS": 800,
+    "MAX_CONTEXT_CHARACTERS": 3500,
 }
