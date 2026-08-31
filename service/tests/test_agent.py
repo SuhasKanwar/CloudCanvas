@@ -55,6 +55,15 @@ class AgentShapeTests(unittest.TestCase):
                     strict=False,
                 )
 
+    def test_build_response_exposes_graph_rules_in_json_schema(self):
+        schema = BuildResponse.model_json_schema()
+        sketch = schema["$defs"]["SketchSpec"]
+        edge = schema["$defs"]["SketchEdge"]
+        self.assertFalse(schema["additionalProperties"])
+        self.assertIn("unique", sketch["properties"]["nodes"]["description"])
+        self.assertIn("provider node", sketch["properties"]["edges"]["description"])
+        self.assertIn("dependency node", edge["properties"]["sourceNodeId"]["description"])
+
     def test_catalog_context_stays_valid_and_represents_each_collection(self):
         context = json.dumps({
             "region": "ap-south-1",

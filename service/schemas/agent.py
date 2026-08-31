@@ -260,15 +260,21 @@ AwsNode: TypeAlias = Annotated[
 
 
 class SketchEdge(CloudCanvasModel):
-    sourceNodeId: str
-    targetNodeId: str
+    sourceNodeId: str = Field(description="ID of the dependency node that provides a value.")
+    targetNodeId: str = Field(description="ID of the dependent node that consumes the value.")
 
 
 class SketchSpec(CloudCanvasModel):
-    name: str
+    name: str = Field(description="Short human-readable name for the infrastructure sketch.")
     description: str | None = None
-    nodes: list[AwsNode] = Field(min_length=1)
-    edges: list[SketchEdge] = Field(default_factory=list)
+    nodes: list[AwsNode] = Field(
+        min_length=1,
+        description="AWS resource nodes. Every node ID must be unique within the sketch.",
+    )
+    edges: list[SketchEdge] = Field(
+        default_factory=list,
+        description="Dependency edges from a provider node to a consumer node. Both IDs must exist in nodes.",
+    )
 
 
 class TextResponse(CloudCanvasModel):
@@ -278,8 +284,8 @@ class TextResponse(CloudCanvasModel):
 
 class BuildResponse(CloudCanvasModel):
     type: Literal["build"] = "build"
-    message: str
-    build: SketchSpec
+    message: str = Field(description="Concise summary plus any configuration the user must select before deployment.")
+    build: SketchSpec = Field(description="Validated CloudCanvas graph to apply to the canvas.")
 
 
 AgentResponse: TypeAlias = Annotated[TextResponse | BuildResponse, Field(discriminator="type")]
