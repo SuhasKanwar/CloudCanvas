@@ -59,12 +59,24 @@ export default function AiComposer({ onApplyBlueprint, sketchId }: { onApplyBlue
         event.preventDefault();
         const prompt = query.trim();
         if (!accessToken || !prompt || loading) return;
+        const pendingUserMessage: SketchConversationMessage = {
+            id: `pending-${crypto.randomUUID()}`,
+            role: "USER",
+            type: "TEXT",
+            content: prompt,
+            build: null,
+            createdAt: new Date().toISOString(),
+        };
         setQuery("");
         setError(null);
         setLoading(true);
+        setMessages((current) => [...current, pendingUserMessage]);
         try {
             const response = await sendSketchConversationMessage(accessToken, sketchId, prompt);
-            setMessages((current) => [...current, response.userMessage, response.assistantMessage]);
+            setMessages((current) => [
+                ...current.map((message) => message.id === pendingUserMessage.id ? response.userMessage : message),
+                response.assistantMessage,
+            ]);
         } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : "AI request failed.");
             void loadConversation();
