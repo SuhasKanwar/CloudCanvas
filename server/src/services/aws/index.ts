@@ -4,7 +4,7 @@ import { GetRoleCommand, IAMClient } from "@aws-sdk/client-iam";
 import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { DescribeTableCommand, DynamoDBClient, UpdateTableCommand } from "@aws-sdk/client-dynamodb";
 import { GetFunctionCommand, LambdaClient, UpdateFunctionCodeCommand, UpdateFunctionConfigurationCommand, waitUntilFunctionUpdatedV2 } from "@aws-sdk/client-lambda";
-import { GetTopicAttributesCommand, SNSClient } from "@aws-sdk/client-sns";
+import { GetTopicAttributesCommand, SetTopicAttributesCommand, SNSClient } from "@aws-sdk/client-sns";
 import { GetQueueAttributesCommand, SetQueueAttributesCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { AWS_REGION } from "../../lib/config.js";
 import { ec2InstanceDetails, Ec2Service } from "./resources/ec2.js";
@@ -235,6 +235,15 @@ export class AWSResourceManager {
     }
 
     async updateResource(request: AwsResourceCreateRequest, externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
+        if (request.service === AwsService.SNS_TOPIC) {
+            const client = new SNSClient({ region, credentials });
+            await client.send(new SetTopicAttributesCommand({ TopicArn: externalId, AttributeName: "DisplayName", AttributeValue: request.config.displayName ?? "" }));
+            if (request.config.fifoTopic) {
+                await client.send(new SetTopicAttributesCommand({ TopicArn: externalId, AttributeName: "ContentBasedDeduplication", AttributeValue: String(request.config.contentBasedDeduplication ?? false) }));
+            }
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: request.config.topicName, externalId, data: details.data };
+        }
         if (request.service === AwsService.LAMBDA_FUNCTION) {
             const client = new LambdaClient({ region, credentials });
             const config = request.config;

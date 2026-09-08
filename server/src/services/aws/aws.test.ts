@@ -18,6 +18,25 @@ import CacheService from "../cacheService.js";
 import { AWSResourceManager } from "./index.js";
 import { AwsService } from "./types.js";
 import { SQSClient, SetQueueAttributesCommand } from "@aws-sdk/client-sqs";
+import { SNSClient, SetTopicAttributesCommand } from "@aws-sdk/client-sns";
+
+test("updates SNS FIFO settings without recreating a topic", async (context) => {
+    const commands: unknown[] = [];
+    context.mock.method(SNSClient.prototype, "send", async (command: unknown) => {
+        commands.push(command);
+        return { Attributes: {} };
+    });
+    const arn = "arn:aws:sns:ap-south-1:123456789012:events.fifo";
+    await new AWSResourceManager().updateResource({
+        service: AwsService.SNS_TOPIC,
+        config: { topicName: "events", fifoTopic: true, displayName: "Events", contentBasedDeduplication: true },
+    }, arn, { accessKeyId: "test", secretAccessKey: "test" });
+    assert.ok(commands[0] instanceof SetTopicAttributesCommand);
+    assert.ok(commands[1] instanceof SetTopicAttributesCommand);
+    assert.equal(commands[0].input.AttributeValue, "Events");
+    assert.equal(commands[1].input.AttributeValue, "true");
+    assert.equal(commands.length, 3);
+});
 
 test("publishing SQS settings updates the existing queue and refreshes details", async (context) => {
     const commands: unknown[] = [];

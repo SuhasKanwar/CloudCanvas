@@ -8,6 +8,8 @@ import {
 export type SnsTopicRequest = {
     topicName: string;
     fifoTopic?: boolean;
+    displayName?: string;
+    contentBasedDeduplication?: boolean;
 };
 
 export type SnsTopicResult = {
@@ -34,7 +36,10 @@ export class SnsService {
         const topicName = request.fifoTopic && !request.topicName.endsWith(".fifo") ? `${request.topicName}.fifo` : request.topicName;
         const result = await this.send.create(new CreateTopicCommand({
             Name: topicName,
-            ...(request.fifoTopic && { Attributes: { FifoTopic: "true" } }),
+            Attributes: {
+                ...(request.fifoTopic && { FifoTopic: "true", ContentBasedDeduplication: String(request.contentBasedDeduplication ?? false) }),
+                ...(request.displayName !== undefined && { DisplayName: request.displayName }),
+            },
         }));
         if (!result.TopicArn) throw new Error("AWS did not return an SNS topic ARN.");
         return { region: this.region, topicName, topicArn: result.TopicArn };

@@ -162,6 +162,7 @@ function assertDeployedResourceUpdate(previousConfig: unknown, request: AwsResou
     const immutableFields: Record<string, string[]> = {
         LAMBDA_FUNCTION: ["functionName"], ECR_REPOSITORY: ["repositoryName"],
         DYNAMODB_TABLE: ["tableName", "keySchema", "attributeDefinitions"], SQS_QUEUE: ["queueName"],
+        SNS_TOPIC: ["topicName", "fifoTopic"],
     };
     if (isRecord(previousConfig)) {
         const next = request.config as unknown as Record<string, unknown>;
@@ -324,7 +325,12 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
     }
     if (type === "SNS_TOPIC") {
         if (typeof config.topicName !== "string" || !config.topicName) throw new Error("SNS node config must include topicName.");
-        return { service: AwsService.SNS_TOPIC, config: { topicName: config.topicName, ...(config.fifoTopic === true && { fifoTopic: true }) } };
+        if (typeof config.displayName === "string" && config.displayName.length > 100) throw new Error("SNS display name must be at most 100 characters.");
+        return { service: AwsService.SNS_TOPIC, config: {
+            topicName: config.topicName, ...(config.fifoTopic === true && { fifoTopic: true }),
+            ...(typeof config.displayName === "string" && { displayName: config.displayName }),
+            ...(config.fifoTopic === true && typeof config.contentBasedDeduplication === "boolean" && { contentBasedDeduplication: config.contentBasedDeduplication }),
+        } };
     }
     throw new Error("Supported services are EC2_INSTANCE, KEY_PAIR, SECURITY_GROUP, ECR_REPOSITORY, S3_BUCKET, IAM_ROLE, LAMBDA_FUNCTION, DYNAMODB_TABLE, SQS_QUEUE, and SNS_TOPIC.");
 }

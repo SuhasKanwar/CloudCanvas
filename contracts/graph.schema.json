@@ -59,6 +59,6 @@
     "keySchema": { "type": "object", "additionalProperties": false, "required": ["AttributeName", "KeyType"], "properties": { "AttributeName": { "type": "string", "minLength": 1 }, "KeyType": { "enum": ["HASH", "RANGE"] } } },
     "attributeDefinition": { "type": "object", "additionalProperties": false, "required": ["AttributeName", "AttributeType"], "properties": { "AttributeName": { "type": "string", "minLength": 1 }, "AttributeType": { "enum": ["S", "N", "B"] } } },
     "sqs": { "type": "object", "additionalProperties": false, "required": ["queueName"], "properties": { "queueName": { "type": "string", "minLength": 1 }, "visibilityTimeoutSeconds": { "type": "integer", "minimum": 0 }, "messageRetentionPeriodSeconds": { "type": "integer", "minimum": 60 } } },
-    "sns": { "type": "object", "additionalProperties": false, "required": ["topicName"], "properties": { "topicName": { "type": "string", "minLength": 1 }, "fifoTopic": { "type": "boolean" } } }
+    "sns": {"type":"object","additionalProperties":false,"required":["topicName"],"properties":{"topicName":{"type":"string","minLength":1},"fifoTopic":{"type":"boolean"},"displayName":{"type":"string","maxLength":100},"contentBasedDeduplication":{"type":"boolean"}}}
   }
 }

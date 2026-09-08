@@ -161,6 +161,8 @@ class SqsConfig(CloudCanvasModel):
 class SnsConfig(CloudCanvasModel):
     topicName: str
     fifoTopic: bool | None = None
+    displayName: str | None = Field(default=None, max_length=100)
+    contentBasedDeduplication: bool | None = None
 
 
 class Ec2Node(CloudCanvasModel):
