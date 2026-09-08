@@ -123,14 +123,14 @@ class IamConfig(CloudCanvasModel):
 
 
 class LambdaConfig(CloudCanvasModel):
-    functionName: str
-    roleArn: str
-    handler: str
-    runtime: str
-    codeZipBase64: str
+    functionName: str | None = None
+    roleArn: str | None = None
+    handler: str | None = None
+    runtime: str | None = None
+    codeZipBase64: str | None = None
     description: str | None = None
-    memorySize: int | None = None
-    timeout: int | None = None
+    memorySize: int | None = Field(default=None, ge=128, le=10240)
+    timeout: int | None = Field(default=None, ge=1, le=900)
 
 
 class KeySchemaElement(CloudCanvasModel):

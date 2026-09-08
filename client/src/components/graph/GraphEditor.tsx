@@ -103,8 +103,10 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         const source = nodes.find((node) => node.id === connection.source);
         const target = nodes.find((node) => node.id === connection.target);
         return Boolean(source && target && source.id !== target.id && canConnectResources(source.data.service, target.data.service)
+            && !(source.data.service === "KEY_PAIR" && resourcesByNodeId[target.id]?.status === "RUNNING")
+            && !(source.data.service === "IAM_ROLE" && source.data.config.trustedService !== "lambda.amazonaws.com")
             && !edges.some((edge) => edge.source === source.id && edge.target === target.id));
-    }, [nodes, edges]);
+    }, [nodes, edges, resourcesByNodeId]);
 
     const applyResourceSnapshots = useCallback((resources: readonly AwsResourceSnapshot[], replace = false) => {
         const incoming = Object.fromEntries(resources.flatMap((resource) => resource.nodeId ? [[resource.nodeId, resource]] : [])) as Record<string, AwsResourceSnapshot>;
@@ -148,8 +150,8 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         const source = nodes.find((node) => node.id === normalized.source);
         const target = nodes.find((node) => node.id === normalized.target);
         if (!source || !target || !canConnectResources(source.data.service, target.data.service)) return;
-        const withoutPreviousKeyPair = source?.data.service === "KEY_PAIR" && target?.data.service === "EC2_INSTANCE"
-            ? edges.filter((edge) => !(edge.target === target.id && nodes.find((node) => node.id === edge.source)?.data.service === "KEY_PAIR"))
+        const withoutPreviousKeyPair = source?.data.service === "KEY_PAIR" || source?.data.service === "IAM_ROLE"
+            ? edges.filter((edge) => !(edge.target === target.id && nodes.find((node) => node.id === edge.source)?.data.service === source.data.service))
             : edges;
         const nextEdges = addEdge({ ...normalized, id: crypto.randomUUID(), type: "smoothstep" }, withoutPreviousKeyPair);
         setEdges(nextEdges);

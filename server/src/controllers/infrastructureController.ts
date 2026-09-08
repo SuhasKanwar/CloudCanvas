@@ -159,6 +159,15 @@ function stringArray(value: unknown) {
 const ec2LaunchOnlyConfigKeys = ["imageId", "launchTemplateId", "instanceType", "instanceCount", "keyName", "rootDeviceName", "rootVolumeSizeGiB", "rootVolumeType", "deleteRootVolumeOnTermination", "subnetId", "iamInstanceProfile", "userData", "ebsOptimized", "metadataHttpTokens", "name"] as const;
 
 function assertDeployedResourceUpdate(previousConfig: unknown, request: AwsResourceCreateRequest) {
+    const immutableFields: Record<string, string[]> = {
+        LAMBDA_FUNCTION: ["functionName"], ECR_REPOSITORY: ["repositoryName"],
+        DYNAMODB_TABLE: ["tableName", "keySchema", "attributeDefinitions"], SQS_QUEUE: ["queueName"],
+    };
+    if (isRecord(previousConfig)) {
+        const next = request.config as unknown as Record<string, unknown>;
+        const changed = (immutableFields[request.service] ?? []).filter((key) => JSON.stringify(previousConfig[key]) !== JSON.stringify(next[key]));
+        if (changed.length) throw new Error(`${changed.join(", ")} requires a replacement resource.`);
+    }
     if (request.service !== AwsService.EC2_INSTANCE || !isRecord(previousConfig)) return;
     const changedKeys = ec2LaunchOnlyConfigKeys.filter((key) => JSON.stringify(previousConfig[key]) !== JSON.stringify(request.config[key]));
     if (changedKeys.length) throw new Error(`EC2 ${changedKeys.join(", ")} cannot be changed after deployment. Create a replacement instance instead.`);
@@ -263,6 +272,12 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
         if (required.some((key) => typeof config[key] !== "string" || !config[key])) {
             throw new Error("Lambda node config must include functionName, roleArn, handler, runtime, and codeZipBase64.");
         }
+        const encoded = config.codeZipBase64 as string;
+        if (encoded.length > 6990508 || !/^[A-Za-z0-9+/]+={0,2}$/.test(encoded) || !Buffer.from(encoded, "base64").subarray(0, 2).equals(Buffer.from("PK"))) {
+            throw new Error("Upload a valid Lambda ZIP package up to 5 MB.");
+        }
+        if (config.memorySize !== undefined && (!Number.isInteger(config.memorySize) || Number(config.memorySize) < 128 || Number(config.memorySize) > 10240)) throw new Error("Lambda memory must be between 128 and 10240 MB.");
+        if (config.timeout !== undefined && (!Number.isInteger(config.timeout) || Number(config.timeout) < 1 || Number(config.timeout) > 900)) throw new Error("Lambda timeout must be between 1 and 900 seconds.");
         return {
             service: AwsService.LAMBDA_FUNCTION,
             config: {

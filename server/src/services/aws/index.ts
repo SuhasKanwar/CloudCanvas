@@ -1,11 +1,11 @@
 import { DescribeInstancesCommand, DescribeKeyPairsCommand, DescribeSecurityGroupsCommand, EC2Client } from "@aws-sdk/client-ec2";
-import { DescribeRepositoriesCommand, ECRClient } from "@aws-sdk/client-ecr";
+import { DescribeRepositoriesCommand, ECRClient, PutImageScanningConfigurationCommand, PutImageTagMutabilityCommand } from "@aws-sdk/client-ecr";
 import { GetRoleCommand, IAMClient } from "@aws-sdk/client-iam";
 import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
-import { DescribeTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { GetFunctionCommand, LambdaClient } from "@aws-sdk/client-lambda";
+import { DescribeTableCommand, DynamoDBClient, UpdateTableCommand } from "@aws-sdk/client-dynamodb";
+import { GetFunctionCommand, LambdaClient, UpdateFunctionCodeCommand, UpdateFunctionConfigurationCommand, waitUntilFunctionUpdatedV2 } from "@aws-sdk/client-lambda";
 import { GetTopicAttributesCommand, SNSClient } from "@aws-sdk/client-sns";
-import { GetQueueAttributesCommand, SQSClient } from "@aws-sdk/client-sqs";
+import { GetQueueAttributesCommand, SetQueueAttributesCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { AWS_REGION } from "../../lib/config.js";
 import { ec2InstanceDetails, Ec2Service } from "./resources/ec2.js";
 import { EcrService } from "./resources/ecr.js";
@@ -118,7 +118,7 @@ export class AWSResourceManager {
             const output = await new LambdaClient({ region, credentials }).send(new GetFunctionCommand({ FunctionName: externalId }));
             const configuration = output.Configuration;
             if (!configuration) throw new Error(`Lambda function ${externalId} was not found.`);
-            return { service, region, externalId, state: configuration.State ?? "unknown", status: configuration.State === "Pending" ? "PROVISIONING" : configuration.State === "Failed" ? "FAILED" : "RUNNING", data: { functionName: configuration.FunctionName, functionArn: configuration.FunctionArn, runtime: configuration.Runtime, handler: configuration.Handler, role: configuration.Role, memorySize: configuration.MemorySize, timeout: configuration.Timeout, lastModified: configuration.LastModified, version: configuration.Version, packageType: configuration.PackageType, architectures: configuration.Architectures, stateReason: configuration.StateReason, vpcConfig: configuration.VpcConfig } };
+            return { service, region, externalId, state: configuration.State ?? "unknown", status: configuration.State === "Pending" || configuration.LastUpdateStatus === "InProgress" ? "PROVISIONING" : configuration.State === "Failed" || configuration.LastUpdateStatus === "Failed" ? "FAILED" : "RUNNING", data: { functionName: configuration.FunctionName, functionArn: configuration.FunctionArn, runtime: configuration.Runtime, handler: configuration.Handler, role: configuration.Role, memorySize: configuration.MemorySize, timeout: configuration.Timeout, lastModified: configuration.LastModified, version: configuration.Version, packageType: configuration.PackageType, architectures: configuration.Architectures, stateReason: configuration.StateReason, lastUpdateStatus: configuration.LastUpdateStatus, lastUpdateStatusReason: configuration.LastUpdateStatusReason, codeSize: configuration.CodeSize, vpcConfig: configuration.VpcConfig } };
         }
         if (service === AwsService.DYNAMODB_TABLE) {
             const output = await new DynamoDBClient({ region, credentials }).send(new DescribeTableCommand({ TableName: externalId }));
@@ -139,7 +139,7 @@ export class AWSResourceManager {
         const output = await new IAMClient({ region, credentials }).send(new GetRoleCommand({ RoleName: externalId }));
         const role = output.Role;
         if (!role) throw new Error(`IAM role ${externalId} was not found.`);
-        return { service, region, externalId, state: "available", status: "RUNNING", data: { roleName: role.RoleName, roleId: role.RoleId, arn: role.Arn, path: role.Path, createDate: role.CreateDate?.toISOString(), maxSessionDuration: role.MaxSessionDuration, description: role.Description } };
+        return { service, region, externalId, state: "available", status: "RUNNING", data: { roleName: role.RoleName, roleId: role.RoleId, arn: role.Arn, roleArn: role.Arn, path: role.Path, createDate: role.CreateDate?.toISOString(), maxSessionDuration: role.MaxSessionDuration, description: role.Description } };
     }
 
     async createResource(request: AwsResourceCreateRequest, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
@@ -235,6 +235,49 @@ export class AWSResourceManager {
     }
 
     async updateResource(request: AwsResourceCreateRequest, externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
+        if (request.service === AwsService.LAMBDA_FUNCTION) {
+            const client = new LambdaClient({ region, credentials });
+            const config = request.config;
+            const current = await client.send(new GetFunctionCommand({ FunctionName: externalId }));
+            if (current.Configuration?.FunctionName !== config.functionName) throw new Error("A Lambda function cannot be renamed.");
+            await client.send(new UpdateFunctionConfigurationCommand({
+                FunctionName: externalId, Role: config.roleArn, Handler: config.handler, Runtime: config.runtime,
+                Description: config.description ?? "", MemorySize: config.memorySize ?? 128, Timeout: config.timeout ?? 3,
+            }));
+            await waitUntilFunctionUpdatedV2({ client, maxWaitTime: 120 }, { FunctionName: externalId });
+            await client.send(new UpdateFunctionCodeCommand({ FunctionName: externalId, ZipFile: Buffer.from(config.codeZipBase64, "base64") }));
+            await waitUntilFunctionUpdatedV2({ client, maxWaitTime: 120 }, { FunctionName: externalId });
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: config.functionName, externalId, data: details.data };
+        }
+        if (request.service === AwsService.ECR_REPOSITORY) {
+            if (request.config.repositoryName !== externalId) throw new Error("An ECR repository cannot be renamed.");
+            const client = new ECRClient({ region, credentials });
+            await client.send(new PutImageTagMutabilityCommand({ repositoryName: externalId, imageTagMutability: request.config.imageTagMutability ?? "MUTABLE" }));
+            await client.send(new PutImageScanningConfigurationCommand({ repositoryName: externalId, imageScanningConfiguration: { scanOnPush: request.config.scanOnPush ?? false } }));
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: externalId, externalId, data: details.data };
+        }
+        if (request.service === AwsService.DYNAMODB_TABLE) {
+            const config = request.config;
+            if (config.tableName !== externalId) throw new Error("A DynamoDB table cannot be renamed.");
+            await new DynamoDBClient({ region, credentials }).send(new UpdateTableCommand({
+                TableName: externalId, BillingMode: config.billingMode ?? "PAY_PER_REQUEST",
+                ...(config.billingMode === "PROVISIONED" && { ProvisionedThroughput: { ReadCapacityUnits: config.readCapacityUnits ?? 1, WriteCapacityUnits: config.writeCapacityUnits ?? 1 } }),
+            }));
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: externalId, externalId, data: details.data };
+        }
+        if (request.service === AwsService.SQS_QUEUE) {
+            await new SQSClient({ region, credentials }).send(new SetQueueAttributesCommand({
+                QueueUrl: externalId, Attributes: {
+                    VisibilityTimeout: String(request.config.visibilityTimeoutSeconds ?? 30),
+                    MessageRetentionPeriod: String(request.config.messageRetentionPeriodSeconds ?? 345600),
+                },
+            }));
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: request.config.queueName, externalId, data: details.data };
+        }
         if (request.service === AwsService.EC2_INSTANCE) {
             const client = new EC2Client({ region, credentials });
             await new Ec2Service({

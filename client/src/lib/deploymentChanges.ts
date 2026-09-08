@@ -3,6 +3,10 @@ import type { AwsService } from "@cloudcanvas/graph-contract";
 type ChangeField = { key: string; label: string };
 
 const mutableFields: Partial<Record<AwsService, ChangeField[]>> = {
+    LAMBDA_FUNCTION: ["roleArn", "handler", "runtime", "codeZipBase64", "description", "memorySize", "timeout"].map((key) => ({ key, label: key === "codeZipBase64" ? "Function code" : key })),
+    ECR_REPOSITORY: ["imageTagMutability", "scanOnPush"].map((key) => ({ key, label: key })),
+    DYNAMODB_TABLE: ["billingMode", "readCapacityUnits", "writeCapacityUnits"].map((key) => ({ key, label: key })),
+    SQS_QUEUE: ["visibilityTimeoutSeconds", "messageRetentionPeriodSeconds"].map((key) => ({ key, label: key })),
     EC2_INSTANCE: [
         { key: "securityGroupIds", label: "Security groups" },
         { key: "shutdownBehavior", label: "Shutdown behavior" },

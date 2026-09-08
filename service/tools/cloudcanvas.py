@@ -10,7 +10,7 @@ RESOURCE_GUIDANCE = {
     "ECR_REPOSITORY": "Set a repositoryName, then optionally configure imageTagMutability and scanOnPush.",
     "S3_BUCKET": "Set a globally unique bucketName, then optionally configure versioning, public-access blocking, SSE-S3 or SSE-KMS encryption, and HTTPS enforcement.",
     "IAM_ROLE": "Set a trusted service or an explicit trust policy, then optional managed policy ARNs.",
-    "LAMBDA_FUNCTION": "Requires a functionName, roleArn, handler, runtime, and base64 deployment package; memory, timeout, and description are optional.",
+    "LAMBDA_FUNCTION": "Create a draft first; upload a ZIP package up to 5 MB in the form before publishing. Connect IAM_ROLE to supply roleArn and trust lambda.amazonaws.com. Code, runtime, handler, memory, timeout, and description can be updated by publishing again. Function name is immutable.",
     "DYNAMODB_TABLE": "Requires a tableName, key schema, and matching attribute definitions. Billing defaults to on-demand; provision read and write capacity only for PROVISIONED mode.",
     "SQS_QUEUE": "Set a queueName, then optionally configure visibility timeout and message retention in seconds.",
     "SNS_TOPIC": "Set a topicName and enable fifoTopic when ordering and deduplication are required; FIFO names receive the .fifo suffix.",

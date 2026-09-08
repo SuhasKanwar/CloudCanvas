@@ -15,6 +15,26 @@ import { AwsCatalogService } from "./catalog.js";
 import { SecurityGroupService } from "./resources/securityGroup.js";
 import { KeyPairService } from "./resources/keyPair.js";
 import CacheService from "../cacheService.js";
+import { AWSResourceManager } from "./index.js";
+import { AwsService } from "./types.js";
+import { SQSClient, SetQueueAttributesCommand } from "@aws-sdk/client-sqs";
+
+test("publishing SQS settings updates the existing queue and refreshes details", async (context) => {
+    const commands: unknown[] = [];
+    context.mock.method(SQSClient.prototype, "send", async (command: unknown) => {
+        commands.push(command);
+        return { Attributes: { QueueArn: "arn:aws:sqs:ap-south-1:123456789012:jobs" } };
+    });
+    const url = "https://sqs.ap-south-1.amazonaws.com/123456789012/jobs";
+    const result = await new AWSResourceManager().updateResource({
+        service: AwsService.SQS_QUEUE,
+        config: { queueName: "jobs", visibilityTimeoutSeconds: 45, messageRetentionPeriodSeconds: 3600 },
+    }, url, { accessKeyId: "test", secretAccessKey: "test" });
+    assert.ok(commands[0] instanceof SetQueueAttributesCommand);
+    assert.deepEqual(commands[0].input, { QueueUrl: url, Attributes: { VisibilityTimeout: "45", MessageRetentionPeriod: "3600" } });
+    assert.equal(result.externalId, url);
+    assert.equal(commands.length, 2);
+});
 
 test("caches and invalidates AWS catalog values", () => {
     const cache = new CacheService(60);

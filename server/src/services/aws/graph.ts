@@ -1,4 +1,6 @@
-export type GraphNode = { id: string };
+import { canConnectResources } from "@cloudcanvas/graph-contract";
+
+export type GraphNode = { id: string; type?: string };
 
 export type GraphEdge = {
     sourceNodeId: string;
@@ -29,6 +31,11 @@ export function createGraphPlan(nodes: readonly GraphNode[], edges: readonly Gra
         }
         if (edge.sourceNodeId === edge.targetNodeId) {
             throw new Error("A sketch edge cannot reference the same node twice.");
+        }
+        const source = nodes.find((node) => node.id === edge.sourceNodeId);
+        const target = nodes.find((node) => node.id === edge.targetNodeId);
+        if (source?.type && target?.type && !canConnectResources(source.type, target.type)) {
+            throw new Error(`${source.type} cannot attach to ${target.type}.`);
         }
         const key = `${edge.sourceNodeId}:${edge.targetNodeId}`;
         if (edgeKeys.has(key)) throw new Error("Duplicate sketch edges are not allowed.");
