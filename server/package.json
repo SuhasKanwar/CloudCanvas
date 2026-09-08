@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsc --watch",
+    "dev": "tsx watch src/index.ts",
     "test": "npm run build && node --test dist/services/aws/aws.test.js dist/services/aws/graph.test.js dist/services/aiService.test.js dist/services/graphParser.test.js",
     "db:generate": "npx prisma generate",
     "db:pull": "npx prisma db pull",
@@ -35,6 +35,7 @@
     "@types/node": "^26.2.0",
     "@types/pg": "^8.21.0",
     "prisma": "^7.9.1",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   },
   "dependencies": {
