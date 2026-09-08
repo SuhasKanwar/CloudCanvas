@@ -43,6 +43,10 @@ export type GraphDefinition = {
 };
 
 export type GraphDiagnostic = { path: string; code: string; message: string };
+export function canConnectResources(source: string, target: string): boolean {
+    return ((source === "KEY_PAIR" || source === "SECURITY_GROUP") && target === "EC2_INSTANCE")
+        || (source === "IAM_ROLE" && target === "LAMBDA_FUNCTION");
+}
 export type GraphPlan = { order: string[]; sourcesByTarget: Map<string, Set<string>> };
 
 export class GraphValidationError extends Error {
@@ -70,6 +74,11 @@ export function createGraphPlan(nodes: readonly GraphNode[], edges: readonly Gra
         }
         if (edge.sourceNodeId === edge.targetNodeId) {
             fail("/edges", "self_edge", "An edge cannot reference the same node twice.");
+        }
+        const source = nodes.find((node) => node.id === edge.sourceNodeId)!;
+        const target = nodes.find((node) => node.id === edge.targetNodeId)!;
+        if (!canConnectResources(source.type, target.type)) {
+            fail("/edges", "incompatible_resources", `${source.type} cannot attach to ${target.type}.`);
         }
         const key = `${edge.sourceNodeId}:${edge.targetNodeId}`;
         if (edgeKeys.has(key)) fail("/edges", "duplicate_edge", "Duplicate edges are not allowed.");

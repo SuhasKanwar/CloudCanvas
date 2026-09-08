@@ -8,7 +8,7 @@ import "@xyflow/react/dist/style.css";
 import { ArrowLeft, Check, FolderOpen, Loader2, Pencil, Redo2, Save, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { stringify } from "yaml";
-import { layoutOverlappingGraphNodes, type AwsService, type GraphDefinition } from "@cloudcanvas/graph-contract";
+import { canConnectResources, layoutOverlappingGraphNodes, type AwsService, type GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
 import { RESOURCE_STATUS_POLL_INTERVAL_MS } from "@/lib/config";
 import { createSketchEdge, createSketchNode, deleteSketchEdge, deleteSketchNode, getSketch, refreshSketchResources, renameSketch, updateSketchNodePosition, type AwsResourceSnapshot, type Sketch, type SketchEdge, type SketchNode } from "@/lib/sketches";
@@ -44,6 +44,12 @@ function normalizeEc2Connection(connection: Connection, nodes: readonly Resource
 function syncEc2Bindings(nodes: readonly ResourceFlowNode[], edges: readonly Edge[]): ResourceFlowNode[] {
     const byId = new Map(nodes.map((node) => [node.id, node]));
     return nodes.map((node) => {
+        if (node.data.service === "LAMBDA_FUNCTION") {
+            const role = edges.flatMap((edge) => edge.target === node.id ? [byId.get(edge.source)] : []).find((source) => source?.data.service === "IAM_ROLE");
+            const currentRole = String(node.data.config.roleArn ?? "");
+            const roleArn = role ? `\${${role.id}.roleArn}` : currentRole.startsWith("${") ? "" : currentRole;
+            return { ...node, data: { ...node.data, config: { ...node.data.config, roleArn } } };
+        }
         if (node.data.service !== "EC2_INSTANCE") return node;
         const sources = edges.flatMap((edge) => edge.target === node.id ? [byId.get(edge.source)] : []).filter((source): source is ResourceFlowNode => Boolean(source));
         const keyPair = sources.find((source) => source.data.service === "KEY_PAIR");
@@ -93,6 +99,12 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         securityGroups: edges.map((edge) => edge.target === selectedNode.id ? nodes.find((node) => node.id === edge.source) : undefined).filter((node): node is ResourceFlowNode => node?.data.service === "SECURITY_GROUP"),
     } : undefined;
     const nodeTypeMap = useMemo(() => nodeTypes, []);
+    const isValidConnection = useCallback((connection: Connection | Edge) => {
+        const source = nodes.find((node) => node.id === connection.source);
+        const target = nodes.find((node) => node.id === connection.target);
+        return Boolean(source && target && source.id !== target.id && canConnectResources(source.data.service, target.data.service)
+            && !edges.some((edge) => edge.source === source.id && edge.target === target.id));
+    }, [nodes, edges]);
 
     const applyResourceSnapshots = useCallback((resources: readonly AwsResourceSnapshot[], replace = false) => {
         const incoming = Object.fromEntries(resources.flatMap((resource) => resource.nodeId ? [[resource.nodeId, resource]] : [])) as Record<string, AwsResourceSnapshot>;
@@ -135,6 +147,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         const normalized = normalizeEc2Connection(connection, nodes);
         const source = nodes.find((node) => node.id === normalized.source);
         const target = nodes.find((node) => node.id === normalized.target);
+        if (!source || !target || !canConnectResources(source.data.service, target.data.service)) return;
         const withoutPreviousKeyPair = source?.data.service === "KEY_PAIR" && target?.data.service === "EC2_INSTANCE"
             ? edges.filter((edge) => !(edge.target === target.id && nodes.find((node) => node.id === edge.source)?.data.service === "KEY_PAIR"))
             : edges;
@@ -350,7 +363,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
             </div>
             {loading ? <div className="grid h-full place-items-center pt-16 text-sm text-(--secondary-text-color)"><span className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/12 px-4 py-3"><Loader2 className="h-4 w-4 animate-spin text-(--primary-color)" />Loading sketch</span></div> : null}
             {loadError ? <div className="grid h-full place-items-center px-4 pt-16 text-sm text-(--secondary-text-color)"><div className="rounded-md border border-white/10 bg-[var(--surface-color)] px-5 py-4 text-center shadow-xl"><p>{loadError}</p><Link className="mt-3 inline-flex items-center gap-2 text-(--secondary-color) hover:text-(--primary-text-color)" href="/dashboard"><ArrowLeft className="h-4 w-4" />Back to sketches</Link></div></div> : null}
-            {canvasReady ? <><ReactFlow className="dashboard-enter" edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={handleNodesChange} proOptions={{ hideAttribution: true }}><Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} /></ReactFlow><AiComposer onApplyBlueprint={applyBlueprint} sketchId={sketchId} /></> : null}
+            {canvasReady ? <><ReactFlow className="dashboard-enter" edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} isValidConnection={isValidConnection} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={handleNodesChange} proOptions={{ hideAttribution: true }}><Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} /></ReactFlow><AiComposer onApplyBlueprint={applyBlueprint} sketchId={sketchId} /></> : null}
         </div>
     </div>{canvasReady && selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={requestNodeDeletion} onOpenAwsSettings={onOpenAwsSettings} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}<ConfirmModal confirmLabel="Rename sketch" confirming={renaming} description={`Rename this sketch to ${nameToConfirm ?? "the new name"}.`} onClose={() => { setNameToConfirm(null); setName(persistedName); }} onConfirm={() => void rename()} open={Boolean(nameToConfirm)} title="Rename sketch?" /><ConfirmModal confirmLabel="Delete node" description={`Delete ${nodeToDelete?.data.label ?? "this node"} from the sketch. This change is saved automatically.`} onClose={() => setNodeToDelete(null)} onConfirm={deleteNode} open={Boolean(nodeToDelete)} title="Delete node?" variant="danger" /></>;
 }

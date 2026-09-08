@@ -15,6 +15,7 @@ import {
 import { createGraphPlan, remapConfigReferences, resolveConfigReferences } from "../services/aws/graph.js";
 import { AIServiceError, aiService, type AiChatMessage } from "../services/aiService.js";
 import { prepareGraphForPersistence, validateGraphDefinition } from "../services/graphParser.js";
+import { canConnectResources } from "@cloudcanvas/graph-contract";
 import type { GraphDefinition } from "@cloudcanvas/graph-contract";
 import type { ApiResponse } from "../types/response.js";
 import { isAwsService } from "../utils/aws.js";
@@ -661,10 +662,15 @@ export async function createSketchEdge(req: Request, res: Response<ApiResponse>)
     }
     const sketch = await prisma.sketch.findFirst({
         where: { id: sketchId, userId },
-        include: { nodes: { select: { id: true } }, edges: { select: { sourceNodeId: true, targetNodeId: true } } },
+        include: { nodes: { select: { id: true, type: true } }, edges: { select: { sourceNodeId: true, targetNodeId: true } } },
     });
     if (!sketch) return res.status(404).json({ success: false, message: "Sketch not found." });
     try {
+        const source = sketch.nodes.find((node) => node.id === sourceNodeId);
+        const target = sketch.nodes.find((node) => node.id === targetNodeId);
+        if (!source || !target || !canConnectResources(source.type, target.type)) {
+            throw new Error("These resource types do not support an attachment.");
+        }
         createGraphPlan(sketch.nodes, [...sketch.edges, { sourceNodeId, targetNodeId }]);
     } catch (error) {
         return res.status(400).json({ success: false, message: errorMessage(error) });

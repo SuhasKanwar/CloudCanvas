@@ -15,6 +15,17 @@ edges: []`);
     assert.equal(graph.nodes[0].positionX, 0);
 });
 
+test("rejects unrelated resources even when their edge is acyclic", () => {
+    assert.throws(() => validateGraphObject({
+        schemaVersion: 1, name: "invalid attachment",
+        nodes: [
+            { id: "a", type: "S3_BUCKET", config: { bucketName: "assets" } },
+            { id: "b", type: "S3_BUCKET", config: { bucketName: "backups" } },
+        ],
+        edges: [{ sourceNodeId: "a", targetNodeId: "b" }],
+    }), /cannot attach/);
+});
+
 test("rejects cyclic and unsupported graphs", () => {
     assert.throws(() => validateGraphObject({
         schemaVersion: 1,
