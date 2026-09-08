@@ -12,6 +12,7 @@ import { getPendingDeploymentChanges } from "@/lib/deploymentChanges";
 import DeploymentChangeInfo from "./DeploymentChangeInfo";
 import LambdaCodeField from "./LambdaCodeField";
 import ResourceDetails from "./ResourceDetails";
+import InstanceTypeField from "./InstanceTypeField";
 
 type Ec2Bindings = { keyPair?: string; securityGroups: string[] };
 type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; resource?: AwsResourceSnapshot; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void; onOpenAwsSettings: () => void };
@@ -21,13 +22,6 @@ const inputClass = "mt-2 w-full rounded-md border border-white/10 bg-black/20 px
 
 function Field({ label, value, onChange, disabled, type = "text" }: FieldProps) {
     return <label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">{label}</span><input disabled={disabled} className={inputClass} min={type === "number" ? 0 : undefined} onChange={(event) => onChange(event.target.value)} type={type} value={value} /></label>;
-}
-
-function InstanceTypeField({ options, value, onChange }: { options: AwsResourceCatalog["instanceTypes"]; value: string; onChange: (value: string) => void }) {
-    const selected = options.find((option) => option.name === value);
-    const memory = selected?.memoryMiB ? `${Math.round(selected.memoryMiB / 102.4) / 10} GiB memory` : "";
-    const details = selected ? [`${selected.vcpus ?? "Unknown"} vCPUs`, memory, selected.architectures.join(", "), selected.networkPerformance, selected.instanceStorageGiB ? `${selected.instanceStorageGiB} GB instance storage` : "EBS only"].filter(Boolean) : [];
-    return <div><label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">Instance type</span><input className={inputClass} list="ec2-instance-types" onChange={(event) => onChange(event.target.value)} value={value} /><datalist id="ec2-instance-types">{options.map((option) => <option key={option.name} label={[`${option.vcpus ?? "?"} vCPU`, option.memoryMiB ? `${Math.round(option.memoryMiB / 1024)} GiB` : ""].filter(Boolean).join(" · ")} value={option.name} />)}</datalist></label>{details.length ? <p className="mt-2 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-(--secondary-text-color)">{details.join(" · ")}</p> : null}</div>;
 }
 
 function AmiField({ category: initialCategory, images, value, onCategoryChange, onChange }: { category: "amazon-linux" | "windows"; images: AwsResourceCatalog["images"]; value: string; onCategoryChange: (category: "amazon-linux" | "windows") => void; onChange: (image: AwsResourceCatalog["images"][number] | null) => void }) {
