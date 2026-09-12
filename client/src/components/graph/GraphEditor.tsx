@@ -44,6 +44,12 @@ function normalizeEc2Connection(connection: Connection, nodes: readonly Resource
 function syncEc2Bindings(nodes: readonly ResourceFlowNode[], edges: readonly Edge[]): ResourceFlowNode[] {
     const byId = new Map(nodes.map((node) => [node.id, node]));
     return nodes.map((node) => {
+        if (node.data.service === "CLOUDFRONT_DISTRIBUTION") {
+            const bucket = edges.flatMap((edge) => edge.target === node.id ? [byId.get(edge.source)] : []).find((source) => source?.data.service === "S3_BUCKET");
+            const currentBucket = String(node.data.config.bucketName ?? "");
+            const bucketName = bucket ? `\${${bucket.id}.bucketName}` : currentBucket.startsWith("${") ? "" : currentBucket;
+            return { ...node, data: { ...node.data, config: { ...node.data.config, bucketName } } };
+        }
         if (node.data.service === "LAMBDA_FUNCTION") {
             const role = edges.flatMap((edge) => edge.target === node.id ? [byId.get(edge.source)] : []).find((source) => source?.data.service === "IAM_ROLE");
             const currentRole = String(node.data.config.roleArn ?? "");
@@ -104,6 +110,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         const target = nodes.find((node) => node.id === connection.target);
         return Boolean(source && target && source.id !== target.id && canConnectResources(source.data.service, target.data.service)
             && !(source.data.service === "KEY_PAIR" && resourcesByNodeId[target.id]?.status === "RUNNING")
+            && !(target.data.service === "CLOUDFRONT_DISTRIBUTION" && resourcesByNodeId[target.id]?.status === "RUNNING")
             && !(source.data.service === "IAM_ROLE" && source.data.config.trustedService !== "lambda.amazonaws.com")
             && !edges.some((edge) => edge.source === source.id && edge.target === target.id));
     }, [nodes, edges, resourcesByNodeId]);
@@ -150,7 +157,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         const source = nodes.find((node) => node.id === normalized.source);
         const target = nodes.find((node) => node.id === normalized.target);
         if (!source || !target || !canConnectResources(source.data.service, target.data.service)) return;
-        const withoutPreviousKeyPair = source?.data.service === "KEY_PAIR" || source?.data.service === "IAM_ROLE"
+        const withoutPreviousKeyPair = source?.data.service === "KEY_PAIR" || source?.data.service === "IAM_ROLE" || target.data.service === "CLOUDFRONT_DISTRIBUTION"
             ? edges.filter((edge) => !(edge.target === target.id && nodes.find((node) => node.id === edge.source)?.data.service === source.data.service))
             : edges;
         const nextEdges = addEdge({ ...normalized, id: crypto.randomUUID(), type: "smoothstep" }, withoutPreviousKeyPair);

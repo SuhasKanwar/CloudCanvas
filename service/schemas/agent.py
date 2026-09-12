@@ -29,6 +29,7 @@ class AwsService(str, Enum):
     DYNAMODB_TABLE = "DYNAMODB_TABLE"
     SQS_QUEUE = "SQS_QUEUE"
     SNS_TOPIC = "SNS_TOPIC"
+    CLOUDFRONT_DISTRIBUTION = "CLOUDFRONT_DISTRIBUTION"
 
 
 class KeyType(str, Enum):
@@ -165,6 +166,26 @@ class SnsConfig(CloudCanvasModel):
     contentBasedDeduplication: bool | None = None
 
 
+class CloudFrontConfig(CloudCanvasModel):
+    bucketName: str | None = None
+    originPath: str | None = None
+    defaultRootObject: str | None = None
+    comment: str | None = Field(default=None, max_length=128)
+    enabled: bool | None = None
+    spaFallback: bool | None = None
+    priceClass: Literal["PriceClass_All", "PriceClass_200", "PriceClass_100"] | None = None
+    cacheMode: Literal["disabled", "optimized"] | None = None
+
+
+class CloudFrontNode(CloudCanvasModel):
+    type: Literal[AwsService.CLOUDFRONT_DISTRIBUTION] = AwsService.CLOUDFRONT_DISTRIBUTION
+    id: str
+    label: str | None = None
+    positionX: float = 0
+    positionY: float = 0
+    config: CloudFrontConfig
+
+
 class Ec2Node(CloudCanvasModel):
     type: Literal[AwsService.EC2_INSTANCE] = AwsService.EC2_INSTANCE
     id: str
@@ -256,7 +277,7 @@ class SnsNode(CloudCanvasModel):
 
 
 AwsNode: TypeAlias = Annotated[
-    Ec2Node | KeyPairNode | SecurityGroupNode | EcrNode | S3Node | IamNode | LambdaNode | DynamoDbNode | SqsNode | SnsNode,
+    Ec2Node | KeyPairNode | SecurityGroupNode | EcrNode | S3Node | IamNode | LambdaNode | DynamoDbNode | SqsNode | SnsNode | CloudFrontNode,
     Field(discriminator="type"),
 ]
 

@@ -18,6 +18,15 @@ from utils.exception import CloudCanvasException
 
 
 class AgentShapeTests(unittest.TestCase):
+    def test_cloudfront_draft_uses_s3_dependency(self):
+        response = BuildResponse.model_validate({"message": "Upload the site files before publishing.", "build": {
+            "name": "Frontend", "nodes": [
+                {"id": "bucket", "type": "S3_BUCKET", "config": {"bucketName": "frontend-assets"}},
+                {"id": "cdn", "type": "CLOUDFRONT_DISTRIBUTION", "config": {"bucketName": "${bucket.bucketName}", "spaFallback": True}},
+            ], "edges": [{"sourceNodeId": "bucket", "targetNodeId": "cdn"}],
+        }})
+        self.assertEqual(response.build.nodes[1].config.bucketName, "${bucket.bucketName}")
+
     def test_graph_and_router_schemas_are_wired(self):
         self.assertTrue({"router", "aws_router", "nvidia", "tools"}.issubset(agent_app.get_graph().nodes))
         self.assertEqual(
@@ -33,6 +42,7 @@ class AgentShapeTests(unittest.TestCase):
                 "DYNAMODB_TABLE",
                 "SQS_QUEUE",
                 "SNS_TOPIC",
+                "CLOUDFRONT_DISTRIBUTION",
             },
         )
         self.assertEqual(ROUTER_MODEL["STRUCTURED_OUTPUT_METHOD"], "json_schema")

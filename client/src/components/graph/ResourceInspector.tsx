@@ -13,6 +13,7 @@ import DeploymentChangeInfo from "./DeploymentChangeInfo";
 import LambdaCodeField from "./LambdaCodeField";
 import ResourceDetails from "./ResourceDetails";
 import InstanceTypeField from "./InstanceTypeField";
+import CloudFrontForm from "./CloudFrontForm";
 
 type Ec2Bindings = { keyPair?: string; securityGroups: string[] };
 type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; resource?: AwsResourceSnapshot; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void; onOpenAwsSettings: () => void };
@@ -163,7 +164,7 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
     const update = (key: string, value: unknown) => onChange(node.data.label, key === "__all__" ? value as Record<string, unknown> : { ...config, [key]: value });
     const deployed = resource?.status === "RUNNING";
     const changes = deployed && resource ? getPendingDeploymentChanges(service, config, resource.desiredConfig) : [];
-    const formLocked = deployed && !["EC2_INSTANCE", "S3_BUCKET", "LAMBDA_FUNCTION", "ECR_REPOSITORY", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC"].includes(service);
+    const formLocked = deployed && !["EC2_INSTANCE", "S3_BUCKET", "LAMBDA_FUNCTION", "ECR_REPOSITORY", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC", "CLOUDFRONT_DISTRIBUTION"].includes(service);
 
     useEffect(() => {
         const accessToken = session?.accessToken;
@@ -189,6 +190,7 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
             {formLocked ? <p className="border border-amber-300/25 bg-amber-300/8 p-3 text-xs leading-5 text-amber-100">This resource type does not support configuration updates yet. Delete and replace it to change its deployment settings.</p> : null}
             {!catalogRequired || catalog ? <fieldset disabled={formLocked} className="space-y-5 disabled:opacity-55">
             {service === "EC2_INSTANCE" ? <Ec2Form bindings={bindings} catalog={catalog} config={config} deployed={deployed} update={update} /> : null}
+            {service === "CLOUDFRONT_DISTRIBUTION" ? <CloudFrontForm config={config} deployed={Boolean(resource?.externalId)} update={update} /> : null}
             {service === "KEY_PAIR" ? <KeyPairForm catalog={catalog} config={config} update={update} /> : null}
             {service === "SECURITY_GROUP" ? <SecurityGroupForm catalog={catalog} config={config} update={update} /> : null}
             {service === "ECR_REPOSITORY" ? <><Field disabled={deployed} label="Repository name" onChange={(value) => update("repositoryName", value)} value={String(config.repositoryName ?? "")} /><Select label="Tag mutability" onChange={(value) => update("imageTagMutability", value)} options={[["MUTABLE", "Mutable"], ["IMMUTABLE", "Immutable"]]} value={String(config.imageTagMutability ?? "MUTABLE")} /><Toggle checked={config.scanOnPush === true} label="Scan on push" onChange={(value) => update("scanOnPush", value)} /></> : null}

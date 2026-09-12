@@ -1,7 +1,7 @@
 "use client";
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Archive, Box, Copy, Database, FunctionSquare, HardDrive, KeyRound, KeySquare, Network, Send, Server } from "lucide-react";
+import { Archive, Box, Copy, Database, FunctionSquare, Globe, HardDrive, KeyRound, KeySquare, Network, Send, Server } from "lucide-react";
 import type { AwsService } from "@cloudcanvas/graph-contract";
 import { pushToast } from "@/lib/toast";
 import { getPendingDeploymentChanges } from "@/lib/deploymentChanges";
@@ -15,6 +15,7 @@ export type ResourceNodeData = {
 };
 
 const serviceAppearance: Record<AwsService, { accent: string; icon: typeof Server; title: string }> = {
+    CLOUDFRONT_DISTRIBUTION: { title: "CloudFront distribution", icon: Globe, accent: "text-teal-300" },
     EC2_INSTANCE: { title: "EC2 instance", icon: Server, accent: "text-amber-300" },
     KEY_PAIR: { title: "EC2 key pair", icon: KeySquare, accent: "text-teal-300" },
     SECURITY_GROUP: { title: "Security group", icon: Network, accent: "text-emerald-300" },
@@ -70,6 +71,7 @@ export const awsServiceOptions = Object.entries(serviceAppearance).map(([service
 }));
 
 export function defaultResourceConfig(service: AwsService): Record<string, unknown> {
+    if (service === "CLOUDFRONT_DISTRIBUTION") return { bucketName: "", originPath: "", defaultRootObject: "index.html", comment: "Frontend delivery", enabled: true, spaFallback: false, priceClass: "PriceClass_All", cacheMode: "disabled" };
     if (service === "EC2_INSTANCE") return { mode: "create", imageId: "", imageFamily: "amazon-linux", instanceType: "t3.micro", instanceCount: 1, rootVolumeType: "gp3", deleteRootVolumeOnTermination: true, shutdownBehavior: "stop", metadataHttpTokens: "required" };
     if (service === "KEY_PAIR") return { mode: "existing", keyName: "" };
     if (service === "SECURITY_GROUP") return { mode: "create", groupName: "cloudcanvas-security-group", description: "Managed by CloudCanvas", vpcId: "", ingressRules: [] };
