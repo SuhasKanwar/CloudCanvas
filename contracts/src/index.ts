@@ -16,7 +16,8 @@ export type AwsService =
     | "LAMBDA_FUNCTION"
     | "DYNAMODB_TABLE"
     | "SQS_QUEUE"
-    | "SNS_TOPIC";
+    | "SNS_TOPIC"
+    | "CLOUDFRONT_DISTRIBUTION";
 
 export type GraphNode = {
     id: string;
@@ -45,7 +46,8 @@ export type GraphDefinition = {
 export type GraphDiagnostic = { path: string; code: string; message: string };
 export function canConnectResources(source: string, target: string): boolean {
     return ((source === "KEY_PAIR" || source === "SECURITY_GROUP") && target === "EC2_INSTANCE")
-        || (source === "IAM_ROLE" && target === "LAMBDA_FUNCTION");
+        || (source === "IAM_ROLE" && target === "LAMBDA_FUNCTION")
+        || (source === "S3_BUCKET" && target === "CLOUDFRONT_DISTRIBUTION");
 }
 export type GraphPlan = { order: string[]; sourcesByTarget: Map<string, Set<string>> };
 
@@ -79,6 +81,9 @@ export function createGraphPlan(nodes: readonly GraphNode[], edges: readonly Gra
         const target = nodes.find((node) => node.id === edge.targetNodeId)!;
         if (!canConnectResources(source.type, target.type)) {
             fail("/edges", "incompatible_resources", `${source.type} cannot attach to ${target.type}.`);
+        }
+        if (target.type === "CLOUDFRONT_DISTRIBUTION" && sourcesByTarget.get(target.id)!.size) {
+            fail("/edges", "multiple_origins", "A CloudFront distribution supports one S3 origin.");
         }
         const key = `${edge.sourceNodeId}:${edge.targetNodeId}`;
         if (edgeKeys.has(key)) fail("/edges", "duplicate_edge", "Duplicate edges are not allowed.");

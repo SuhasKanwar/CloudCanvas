@@ -18,6 +18,8 @@ import { SqsService } from "./resources/sqs.js";
 import { SecurityGroupService } from "./resources/securityGroup.js";
 import { KeyPairService } from "./resources/keyPair.js";
 import { AwsService } from "./types.js";
+import { CloudFrontClient, GetDistributionCommand } from "@aws-sdk/client-cloudfront";
+import { CloudFrontService, cloudFrontDetails } from "./resources/cloudfront.js";
 import { AwsCatalogService, type AwsResourceCatalog } from "./catalog.js";
 import { cacheService } from "../cacheService.js";
 import type {
@@ -86,6 +88,11 @@ export class AWSResourceManager {
     }
 
     async getResourceDetails(service: AwsService, externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceDetails> {
+        if (service === AwsService.CLOUDFRONT_DISTRIBUTION) {
+            const result = await new CloudFrontClient({ region: "us-east-1", credentials }).send(new GetDistributionCommand({ Id: externalId }));
+            if (!result.Distribution) throw new Error("CloudFront distribution is unavailable.");
+            return cloudFrontDetails(result.Distribution, region);
+        }
         if (service === AwsService.EC2_INSTANCE) {
             const output = await new EC2Client({ region, credentials }).send(new DescribeInstancesCommand({ InstanceIds: [externalId] }));
             const instance = output.Reservations?.flatMap((reservation) => reservation.Instances ?? []).find((entry) => entry.InstanceId === externalId);
@@ -142,7 +149,11 @@ export class AWSResourceManager {
         return { service, region, externalId, state: "available", status: "RUNNING", data: { roleName: role.RoleName, roleId: role.RoleId, arn: role.Arn, roleArn: role.Arn, path: role.Path, createDate: role.CreateDate?.toISOString(), maxSessionDuration: role.MaxSessionDuration, description: role.Description } };
     }
 
-    async createResource(request: AwsResourceCreateRequest, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
+    async createResource(request: AwsResourceCreateRequest, credentials: AwsCredentials, region = this.defaultRegion, onCreated: (details: AwsResourceDetails) => Promise<void> = async () => {}, callerReference?: string): Promise<AwsResourceResult> {
+        if (request.service === AwsService.CLOUDFRONT_DISTRIBUTION) {
+            const details = await new CloudFrontService(new CloudFrontClient({ region: "us-east-1", credentials }), new S3Client({ region, credentials }), region).create(request.config, onCreated, callerReference);
+            return { service: request.service, region, name: request.config.comment || details.externalId, externalId: details.externalId, data: details.data };
+        }
         if (request.service === AwsService.EC2_INSTANCE) {
             if (request.config.mode === "existing") {
                 if (!request.config.instanceId) throw new Error("Choose an existing EC2 instance.");
@@ -235,6 +246,10 @@ export class AWSResourceManager {
     }
 
     async updateResource(request: AwsResourceCreateRequest, externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceResult> {
+        if (request.service === AwsService.CLOUDFRONT_DISTRIBUTION) {
+            const details = await new CloudFrontService(new CloudFrontClient({ region: "us-east-1", credentials }), new S3Client({ region, credentials }), region).update(externalId, request.config);
+            return { service: request.service, region, name: request.config.comment || externalId, externalId, data: details.data };
+        }
         if (request.service === AwsService.SNS_TOPIC) {
             const client = new SNSClient({ region, credentials });
             await client.send(new SetTopicAttributesCommand({ TopicArn: externalId, AttributeName: "DisplayName", AttributeValue: request.config.displayName ?? "" }));
@@ -317,7 +332,11 @@ export class AWSResourceManager {
         return { service: request.service, region, name: data.bucketName, externalId, data };
     }
 
-    async deleteResource(service: AwsResourceCreateRequest["service"], externalId: string, credentials: AwsCredentials, region = this.defaultRegion): Promise<AwsResourceDeleteResult> {
+    async deleteResource(service: AwsResourceCreateRequest["service"], externalId: string, credentials: AwsCredentials, region = this.defaultRegion, previousState?: unknown): Promise<AwsResourceDeleteResult> {
+        if (service === AwsService.CLOUDFRONT_DISTRIBUTION) {
+            const data = await new CloudFrontService(new CloudFrontClient({ region: "us-east-1", credentials }), new S3Client({ region, credentials }), region).delete(externalId, previousState);
+            return { service, region, externalId, data };
+        }
         if (service === AwsService.EC2_INSTANCE) {
             const data = await this.terminateEc2Instances([externalId], credentials, region);
             return { service, region, externalId, data };

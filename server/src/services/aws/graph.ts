@@ -37,6 +37,9 @@ export function createGraphPlan(nodes: readonly GraphNode[], edges: readonly Gra
         if (source?.type && target?.type && !canConnectResources(source.type, target.type)) {
             throw new Error(`${source.type} cannot attach to ${target.type}.`);
         }
+        if (target?.type === "CLOUDFRONT_DISTRIBUTION" && sourcesByTarget.get(target.id)!.size) {
+            throw new Error("A CloudFront distribution supports one S3 origin.");
+        }
         const key = `${edge.sourceNodeId}:${edge.targetNodeId}`;
         if (edgeKeys.has(key)) throw new Error("Duplicate sketch edges are not allowed.");
         edgeKeys.add(key);

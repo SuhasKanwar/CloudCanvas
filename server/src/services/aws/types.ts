@@ -28,6 +28,7 @@ export enum AwsService {
     DYNAMODB_TABLE = "DYNAMODB_TABLE",
     SQS_QUEUE = "SQS_QUEUE",
     SNS_TOPIC = "SNS_TOPIC",
+    CLOUDFRONT_DISTRIBUTION = "CLOUDFRONT_DISTRIBUTION",
 }
 
 export type AwsServiceType = AwsService;
@@ -91,6 +92,7 @@ export type Ec2CommandSender = {
 };
 
 export type AwsResourceCreateRequest =
+    | { service: AwsService.CLOUDFRONT_DISTRIBUTION; config: import("./resources/cloudfront.js").CloudFrontRequest }
     | { service: AwsService.EC2_INSTANCE; config: Ec2InstanceRequest }
     | { service: AwsService.KEY_PAIR; config: import("./resources/keyPair.js").KeyPairRequest }
     | { service: AwsService.SECURITY_GROUP; config: import("./resources/securityGroup.js").SecurityGroupRequest }

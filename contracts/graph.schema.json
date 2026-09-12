@@ -18,7 +18,7 @@
       "required": ["id", "type", "config"],
       "properties": {
         "id": { "type": "string", "minLength": 1, "maxLength": 120 },
-        "type": { "enum": ["EC2_INSTANCE", "KEY_PAIR", "SECURITY_GROUP", "ECR_REPOSITORY", "S3_BUCKET", "IAM_ROLE", "LAMBDA_FUNCTION", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC"] },
+        "type": { "enum": ["EC2_INSTANCE", "KEY_PAIR", "SECURITY_GROUP", "ECR_REPOSITORY", "S3_BUCKET", "IAM_ROLE", "LAMBDA_FUNCTION", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC", "CLOUDFRONT_DISTRIBUTION"] },
         "label": { "type": ["string", "null"], "maxLength": 120 },
         "positionX": { "type": "number", "default": 0 },
         "positionY": { "type": "number", "default": 0 },
@@ -34,7 +34,8 @@
         { "if": { "properties": { "type": { "const": "LAMBDA_FUNCTION" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/lambda" } } } },
         { "if": { "properties": { "type": { "const": "DYNAMODB_TABLE" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/dynamodb" } } } },
         { "if": { "properties": { "type": { "const": "SQS_QUEUE" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/sqs" } } } },
-        { "if": { "properties": { "type": { "const": "SNS_TOPIC" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/sns" } } } }
+        { "if": { "properties": { "type": { "const": "SNS_TOPIC" } } }, "then": { "properties": { "config": { "$ref": "#/$defs/sns" } } } },
+        {"if":{"properties":{"type":{"const":"CLOUDFRONT_DISTRIBUTION"}}},"then":{"properties":{"config":{"$ref":"#/$defs/cloudfront"}}}}
       ]
     },
     "edge": {
@@ -59,6 +60,7 @@
     "keySchema": { "type": "object", "additionalProperties": false, "required": ["AttributeName", "KeyType"], "properties": { "AttributeName": { "type": "string", "minLength": 1 }, "KeyType": { "enum": ["HASH", "RANGE"] } } },
     "attributeDefinition": { "type": "object", "additionalProperties": false, "required": ["AttributeName", "AttributeType"], "properties": { "AttributeName": { "type": "string", "minLength": 1 }, "AttributeType": { "enum": ["S", "N", "B"] } } },
     "sqs": { "type": "object", "additionalProperties": false, "required": ["queueName"], "properties": { "queueName": { "type": "string", "minLength": 1 }, "visibilityTimeoutSeconds": { "type": "integer", "minimum": 0 }, "messageRetentionPeriodSeconds": { "type": "integer", "minimum": 60 } } },
-    "sns": {"type":"object","additionalProperties":false,"required":["topicName"],"properties":{"topicName":{"type":"string","minLength":1},"fifoTopic":{"type":"boolean"},"displayName":{"type":"string","maxLength":100},"contentBasedDeduplication":{"type":"boolean"}}}
+    "sns": {"type":"object","additionalProperties":false,"required":["topicName"],"properties":{"topicName":{"type":"string","minLength":1},"fifoTopic":{"type":"boolean"},"displayName":{"type":"string","maxLength":100},"contentBasedDeduplication":{"type":"boolean"}}},
+    "cloudfront": {"type":"object","additionalProperties":false,"properties":{"bucketName":{"type":"string"},"originPath":{"type":"string","pattern":"^(/[^?#]*)?$"},"defaultRootObject":{"type":"string","pattern":"^[^/?#][^?#]*$","maxLength":255},"comment":{"type":"string","maxLength":128},"enabled":{"type":"boolean"},"spaFallback":{"type":"boolean"},"priceClass":{"enum":["PriceClass_All","PriceClass_200","PriceClass_100"]},"cacheMode":{"enum":["disabled","optimized"]}}}
   }
 }

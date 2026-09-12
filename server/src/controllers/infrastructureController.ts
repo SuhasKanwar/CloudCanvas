@@ -59,6 +59,7 @@ type AwsResourceForDeletion = {
     region: string;
     status: AwsResourceStatus;
     managed: boolean;
+    actualState?: unknown;
     connection: { accessKeyIdEncrypted: string; secretAccessKeyEncrypted: string; sessionTokenEncrypted: string | null };
 };
 
@@ -86,7 +87,11 @@ async function deleteResourceRecord(resource: AwsResourceForDeletion, userId: st
             secretAccessKey: decryptAwsSecret(resource.connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
             ...(resource.connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(resource.connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
         };
-        const result = await awsResourceManager.deleteResource(resource.service, resource.externalId, credentials, resource.region);
+        const result = await awsResourceManager.deleteResource(resource.service, resource.externalId, credentials, resource.region, resource.actualState);
+        if (isRecord(result.data) && result.data.pending === true) {
+            await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result.data), finishedAt: new Date() } });
+            return { resourceId: resource.id, status: "pending" as const };
+        }
         awsResourceManager.invalidateCatalog(resource.connectionId, resource.region);
         await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.TERMINATED, actualState: jsonValue(result.data), lastError: null } });
         await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.SUCCEEDED, response: jsonValue(result.data), finishedAt: new Date() } });
@@ -106,7 +111,10 @@ async function deleteResourceRecord(resource: AwsResourceForDeletion, userId: st
 }
 
 async function refreshResourceRecord(resource: AwsResourceForDeletion) {
-    if (resource.status === AwsResourceStatus.TERMINATED || resource.status === AwsResourceStatus.DELETING) {
+    if (resource.service === AwsService.CLOUDFRONT_DISTRIBUTION && resource.status === AwsResourceStatus.FAILED) {
+        return { resourceId: resource.id, status: "skipped" as const };
+    }
+    if (resource.status === AwsResourceStatus.TERMINATED || (resource.status === AwsResourceStatus.DELETING && resource.service !== AwsService.CLOUDFRONT_DISTRIBUTION)) {
         return { resourceId: resource.id, status: "skipped" as const };
     }
     if (!resource.externalId || !isAwsService(resource.service) || !AWS_ENCRYPTION_KEY) {
@@ -118,6 +126,12 @@ async function refreshResourceRecord(resource: AwsResourceForDeletion) {
             secretAccessKey: decryptAwsSecret(resource.connection.secretAccessKeyEncrypted, AWS_ENCRYPTION_KEY),
             ...(resource.connection.sessionTokenEncrypted && { sessionToken: decryptAwsSecret(resource.connection.sessionTokenEncrypted, AWS_ENCRYPTION_KEY) }),
         };
+        if (resource.status === AwsResourceStatus.DELETING && resource.service === AwsService.CLOUDFRONT_DISTRIBUTION) {
+            const result = await awsResourceManager.deleteResource(resource.service, resource.externalId, credentials, resource.region, resource.actualState);
+            if (isRecord(result.data) && result.data.pending === true) return { resourceId: resource.id, status: "skipped" as const };
+            const updated = await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.TERMINATED, lastError: null } });
+            return { resourceId: resource.id, status: "terminated" as const, resource: updated };
+        }
         const details = await awsResourceManager.getResourceDetails(resource.service, resource.externalId, credentials, resource.region);
         const updated = await prisma.awsResource.update({
             where: { id: resource.id },
@@ -163,6 +177,7 @@ function assertDeployedResourceUpdate(previousConfig: unknown, request: AwsResou
         LAMBDA_FUNCTION: ["functionName"], ECR_REPOSITORY: ["repositoryName"],
         DYNAMODB_TABLE: ["tableName", "keySchema", "attributeDefinitions"], SQS_QUEUE: ["queueName"],
         SNS_TOPIC: ["topicName", "fifoTopic"],
+        CLOUDFRONT_DISTRIBUTION: ["bucketName"],
     };
     if (isRecord(previousConfig)) {
         const next = request.config as unknown as Record<string, unknown>;
@@ -179,6 +194,13 @@ function isAdoptedResource(request: AwsResourceCreateRequest) {
 }
 
 function buildResourceRequest(type: string, config: Record<string, unknown>): AwsResourceCreateRequest {
+    if (type === AwsService.CLOUDFRONT_DISTRIBUTION) {
+        if (typeof config.bucketName !== "string" || !config.bucketName) throw new Error("Select or connect an S3 origin bucket.");
+        // Use the shared contract for optional fields on direct publish requests too.
+        validateGraphDefinition({ schemaVersion: 1, name: "CloudFront", nodes: [{ id: "distribution", type, config: { ...config, bucketName: "validated-origin" } }], edges: [] });
+        if (!config.bucketName.startsWith("${") && !/^(?!.*\.\.)(?!\d+\.\d+\.\d+\.\d+$)[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(config.bucketName)) throw new Error("Invalid S3 origin bucket name.");
+        return { service: AwsService.CLOUDFRONT_DISTRIBUTION, config: config as unknown as import("../services/aws/resources/cloudfront.js").CloudFrontRequest };
+    }
     if (type === "EC2_INSTANCE") {
         if (config.mode === "existing") {
             if (typeof config.instanceId !== "string" || !config.instanceId) throw new Error("Choose an existing EC2 instance.");
@@ -332,7 +354,7 @@ function buildResourceRequest(type: string, config: Record<string, unknown>): Aw
             ...(config.fifoTopic === true && typeof config.contentBasedDeduplication === "boolean" && { contentBasedDeduplication: config.contentBasedDeduplication }),
         } };
     }
-    throw new Error("Supported services are EC2_INSTANCE, KEY_PAIR, SECURITY_GROUP, ECR_REPOSITORY, S3_BUCKET, IAM_ROLE, LAMBDA_FUNCTION, DYNAMODB_TABLE, SQS_QUEUE, and SNS_TOPIC.");
+    throw new Error(`Supported services: ${Object.values(AwsService).join(", ")}.`);
 }
 
 function touchSketch(sketchId: string) {
@@ -573,6 +595,7 @@ export async function deleteSketch(req: Request, res: Response<ApiResponse>) {
     for (const resource of resources) {
         const outcome = await deleteResourceRecord(resource, userId);
         outcomes.push(outcome);
+        if (outcome.status === "pending") return res.status(409).json({ success: false, message: "CloudFront is being disabled before deletion. Resource polling will finish deletion; retry deleting the sketch once it is terminated.", data: { outcomes } });
         if (outcome.status === "failed") return res.status(502).json({ success: false, message: "Sketch deletion stopped because an AWS resource could not be deleted.", error: outcome.error, data: { outcomes } });
     }
     await prisma.sketch.delete({ where: { id: sketch.id } });
@@ -828,6 +851,14 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
     const requests = new Map<string, AwsResourceCreateRequest>();
     try {
         graph = createGraphPlan(sketch.nodes, sketch.edges);
+        for (const edge of sketch.edges) {
+            const target = sketch.nodes.find((node) => node.id === edge.targetNodeId);
+            const source = sketch.nodes.find((node) => node.id === edge.sourceNodeId);
+            if (target?.type === AwsService.CLOUDFRONT_DISTRIBUTION && source && isRecord(source.config)
+                && (source.config.encryption === "SSE-KMS" || source.config.blockPublicAccess === false)) {
+                throw new Error("CloudFront frontend origins require SSE-S3 encryption and blocked public access.");
+            }
+        }
         for (const node of sketch.nodes) {
             if (!isRecord(node.config)) throw new Error(`Node ${node.id} has an invalid AWS config.`);
             requests.set(node.id, buildResourceRequest(node.type, node.config));
@@ -901,7 +932,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                 assertDeployedResourceUpdate(existingResource.desiredConfig, resourceRequest);
                 const result = await awsResourceManager.updateResource(resourceRequest, existingResource.externalId, credentials, connection.region);
                 awsResourceManager.invalidateCatalog(connection.id, connection.region);
-                const updated = await prisma.awsResource.update({ where: { id: existingResource.id }, data: { desiredConfig: jsonValue(resourceRequest.config), actualState: jsonValue(result.data), lastError: null } });
+                const updated = await prisma.awsResource.update({ where: { id: existingResource.id }, data: { desiredConfig: jsonValue(resourceRequest.config), actualState: jsonValue(result.data), lastError: null, ...(resourceRequest.service === AwsService.CLOUDFRONT_DISTRIBUTION && { status: AwsResourceStatus.PROVISIONING }) } });
                 if (isRecord(result.data)) outputsByNode.set(nodeId, result.data);
                 outcomes.push({ nodeId, status: "updated", resourceId: updated.id, result });
             } catch (error) {
@@ -944,14 +975,16 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                     lastError: null,
                 },
             });
-            const result = await awsResourceManager.createResource(resourceRequest, credentials, connection.region);
+            const result = await awsResourceManager.createResource(resourceRequest, credentials, connection.region, async (details) => {
+                await prisma.awsResource.update({ where: { id: resource!.id }, data: { externalId: details.externalId, actualState: jsonValue({ ...details.data, setupComplete: false }) } });
+            }, resource.id);
             awsResourceManager.invalidateCatalog(connection.id, connection.region);
             const updatedResource = await prisma.awsResource.update({
                 where: { id: resource.id },
                 data: {
                     externalId: result.externalId,
                     name: result.name,
-                    status: AwsResourceStatus.RUNNING,
+                    status: resourceRequest.service === AwsService.CLOUDFRONT_DISTRIBUTION ? AwsResourceStatus.PROVISIONING : AwsResourceStatus.RUNNING,
                     actualState: jsonValue(result.data),
                     lastError: null,
                 },
@@ -990,6 +1023,7 @@ export async function deleteAwsResource(req: Request, res: Response<ApiResponse>
     if (!resource) return res.status(404).json({ success: false, message: "AWS resource not found." });
     const outcome = await deleteResourceRecord(resource, userId);
     if (outcome.status === "failed") return res.status(502).json({ success: false, message: `${resource.service} resource deletion failed.`, error: outcome.error });
+    if (outcome.status === "pending") return res.status(202).json({ success: true, message: "CloudFront deletion started. Waiting for the disabled distribution to propagate.", data: outcome });
     return res.json({ success: true, message: outcome.status === "already_deleted" ? "AWS resource was already deleted." : `${resource.service} resource deleted successfully.`, data: outcome });
 }
 

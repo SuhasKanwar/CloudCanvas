@@ -19,6 +19,75 @@ import { AWSResourceManager } from "./index.js";
 import { AwsService } from "./types.js";
 import { SQSClient, SetQueueAttributesCommand } from "@aws-sdk/client-sqs";
 import { SNSClient, SetTopicAttributesCommand } from "@aws-sdk/client-sns";
+import { CloudFrontClient, CreateDistributionCommand, CreateOriginAccessControlCommand, GetDistributionCommand, ListCachePoliciesCommand, ListResponseHeadersPoliciesCommand, UpdateDistributionCommand, DeleteDistributionCommand, GetOriginAccessControlCommand, DeleteOriginAccessControlCommand } from "@aws-sdk/client-cloudfront";
+import { S3Client, GetBucketEncryptionCommand, GetBucketPolicyCommand, PutBucketPolicyCommand } from "@aws-sdk/client-s3";
+import { CloudFrontService } from "./resources/cloudfront.js";
+
+test("CloudFront retries OAC cleanup after the distribution is gone", async (context) => {
+    let removed = false;
+    context.mock.method(CloudFrontClient.prototype, "send", async (command: unknown) => {
+        if (command instanceof GetDistributionCommand) throw Object.assign(new Error("gone"), { name: "NoSuchDistribution" });
+        if (command instanceof GetOriginAccessControlCommand) return { ETag: "version" };
+        if (command instanceof DeleteOriginAccessControlCommand) { removed = true; return {}; }
+        throw new Error("Unexpected command");
+    });
+    const service = new CloudFrontService(new CloudFrontClient({}), new S3Client({}), "ap-south-1");
+    assert.equal((await service.delete("DIST", { origins: [{ OriginAccessControlId: "oac" }] })).pending, false);
+    assert.ok(removed);
+});
+
+test("CloudFront provisions private S3 delivery and checkpoints before granting access", async (context) => {
+    let checkpointed = false;
+    let creation: CreateDistributionCommand | undefined;
+    let grant: PutBucketPolicyCommand | undefined;
+    context.mock.method(CloudFrontClient.prototype, "send", async (command: unknown) => {
+        if (command instanceof ListCachePoliciesCommand) return { CachePolicyList: { Items: [{ CachePolicy: { Id: "cache", CachePolicyConfig: { Name: "Managed-CachingDisabled" } } }] } };
+        if (command instanceof ListResponseHeadersPoliciesCommand) return { ResponseHeadersPolicyList: { Items: [{ ResponseHeadersPolicy: { Id: "headers", ResponseHeadersPolicyConfig: { Name: "Managed-SecurityHeadersPolicy" } } }] } };
+        if (command instanceof CreateOriginAccessControlCommand) return { OriginAccessControl: { Id: "oac" } };
+        if (command instanceof CreateDistributionCommand) {
+            creation = command;
+            return { Distribution: { Id: "DIST", ARN: "arn:aws:cloudfront::123456789012:distribution/DIST", DomainName: "example.cloudfront.net", Status: "InProgress", DistributionConfig: command.input.DistributionConfig } };
+        }
+        throw new Error("Unexpected CloudFront command");
+    });
+    context.mock.method(S3Client.prototype, "send", async (command: unknown) => {
+        if (command instanceof GetBucketEncryptionCommand) return { ServerSideEncryptionConfiguration: { Rules: [{ ApplyServerSideEncryptionByDefault: { SSEAlgorithm: "AES256" } }] } };
+        if (command instanceof GetBucketPolicyCommand) return { Policy: JSON.stringify({ Statement: [{ Sid: "KeepMe", Effect: "Deny" }] }) };
+        if (command instanceof PutBucketPolicyCommand) { assert.ok(checkpointed); grant = command; }
+        return {};
+    });
+    const service = new CloudFrontService(new CloudFrontClient({}), new S3Client({}), "ap-south-1");
+    const details = await service.create({ bucketName: "frontend", spaFallback: true }, async (snapshot) => { assert.equal(snapshot.externalId, "DIST"); checkpointed = true; });
+    assert.equal(details.status, "PROVISIONING");
+    assert.equal(details.data.url, "https://example.cloudfront.net");
+    assert.equal(creation!.input.DistributionConfig!.Origins!.Items![0]!.OriginAccessControlId, "oac");
+    assert.equal(creation!.input.DistributionConfig!.DefaultCacheBehavior!.ViewerProtocolPolicy, "redirect-to-https");
+    const statements = JSON.parse(grant!.input.Policy!).Statement;
+    assert.equal(statements[0].Sid, "KeepMe");
+    assert.equal(statements[1].Condition.StringEquals["AWS:SourceAccount"], "123456789012");
+});
+
+test("CloudFront deletion waits for disabled configuration to deploy", async (context) => {
+    let enabled = true;
+    let status = "InProgress";
+    const deleted: string[] = [];
+    context.mock.method(CloudFrontClient.prototype, "send", async (command: unknown) => {
+        if (command instanceof GetDistributionCommand) return { ETag: "version", Distribution: { Id: "DIST", Status: status, DistributionConfig: { Enabled: enabled, Origins: { Quantity: 1, Items: [{ DomainName: "frontend.s3.ap-south-1.amazonaws.com", OriginAccessControlId: "oac" }] } } } };
+        if (command instanceof UpdateDistributionCommand) { assert.equal(command.input.IfMatch, "version"); enabled = false; return {}; }
+        if (command instanceof DeleteDistributionCommand) { deleted.push("distribution"); return {}; }
+        if (command instanceof GetOriginAccessControlCommand) return { ETag: "oac-version" };
+        if (command instanceof DeleteOriginAccessControlCommand) { deleted.push("oac"); return {}; }
+        throw new Error("Unexpected command");
+    });
+    context.mock.method(S3Client.prototype, "send", async () => ({}));
+    const service = new CloudFrontService(new CloudFrontClient({}), new S3Client({}), "ap-south-1");
+    assert.equal((await service.delete("DIST")).pending, true);
+    assert.equal((await service.delete("DIST")).pending, true);
+    assert.equal(deleted.length, 0);
+    status = "Deployed";
+    assert.equal((await service.delete("DIST")).pending, false);
+    assert.deepEqual(deleted, ["distribution", "oac"]);
+});
 
 test("updates SNS FIFO settings without recreating a topic", async (context) => {
     const commands: unknown[] = [];

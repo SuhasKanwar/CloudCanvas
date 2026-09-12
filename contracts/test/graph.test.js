@@ -3,6 +3,15 @@ import test from "node:test";
 
 import { GraphValidationError, layoutOverlappingGraphNodes, parseGraphYaml, validateGraphObject } from "../dist/index.js";
 
+test("CloudFront accepts one S3 origin and rejects unrelated attachments", () => {
+    const graph = { schemaVersion: 1, name: "frontend", nodes: [
+        { id: "bucket", type: "S3_BUCKET", config: { bucketName: "frontend-assets" } },
+        { id: "cdn", type: "CLOUDFRONT_DISTRIBUTION", config: { bucketName: "${bucket.bucketName}", spaFallback: true } },
+    ], edges: [{ sourceNodeId: "bucket", targetNodeId: "cdn" }] };
+    assert.equal(validateGraphObject(graph).nodes.length, 2);
+    assert.throws(() => validateGraphObject({ ...graph, edges: [{ sourceNodeId: "cdn", targetNodeId: "bucket" }] }), /cannot attach/);
+});
+
 test("parses a valid YAML graph", () => {
     const graph = parseGraphYaml(`schemaVersion: 1
 name: assets
