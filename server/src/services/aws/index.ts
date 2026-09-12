@@ -199,7 +199,7 @@ export class AWSResourceManager {
                 putEncryption: (command) => client.send(command),
                 putVersioning: (command) => client.send(command),
                 putPublicAccessBlock: (command) => client.send(command),
-            }, region).createBucket(request.config);
+            }, region).createBucket(request.config, async (bucketName) => onCreated({ service: request.service, region, externalId: bucketName, state: "configuring", status: "PROVISIONING", data: { bucketName } }));
             return { service: request.service, region, name: data.bucketName, externalId: data.bucketName, data };
         }
         if (request.service === AwsService.LAMBDA_FUNCTION) {

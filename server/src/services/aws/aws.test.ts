@@ -274,6 +274,7 @@ test("maps ECR repository create and delete", async () => {
 test("maps S3 bucket create and delete", async () => {
     let createLocation: string | undefined;
     let versioningStatus: string | undefined;
+    let checkpointed = false;
     let deletedObjectBatches = 0;
     const service = new S3Service({
         create: async (command) => {
@@ -287,11 +288,11 @@ test("maps S3 bucket create and delete", async () => {
         getPolicy: async () => { const error = new Error("missing"); error.name = "NoSuchBucketPolicy"; throw error; },
         putPolicy: async () => ({ $metadata: {} }),
         putEncryption: async () => ({ $metadata: {} }),
-        putVersioning: async (command) => { versioningStatus = command.input.VersioningConfiguration?.Status; return { $metadata: {} }; },
+        putVersioning: async (command) => { assert.ok(checkpointed); versioningStatus = command.input.VersioningConfiguration?.Status; return { $metadata: {} }; },
         putPublicAccessBlock: async () => ({ $metadata: {} }),
     }, "ap-south-1");
 
-    const result = await service.createBucket({ bucketName: "cloudcanvas", versioning: true, blockPublicAccess: true, encryption: "SSE-S3", enforceHttps: true });
+    const result = await service.createBucket({ bucketName: "cloudcanvas", versioning: true, blockPublicAccess: true, encryption: "SSE-S3", enforceHttps: true }, async (name) => { assert.equal(name, "cloudcanvas"); checkpointed = true; });
     await service.deleteBucket("cloudcanvas");
     assert.equal(createLocation, "ap-south-1");
     assert.equal(versioningStatus, "Enabled");

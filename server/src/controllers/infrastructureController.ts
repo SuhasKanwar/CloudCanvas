@@ -4,7 +4,7 @@ import type { Runtime } from "@aws-sdk/client-lambda";
 import { Prisma } from "../generated/prisma/client.js";
 import { AwsResourceStatus, DeploymentStatus, SketchStatus } from "../generated/prisma/enums.js";
 import prisma from "../lib/prisma.js";
-import { AWS_ENCRYPTION_KEY, AWS_REGION, AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY } from "../lib/config.js";
+import { AWS_ENCRYPTION_KEY, AWS_REGION, AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY, AWS_DEPENDENCY_READY_TIMEOUT_MS, AWS_DEPENDENCY_READY_INTERVAL_MS } from "../lib/config.js";
 import {
     awsResourceManager,
     decryptAwsSecret,
@@ -13,6 +13,7 @@ import {
     type AwsResourceCreateRequest,
 } from "../services/aws/index.js";
 import { createGraphPlan, remapConfigReferences, resolveConfigReferences } from "../services/aws/graph.js";
+import { waitForResourceReady } from "../services/aws/readiness.js";
 import { AIServiceError, aiService, type AiChatMessage } from "../services/aiService.js";
 import { prepareGraphForPersistence, validateGraphDefinition } from "../services/graphParser.js";
 import { canConnectResources } from "@cloudcanvas/graph-contract";
@@ -111,7 +112,7 @@ async function deleteResourceRecord(resource: AwsResourceForDeletion, userId: st
 }
 
 async function refreshResourceRecord(resource: AwsResourceForDeletion) {
-    if (resource.service === AwsService.CLOUDFRONT_DISTRIBUTION && resource.status === AwsResourceStatus.FAILED) {
+    if (resource.status === AwsResourceStatus.FAILED && (resource.service === AwsService.CLOUDFRONT_DISTRIBUTION || (isRecord(resource.actualState) && resource.actualState.setupComplete === false))) {
         return { resourceId: resource.id, status: "skipped" as const };
     }
     if (resource.status === AwsResourceStatus.TERMINATED || (resource.status === AwsResourceStatus.DELETING && resource.service !== AwsService.CLOUDFRONT_DISTRIBUTION)) {
@@ -915,7 +916,24 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
     });
 
     const outcomes: Array<Record<string, unknown>> = [];
+    const readyResources = new Map([...resourcesByNodeId].flatMap(([id, resource]) => resource.status === AwsResourceStatus.RUNNING && resource.externalId ? [[id, { service: resource.service, externalId: resource.externalId }] as const] : []));
     for (const nodeId of graph.order) {
+        try {
+            for (const sourceId of graph.sourcesByTarget.get(nodeId) ?? []) {
+                const source = readyResources.get(sourceId);
+                if (!source || !isAwsService(source.service)) throw new Error(`Dependency ${sourceId} was not deployed.`);
+                const details = await waitForResourceReady(
+                    () => awsResourceManager.getResourceDetails(source.service as AwsService, source.externalId, credentials, connection.region),
+                    AWS_DEPENDENCY_READY_TIMEOUT_MS, AWS_DEPENDENCY_READY_INTERVAL_MS,
+                );
+                if (isRecord(details.data)) outputsByNode.set(sourceId, { ...outputsByNode.get(sourceId), ...details.data });
+            }
+        } catch (error) {
+            const message = `Cannot deploy node ${nodeId}: ${errorMessage(error)}`;
+            outcomes.push({ nodeId, status: "blocked", error: message });
+            await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.FAILED, response: jsonValue({ order: graph.order, outcomes }), errorMessage: message, finishedAt: new Date() } });
+            return res.status(409).json({ success: false, message, data: { deploymentId: deployment.id, outcomes } });
+        }
         const existingResource = resourcesByNodeId.get(nodeId);
         if (existingResource?.status === AwsResourceStatus.RUNNING) {
             const baseRequest = requests.get(nodeId);
@@ -991,6 +1009,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
             });
             if (!isRecord(result.data)) throw new Error(`AWS did not return usable output for node ${nodeId}.`);
             outputsByNode.set(nodeId, result.data);
+            readyResources.set(nodeId, { service: resourceRequest.service, externalId: result.externalId });
             outcomes.push({ nodeId, status: "created", resourceId: updatedResource.id, result });
         } catch (error) {
             const message = errorMessage(error);

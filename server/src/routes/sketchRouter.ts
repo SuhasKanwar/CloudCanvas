@@ -20,6 +20,7 @@ import {
 } from "../controllers/infrastructureController.js";
 import { graphParser } from "../services/graphParser.js";
 import conversationRouter from "./conversationRouter.js";
+import { createBucketFolder, deleteBucketObject, listBucketObjects, signBucketUpload } from "../controllers/bucketObjectsController.js";
 
 const sketchRouter = Router();
 
@@ -40,6 +41,10 @@ sketchRouter.post("/:sketchId/edges", createSketchEdge);
 sketchRouter.delete("/:sketchId/edges/:edgeId", deleteSketchEdge);
 sketchRouter.post("/:sketchId/deploy", deploySketch);
 sketchRouter.post("/:sketchId/resources/refresh", refreshSketchResources);
+sketchRouter.get("/:sketchId/resources/:resourceId/objects", listBucketObjects);
+sketchRouter.post("/:sketchId/resources/:resourceId/folders", createBucketFolder);
+sketchRouter.post("/:sketchId/resources/:resourceId/uploads", signBucketUpload);
+sketchRouter.delete("/:sketchId/resources/:resourceId/objects", deleteBucketObject);
 sketchRouter.delete("/:sketchId/resources/:resourceId", deleteAwsResource);
 
 export default sketchRouter;

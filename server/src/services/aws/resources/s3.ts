@@ -58,7 +58,7 @@ export type S3CommandSender = {
 export class S3Service {
     constructor(private readonly send: S3CommandSender, private readonly region: string) {}
 
-    async createBucket(request: S3BucketRequest): Promise<S3BucketResult> {
+    async createBucket(request: S3BucketRequest, onCreated?: (bucketName: string) => Promise<void>): Promise<S3BucketResult> {
         if (!request.bucketName) throw new Error("bucketName is required to create an S3 bucket.");
         const result = await this.send.create(new CreateBucketCommand({
             Bucket: request.bucketName,
@@ -66,6 +66,7 @@ export class S3Service {
                 CreateBucketConfiguration: { LocationConstraint: this.region as BucketLocationConstraint },
             }),
         }));
+        await onCreated?.(request.bucketName);
         await this.configureBucket(request);
         return { region: this.region, bucketName: request.bucketName, location: result.Location };
     }

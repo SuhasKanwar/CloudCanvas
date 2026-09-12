@@ -11,8 +11,10 @@ export const JWT_SECRET: string = process.env.JWT_SECRET || "secret";
 export const AWS_REGION: string = process.env.AWS_REGION || "ap-south-1";
 export const AWS_ENCRYPTION_KEY: string = process.env.AWS_ENCRYPTION_KEY || "";
 export const AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY: number = Math.max(1, Math.min(10, Number(process.env.AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY) || 4));
+export const AWS_DEPENDENCY_READY_TIMEOUT_MS: number = Math.max(1000, Number(process.env.AWS_DEPENDENCY_READY_TIMEOUT_MS) || 90000);
+export const AWS_DEPENDENCY_READY_INTERVAL_MS: number = Math.max(500, Number(process.env.AWS_DEPENDENCY_READY_INTERVAL_MS) || 3000);
 
 export const LOGS_DIRECTORY: string = "logs";
 
-const FRONTED_URL: string = process.env.FRONTED_URL || "http://localhost:3000"
-export const ALLOWED_ORIGINS: string[] = [FRONTED_URL];
+const FRONTEND_URL: string = process.env.FRONTEND_URL || process.env.FRONTED_URL || "http://localhost:3000";
+export const ALLOWED_ORIGINS: string[] = [FRONTEND_URL];
