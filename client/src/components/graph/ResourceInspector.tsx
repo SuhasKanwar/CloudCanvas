@@ -14,6 +14,7 @@ import LambdaCodeField from "./LambdaCodeField";
 import ResourceDetails from "./ResourceDetails";
 import InstanceTypeField from "./InstanceTypeField";
 import CloudFrontForm from "./CloudFrontForm";
+import BucketObjectsPanel from "./BucketObjectsPanel";
 
 type Ec2Bindings = { keyPair?: string; securityGroups: string[] };
 type Props = { bindings?: Ec2Bindings; connectionId: string | null; node: Node<ResourceNodeData>; resource?: AwsResourceSnapshot; onChange: (label: string, config: Record<string, unknown>) => void; onDelete: () => void; onOpenAwsSettings: () => void };
@@ -201,6 +202,7 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
             {service === "SQS_QUEUE" ? <><Field disabled={deployed} label="Queue name" onChange={(value) => update("queueName", value)} value={String(config.queueName ?? "")} /><Field label="Visibility timeout (seconds)" onChange={(value) => update("visibilityTimeoutSeconds", Number(value) || 0)} type="number" value={Number(config.visibilityTimeoutSeconds ?? 30)} /><Field label="Message retention (seconds)" onChange={(value) => update("messageRetentionPeriodSeconds", Number(value) || 60)} type="number" value={Number(config.messageRetentionPeriodSeconds ?? 345600)} /></> : null}
             {service === "SNS_TOPIC" ? <><fieldset disabled={deployed} className="space-y-5 disabled:opacity-55"><Field label="Topic name" onChange={(value) => update("topicName", value)} value={String(config.topicName ?? "")} /><Toggle checked={config.fifoTopic === true} label="FIFO topic" onChange={(value) => update("fifoTopic", value)} /></fieldset><Field label="Display name" onChange={(value) => update("displayName", value)} value={String(config.displayName ?? "")} />{config.fifoTopic === true ? <Toggle checked={config.contentBasedDeduplication === true} label="Content-based deduplication" onChange={(value) => update("contentBasedDeduplication", value)} /> : null}</> : null}
             </fieldset> : null}
+            {service === "S3_BUCKET" && resource?.status === "RUNNING" ? <BucketObjectsPanel resourceId={resource.id} sketchId={resource.sketchId} /> : null}
             </>}
         </div>
     </div>;

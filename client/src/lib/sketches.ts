@@ -41,6 +41,7 @@ export type SketchEdge = {
 
 export type AwsResourceSnapshot = {
     id: string;
+    sketchId: string;
     nodeId: string | null;
     service: AwsService;
     externalId: string | null;
@@ -57,6 +58,36 @@ export type ResourceRefreshOutcome = {
     resource?: AwsResourceSnapshot;
     error?: string;
 };
+
+export type BucketListing = { folders: string[]; files: { key: string; size: number; lastModified?: string }[]; nextToken: string | null };
+
+function bucketPath(sketchId: string, resourceId: string) { return `/api/sketches/${sketchId}/resources/${resourceId}`; }
+
+export async function listBucketObjects(accessToken: string, sketchId: string, resourceId: string, prefix = "", token?: string): Promise<BucketListing> {
+    const response = await api.get<ApiEnvelope<BucketListing>>(`${bucketPath(sketchId, resourceId)}/objects`, { ...authenticatedRequest(accessToken), params: { prefix, ...(token && { token }) } });
+    return response.data.data;
+}
+
+export async function createBucketFolder(accessToken: string, sketchId: string, resourceId: string, key: string): Promise<void> {
+    await api.post(`${bucketPath(sketchId, resourceId)}/folders`, { key }, authenticatedRequest(accessToken));
+}
+
+export async function deleteBucketObject(accessToken: string, sketchId: string, resourceId: string, key: string, folder: boolean): Promise<void> {
+    await api.delete(`${bucketPath(sketchId, resourceId)}/objects`, { ...authenticatedRequest(accessToken), data: { key, folder } });
+}
+
+export async function uploadBucketFile(accessToken: string, sketchId: string, resourceId: string, key: string, file: File): Promise<void> {
+    const contentType = file.type || "application/octet-stream";
+    const response = await api.post<ApiEnvelope<{ url: string; fields: Record<string, string> }>>(
+        `${bucketPath(sketchId, resourceId)}/uploads`, { key, size: file.size, contentType }, authenticatedRequest(accessToken, { silentToast: true }),
+    );
+    const { url, fields } = response.data.data;
+    const body = new FormData();
+    for (const [name, value] of Object.entries(fields)) body.append(name, value);
+    body.append("file", file);
+    const uploaded = await fetch(url, { method: "POST", body });
+    if (!uploaded.ok) throw new Error(`S3 rejected ${file.name} (${uploaded.status}).`);
+}
 
 export type AiSketchResponse =
     | { type: "text"; message: string }
