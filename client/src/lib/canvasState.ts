@@ -16,12 +16,14 @@ export function diffCanvas<NodeType extends CanvasNode, EdgeType extends CanvasE
         deletedNodes: persisted.nodes.filter((node) => !desiredNodes.has(node.id)),
         createdNodes: desired.nodes.filter((node) => !persistedNodes.has(node.id)),
         createdEdges: desired.edges.filter((edge) => !persistedEdges.has(edge.id)),
-        updatedNodes: desired.nodes.filter((node) => {
+        movedNodes: desired.nodes.filter((node) => {
+            const previous = persistedNodes.get(node.id);
+            return previous && (previous.position.x !== node.position.x || previous.position.y !== node.position.y);
+        }),
+        configuredNodes: desired.nodes.filter((node) => {
             const previous = persistedNodes.get(node.id);
             return previous && (
-                previous.position.x !== node.position.x
-                || previous.position.y !== node.position.y
-                || previous.data?.service !== node.data?.service
+                previous.data?.service !== node.data?.service
                 || previous.data?.label !== node.data?.label
                 || JSON.stringify(previous.data?.config) !== JSON.stringify(node.data?.config)
             );

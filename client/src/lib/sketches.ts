@@ -144,7 +144,15 @@ export async function renameSketch(accessToken: string, sketchId: string, name: 
 export async function updateSketchNode(accessToken: string, sketchId: string, node: SketchNode): Promise<void> {
     await api.patch(
         `/api/sketches/${sketchId}/nodes/${node.id}`,
-        node,
+        { type: node.type, label: node.label, config: node.config },
+        authenticatedRequest(accessToken, { silentToast: true }),
+    );
+}
+
+export async function updateSketchNodePosition(accessToken: string, sketchId: string, nodeId: string, position: { x: number; y: number }): Promise<void> {
+    await api.patch(
+        `/api/sketches/${sketchId}/nodes/${nodeId}`,
+        { positionX: position.x, positionY: position.y },
         authenticatedRequest(accessToken, { silentToast: true }),
     );
 }

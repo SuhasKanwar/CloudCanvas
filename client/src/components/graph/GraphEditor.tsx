@@ -11,7 +11,7 @@ import { stringify } from "yaml";
 import { canConnectResources, layoutOverlappingGraphNodes, type AwsService, type GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
 import { RESOURCE_STATUS_POLL_INTERVAL_MS } from "@/lib/config";
-import { createSketchEdge, createSketchNode, deleteSketchEdge, deleteSketchNode, getSketch, refreshSketchResources, renameSketch, updateSketchNode, type AwsResourceSnapshot, type Sketch, type SketchEdge, type SketchNode } from "@/lib/sketches";
+import { createSketchEdge, createSketchNode, deleteSketchEdge, deleteSketchNode, getSketch, refreshSketchResources, renameSketch, updateSketchNode, updateSketchNodePosition, type AwsResourceSnapshot, type Sketch, type SketchEdge, type SketchNode } from "@/lib/sketches";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCanvasHistory } from "@/hooks/useCanvasHistory";
 import { diffCanvas } from "@/lib/canvasState";
@@ -247,7 +247,8 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
             await Promise.all(changes.deletedNodes.map((node) => deleteSketchNode(accessToken, sketchId, node.id)));
             await Promise.all(changes.createdNodes.map((node) => createSketchNode(accessToken, sketchId, serializeNode(node))));
             await Promise.all(changes.createdEdges.map((edge) => createSketchEdge(accessToken, sketchId, serializeEdge(edge))));
-            await Promise.all(changes.updatedNodes.map((node) => updateSketchNode(accessToken, sketchId, serializeNode(node))));
+            await Promise.all(changes.movedNodes.map((node) => updateSketchNodePosition(accessToken, sketchId, node.id, node.position)));
+            await Promise.all(changes.configuredNodes.map((node) => updateSketchNode(accessToken, sketchId, serializeNode(node))));
             persistedCanvas.current = desired;
             setSaveError(null);
             return true;
