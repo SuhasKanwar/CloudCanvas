@@ -51,6 +51,11 @@ function isMissingAwsResource(error: unknown) {
     return message.includes("notfound") || message.includes("not found") || message.includes("nosuch") || message.includes("does not exist");
 }
 
+function isS3BucketNameConflict(error: unknown) {
+    const message = errorMessage(error).toLowerCase();
+    return message.includes("bucketalreadyexists") || message.includes("bucket name is not available") || message.includes("bucket namespace is shared");
+}
+
 type AwsResourceForDeletion = {
     id: string;
     sketchId: string;
@@ -1013,6 +1018,7 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
             outcomes.push({ nodeId, status: "created", resourceId: updatedResource.id, result });
         } catch (error) {
             const message = errorMessage(error);
+            const bucketNameConflict = isS3BucketNameConflict(error);
             if (resource) {
                 await prisma.awsResource.update({ where: { id: resource.id }, data: { status: AwsResourceStatus.FAILED, lastError: message } });
             }
@@ -1021,7 +1027,12 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                 where: { id: deployment.id },
                 data: { status: DeploymentStatus.FAILED, response: jsonValue({ order: graph.order, outcomes }), errorMessage: message, finishedAt: new Date() },
             });
-            return res.status(502).json({ success: false, message: "AWS publish failed.", error: message, data: { deploymentId: deployment.id, outcomes } });
+            return res.status(bucketNameConflict ? 409 : 502).json({
+                success: false,
+                message: bucketNameConflict ? "Choose a globally unique S3 bucket name and publish again." : "AWS publish failed.",
+                error: message,
+                data: { deploymentId: deployment.id, outcomes },
+            });
         }
     }
     await prisma.deployment.update({

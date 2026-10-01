@@ -29,6 +29,8 @@ export default function PublishSketchButton({ connectionId: sketchConnectionId, 
             await publishSketch(session.accessToken, sketchId, connectionId);
             await onPublished(connectionId);
             setOpen(false);
+        } catch {
+            // The shared API interceptor displays the deployment error.
         } finally {
             setPublishing(false);
         }
