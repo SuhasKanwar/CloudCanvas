@@ -19,7 +19,7 @@ export default async function AuthErrorPage({
 }) {
     const session = await getAuthSession();
 
-    if (session) {
+    if (session?.accessToken) {
         redirect("/dashboard");
     }
 

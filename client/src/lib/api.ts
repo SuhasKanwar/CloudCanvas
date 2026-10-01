@@ -18,6 +18,7 @@ export function authenticatedRequest(accessToken: string, options: { silentToast
 }
 
 let interceptorsInstalled = false;
+let clearingInvalidSession = false;
 
 if (!interceptorsInstalled) {
     interceptorsInstalled = true;
@@ -35,8 +36,9 @@ if (!interceptorsInstalled) {
         (error) => {
             const isProtectedRequest = typeof error?.config?.url === "string"
                 && (error.config.url.startsWith("/api/aws") || error.config.url.startsWith("/api/sketches"));
-            if (error?.response?.status === 401 && isProtectedRequest && typeof window !== "undefined" && window.location.pathname !== "/auth/signin") {
-                window.location.assign("/auth/signin");
+            if (error?.response?.status === 401 && isProtectedRequest && typeof window !== "undefined" && !clearingInvalidSession) {
+                clearingInvalidSession = true;
+                window.dispatchEvent(new Event("cloudcanvas:invalid-session"));
             }
             const message =
                 error?.response?.data?.message ??

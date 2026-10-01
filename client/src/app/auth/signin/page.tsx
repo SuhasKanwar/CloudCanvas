@@ -5,7 +5,7 @@ import { getAuthSession } from "@/lib/session";
 export default async function SignInPage() {
     const session = await getAuthSession();
 
-    if (session) {
+    if (session?.accessToken) {
         redirect("/dashboard");
     }
 
