@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
+import { isAxiosError } from "axios";
 import { addEdge, applyEdgeChanges, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type EdgeChange, type Node, type NodeChange } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { ArrowLeft, Check, FolderOpen, Loader2, Pencil, Redo2, Save, Undo2 } from "lucide-react";
@@ -252,14 +253,14 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
             persistedCanvas.current = desired;
             setSaveError(null);
             return true;
-        } catch {
-            setSaveError("Autosave failed. The canvas was restored to its last saved state.");
-            await reloadSketch();
+        } catch (error) {
+            const message = isAxiosError<{ message?: string }>(error) ? error.response?.data?.message : undefined;
+            setSaveError(`Autosave failed: ${message ?? (error instanceof Error ? error.message : "Unable to save this change.")}`);
             return false;
         } finally {
             setAutoSaving(false);
         }
-    }, [accessToken, reloadSketch, sketchId]);
+    }, [accessToken, sketchId]);
 
     const queueCanvasPersistence = useCallback(() => {
         const desired = currentCanvas.current;

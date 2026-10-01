@@ -71,7 +71,7 @@ export const awsServiceOptions = Object.entries(serviceAppearance).map(([service
 }));
 
 export function defaultS3BucketName() {
-    return `cloudcanvas-${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
+    return `cloudcanvas-${crypto.randomUUID().replaceAll("-", "").slice(0, 20)}`;
 }
 
 export function defaultResourceConfig(service: AwsService): Record<string, unknown> {

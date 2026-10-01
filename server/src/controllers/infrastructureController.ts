@@ -1031,7 +1031,9 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
             });
             return res.status(bucketNameConflict ? 409 : 502).json({
                 success: false,
-                message: bucketNameConflict ? "Choose a globally unique S3 bucket name and publish again." : "AWS publish failed.",
+                message: bucketNameConflict && baseRequest.service === AwsService.S3_BUCKET
+                    ? `S3 bucket "${String(baseRequest.config.bucketName ?? "")}" is already taken globally. Use Generate globally unique name, then publish again.`
+                    : "AWS publish failed.",
                 error: message,
                 data: { deploymentId: deployment.id, outcomes },
             });
