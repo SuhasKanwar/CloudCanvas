@@ -11,7 +11,7 @@ import { stringify } from "yaml";
 import { canConnectResources, layoutOverlappingGraphNodes, type AwsService, type GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
 import { RESOURCE_STATUS_POLL_INTERVAL_MS } from "@/lib/config";
-import { createSketchEdge, createSketchNode, deleteSketchEdge, deleteSketchNode, getSketch, refreshSketchResources, renameSketch, updateSketchNodePosition, type AwsResourceSnapshot, type Sketch, type SketchEdge, type SketchNode } from "@/lib/sketches";
+import { createSketchEdge, createSketchNode, deleteSketchEdge, deleteSketchNode, getSketch, refreshSketchResources, renameSketch, updateSketchNode, type AwsResourceSnapshot, type Sketch, type SketchEdge, type SketchNode } from "@/lib/sketches";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCanvasHistory } from "@/hooks/useCanvasHistory";
 import { diffCanvas } from "@/lib/canvasState";
@@ -96,7 +96,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
     const [nodeToDelete, setNodeToDelete] = useState<ResourceFlowNode | null>(null);
     const persistedCanvas = useRef<CanvasSnapshot>({ nodes: [], edges: [] });
     const currentCanvas = useRef<CanvasSnapshot>({ nodes: [], edges: [] });
-    const autoSaveQueue = useRef(Promise.resolve());
+    const autoSaveQueue = useRef<Promise<boolean>>(Promise.resolve(true));
     const { canRedo, canUndo, record: recordHistory, redo: redoHistory, reset: resetHistory, undo: undoHistory } = useCanvasHistory<CanvasSnapshot>();
 
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
@@ -238,21 +238,23 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
     }, [accessToken, loadSketch, sketchId]);
 
     const persistCanvas = useCallback(async (desired: CanvasSnapshot) => {
-        if (!accessToken) return;
+        if (!accessToken) return false;
         const changes = diffCanvas(persistedCanvas.current, desired);
-        if (Object.values(changes).every((entries) => entries.length === 0)) return;
+        if (Object.values(changes).every((entries) => entries.length === 0)) return true;
         setAutoSaving(true);
         try {
             await Promise.all(changes.deletedEdges.map((edge) => deleteSketchEdge(accessToken, sketchId, edge.id)));
             await Promise.all(changes.deletedNodes.map((node) => deleteSketchNode(accessToken, sketchId, node.id)));
             await Promise.all(changes.createdNodes.map((node) => createSketchNode(accessToken, sketchId, serializeNode(node))));
             await Promise.all(changes.createdEdges.map((edge) => createSketchEdge(accessToken, sketchId, serializeEdge(edge))));
-            await Promise.all(changes.movedNodes.map((node) => updateSketchNodePosition(accessToken, sketchId, node.id, node.position)));
+            await Promise.all(changes.updatedNodes.map((node) => updateSketchNode(accessToken, sketchId, serializeNode(node))));
             persistedCanvas.current = desired;
             setSaveError(null);
+            return true;
         } catch {
             setSaveError("Autosave failed. The canvas was restored to its last saved state.");
             await reloadSketch();
+            return false;
         } finally {
             setAutoSaving(false);
         }
@@ -263,6 +265,11 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         autoSaveQueue.current = autoSaveQueue.current.then(() => persistCanvas(desired));
     }, [persistCanvas]);
     const queueCanvasPersistenceDebounced = useDebounce(queueCanvasPersistence);
+
+    const flushCanvasPersistence = useCallback(async () => {
+        queueCanvasPersistence();
+        return await autoSaveQueue.current;
+    }, [queueCanvasPersistence]);
 
     useEffect(() => {
         currentCanvas.current = { nodes, edges };
@@ -367,7 +374,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
                 <div className="flex items-center border border-white/10 bg-black/10"><button aria-label="Undo" className="grid h-9 w-9 place-items-center text-(--secondary-text-color) transition hover:bg-white/7 hover:text-(--primary-text-color) disabled:opacity-30" disabled={!canUndo} onClick={undo} title="Undo (Ctrl+Z)" type="button"><Undo2 className="h-4 w-4" /></button><button aria-label="Redo" className="grid h-9 w-9 place-items-center border-l border-white/10 text-(--secondary-text-color) transition hover:bg-white/7 hover:text-(--primary-text-color) disabled:opacity-30" disabled={!canRedo} onClick={redo} title="Redo (Ctrl+Y)" type="button"><Redo2 className="h-4 w-4" /></button></div>
                 {autoSaving ? <span className="hidden items-center gap-1.5 text-[11px] text-(--secondary-text-color) xl:inline-flex"><Loader2 className="h-3 w-3 animate-spin" />Autosaving</span> : null}
                 <Link className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/10 px-3 py-2 text-sm text-(--secondary-text-color) transition hover:border-white/20 hover:bg-white/6 hover:text-(--primary-text-color)" href="/dashboard"><FolderOpen className="h-4 w-4" />Sketches</Link>
-                {canvasReady ? <PublishSketchButton connectionId={sketchConnectionId} onPublished={async (connectionId) => { setSketchConnectionId(connectionId); await reloadSketch(); }} sketchId={sketchId} /> : null}
+                {canvasReady ? <PublishSketchButton connectionId={sketchConnectionId} onBeforePublish={flushCanvasPersistence} onPublished={async (connectionId) => { setSketchConnectionId(connectionId); await reloadSketch(); }} sketchId={sketchId} /> : null}
                 <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={!canvasReady || saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}Save</button>
             </div>
             {loading ? <div className="grid h-full place-items-center pt-16 text-sm text-(--secondary-text-color)"><span className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/12 px-4 py-3"><Loader2 className="h-4 w-4 animate-spin text-(--primary-color)" />Loading sketch</span></div> : null}

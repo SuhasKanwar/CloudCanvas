@@ -7,7 +7,7 @@ import { listAwsConnections, type AwsConnection } from "@/lib/aws";
 import { publishSketch } from "@/lib/sketches";
 import { useOutsideDismiss } from "@/hooks/useOutsideDismiss";
 
-export default function PublishSketchButton({ connectionId: sketchConnectionId, onPublished, sketchId }: { connectionId: string | null; onPublished: (connectionId: string) => Promise<void> | void; sketchId: string }) {
+export default function PublishSketchButton({ connectionId: sketchConnectionId, onBeforePublish, onPublished, sketchId }: { connectionId: string | null; onBeforePublish: () => Promise<boolean>; onPublished: (connectionId: string) => Promise<void> | void; sketchId: string }) {
     const { data: session } = useSession();
     const [open, setOpen] = useState(false);
     const [connections, setConnections] = useState<AwsConnection[]>([]);
@@ -26,6 +26,7 @@ export default function PublishSketchButton({ connectionId: sketchConnectionId, 
         if (!session?.accessToken || !sketchId || !connectionId) return;
         try {
             setPublishing(true);
+            if (!await onBeforePublish()) return;
             await publishSketch(session.accessToken, sketchId, connectionId);
             await onPublished(connectionId);
             setOpen(false);

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { isDeepStrictEqual } from "node:util";
 import type { AttributeDefinition, BillingMode, KeySchemaElement } from "@aws-sdk/client-dynamodb";
 import type { Runtime } from "@aws-sdk/client-lambda";
 import { Prisma } from "../generated/prisma/client.js";
@@ -643,10 +644,11 @@ export async function updateSketchNode(req: Request, res: Response<ApiResponse>)
     if (!userId) return;
     const node = await prisma.sketchNode.findFirst({ where: { id: param(req, "nodeId"), sketch: { id: param(req, "sketchId"), userId } } });
     if (!node) return res.status(404).json({ success: false, message: "Sketch node not found." });
-    const changingResourceConfig = req.body?.type !== undefined || req.body?.config !== undefined;
+    const changingResourceConfig = (req.body?.type !== undefined && req.body.type !== node.type)
+        || (req.body?.config !== undefined && !isDeepStrictEqual(req.body.config, node.config));
     if (changingResourceConfig) {
-        const resource = await prisma.awsResource.findUnique({ where: { nodeId: node.id }, select: { status: true } });
-        if (resource && resource.status !== AwsResourceStatus.TERMINATED) {
+        const resource = await prisma.awsResource.findUnique({ where: { nodeId: node.id }, select: { status: true, externalId: true } });
+        if (resource && resource.status !== AwsResourceStatus.TERMINATED && !(resource.status === AwsResourceStatus.FAILED && !resource.externalId)) {
             return res.status(409).json({ success: false, message: "Delete the deployed resource before changing its AWS configuration." });
         }
     }
