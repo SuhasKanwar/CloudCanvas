@@ -126,9 +126,13 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
 
     const refreshDeployedResources = useCallback(async () => {
         if (!accessToken) return;
-        const outcomes = await refreshSketchResources(accessToken, sketchId);
-        const refreshed = outcomes.flatMap((outcome) => outcome.resource ? [outcome.resource] : []);
-        if (refreshed.length) applyResourceSnapshots(refreshed);
+        try {
+            const outcomes = await refreshSketchResources(accessToken, sketchId);
+            const refreshed = outcomes.flatMap((outcome) => outcome.resource ? [outcome.resource] : []);
+            if (refreshed.length) applyResourceSnapshots(refreshed);
+        } catch {
+            // Polling retries on the next interval; transient failures should not escape into the UI runtime.
+        }
     }, [accessToken, applyResourceSnapshots, sketchId]);
 
     useEffect(() => {
@@ -202,7 +206,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         persistedCanvas.current = { nodes: loadedNodes, edges: loadedEdges };
         currentCanvas.current = { nodes: loadedNodes, edges: loadedEdges };
         resetHistory();
-        setNodes(syncEc2Bindings(loadedNodes, loadedEdges));
+        setNodes(loadedNodes);
         applyResourceSnapshots(sketch.resources ?? [], true);
         setEdges(loadedEdges);
         setSelectedNodeId(null);
