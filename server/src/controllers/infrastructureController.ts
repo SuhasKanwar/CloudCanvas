@@ -60,6 +60,7 @@ function isS3BucketNameConflict(error: unknown) {
 type AwsResourceForDeletion = {
     id: string;
     sketchId: string;
+    nodeId: string | null;
     connectionId: string;
     service: string;
     externalId: string | null;
@@ -68,6 +69,12 @@ type AwsResourceForDeletion = {
     managed: boolean;
     actualState?: unknown;
     connection: { accessKeyIdEncrypted: string; secretAccessKeyEncrypted: string; sessionTokenEncrypted: string | null };
+};
+
+type SketchResourcesForDeletion = {
+    nodes: Array<{ id: string; type: string }>;
+    edges: Array<{ sourceNodeId: string; targetNodeId: string }>;
+    resources: AwsResourceForDeletion[];
 };
 
 async function deleteResourceRecord(resource: AwsResourceForDeletion, userId: string) {
@@ -115,6 +122,20 @@ async function deleteResourceRecord(resource: AwsResourceForDeletion, userId: st
         await prisma.deployment.update({ where: { id: deployment.id }, data: { status: DeploymentStatus.FAILED, errorMessage: message, finishedAt: new Date() } });
         return { resourceId: resource.id, status: "failed" as const, error: message };
     }
+}
+
+async function deleteSketchResourceRecords(sketch: SketchResourcesForDeletion, userId: string) {
+    let order: string[];
+    try { order = createGraphPlan(sketch.nodes, sketch.edges).order.reverse(); } catch { order = sketch.nodes.map((node) => node.id).reverse(); }
+    const ranks = new Map(order.map((nodeId, index) => [nodeId, index]));
+    const resources = [...sketch.resources].sort((left, right) => (ranks.get(left.nodeId ?? "") ?? Number.MAX_SAFE_INTEGER) - (ranks.get(right.nodeId ?? "") ?? Number.MAX_SAFE_INTEGER));
+    const outcomes = [];
+    for (const resource of resources) {
+        const outcome = await deleteResourceRecord(resource, userId);
+        outcomes.push(outcome);
+        if (outcome.status === "pending" || outcome.status === "failed") return { outcomes, stopped: outcome };
+    }
+    return { outcomes };
 }
 
 async function refreshResourceRecord(resource: AwsResourceForDeletion) {
@@ -594,17 +615,9 @@ export async function deleteSketch(req: Request, res: Response<ApiResponse>) {
     const sketchId = param(req, "sketchId");
     const sketch = await prisma.sketch.findFirst({ where: { id: sketchId, userId }, include: { nodes: true, edges: true, resources: { include: { connection: true } } } });
     if (!sketch) return res.status(404).json({ success: false, message: "Sketch not found." });
-    let order: string[] = [];
-    try { order = createGraphPlan(sketch.nodes, sketch.edges).order.reverse(); } catch { order = sketch.nodes.map((node) => node.id).reverse(); }
-    const ranks = new Map(order.map((nodeId, index) => [nodeId, index]));
-    const resources = [...sketch.resources].sort((left, right) => (ranks.get(left.nodeId ?? "") ?? Number.MAX_SAFE_INTEGER) - (ranks.get(right.nodeId ?? "") ?? Number.MAX_SAFE_INTEGER));
-    const outcomes = [];
-    for (const resource of resources) {
-        const outcome = await deleteResourceRecord(resource, userId);
-        outcomes.push(outcome);
-        if (outcome.status === "pending") return res.status(409).json({ success: false, message: "CloudFront is being disabled before deletion. Resource polling will finish deletion; retry deleting the sketch once it is terminated.", data: { outcomes } });
-        if (outcome.status === "failed") return res.status(502).json({ success: false, message: "Sketch deletion stopped because an AWS resource could not be deleted.", error: outcome.error, data: { outcomes } });
-    }
+    const { outcomes, stopped } = await deleteSketchResourceRecords(sketch, userId);
+    if (stopped?.status === "pending") return res.status(409).json({ success: false, message: "CloudFront is being disabled before deletion. Resource polling will finish deletion; retry deleting the sketch once it is terminated.", data: { outcomes } });
+    if (stopped?.status === "failed") return res.status(502).json({ success: false, message: "Sketch deletion stopped because an AWS resource could not be deleted.", error: stopped.error, data: { outcomes } });
     await prisma.sketch.delete({ where: { id: sketch.id } });
     return res.json({ success: true, message: "Sketch and its deployed AWS resources were deleted successfully.", data: { outcomes } });
 }
@@ -1059,6 +1072,21 @@ export async function deleteAwsResource(req: Request, res: Response<ApiResponse>
     if (outcome.status === "failed") return res.status(502).json({ success: false, message: `${resource.service} resource deletion failed.`, error: outcome.error });
     if (outcome.status === "pending") return res.status(202).json({ success: true, message: "CloudFront deletion started. Waiting for the disabled distribution to propagate.", data: outcome });
     return res.json({ success: true, message: outcome.status === "already_deleted" ? "AWS resource was already deleted." : `${resource.service} resource deleted successfully.`, data: outcome });
+}
+
+export async function deleteAllSketchResources(req: Request, res: Response<ApiResponse>) {
+    const userId = ownedUser(req, res);
+    if (!userId) return;
+    const sketch = await prisma.sketch.findFirst({
+        where: { id: param(req, "sketchId"), userId },
+        include: { nodes: true, edges: true, resources: { include: { connection: true } } },
+    });
+    if (!sketch) return res.status(404).json({ success: false, message: "Sketch not found." });
+    const { outcomes, stopped } = await deleteSketchResourceRecords(sketch, userId);
+    if (stopped?.status === "pending") return res.status(202).json({ success: true, message: "Resource deletion started and will finish during status polling.", data: { outcomes } });
+    if (stopped?.status === "failed") return res.status(502).json({ success: false, message: "Resource deletion stopped after an AWS failure.", error: stopped.error, data: { outcomes } });
+    await prisma.sketch.update({ where: { id: sketch.id }, data: { status: SketchStatus.DRAFT } });
+    return res.json({ success: true, message: "All deployed resources were deleted or detached successfully.", data: { outcomes } });
 }
 
 export async function refreshSketchResources(req: Request, res: Response<ApiResponse>) {

@@ -9,6 +9,7 @@ import {
     deleteSketch,
     deleteSketchEdge,
     deleteSketchNode,
+    deleteAllSketchResources,
     deleteAwsResource,
     deploySketch,
     refreshSketchResources,
@@ -41,6 +42,7 @@ sketchRouter.post("/:sketchId/edges", createSketchEdge);
 sketchRouter.delete("/:sketchId/edges/:edgeId", deleteSketchEdge);
 sketchRouter.post("/:sketchId/deploy", deploySketch);
 sketchRouter.post("/:sketchId/resources/refresh", refreshSketchResources);
+sketchRouter.delete("/:sketchId/resources", deleteAllSketchResources);
 sketchRouter.get("/:sketchId/resources/:resourceId/objects", listBucketObjects);
 sketchRouter.post("/:sketchId/resources/:resourceId/folders", createBucketFolder);
 sketchRouter.post("/:sketchId/resources/:resourceId/uploads", signBucketUpload);

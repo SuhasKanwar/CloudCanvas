@@ -46,6 +46,7 @@ export type AwsResourceSnapshot = {
     service: AwsService;
     externalId: string | null;
     status: string;
+    managed: boolean;
     desiredConfig: Record<string, unknown>;
     actualState: Record<string, unknown> | null;
     lastError: string | null;
@@ -214,6 +215,14 @@ export async function refreshSketchResources(accessToken: string, sketchId: stri
         authenticatedRequest(accessToken, { silentToast: true }),
     );
     return response.data.data.outcomes;
+}
+
+export async function deleteSketchResource(accessToken: string, sketchId: string, resourceId: string): Promise<void> {
+    await api.delete(`/api/sketches/${sketchId}/resources/${resourceId}`, authenticatedRequest(accessToken));
+}
+
+export async function deleteAllSketchResources(accessToken: string, sketchId: string): Promise<void> {
+    await api.delete(`/api/sketches/${sketchId}/resources`, authenticatedRequest(accessToken));
 }
 
 export async function deleteSketch(accessToken: string, sketchId: string): Promise<void> {

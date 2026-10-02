@@ -6,13 +6,13 @@ import { useSession } from "next-auth/react";
 import { isAxiosError } from "axios";
 import { addEdge, applyEdgeChanges, Background, Controls, ReactFlow, useEdgesState, useNodesState, type Connection, type Edge, type EdgeChange, type Node, type NodeChange } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { ArrowLeft, Check, FolderOpen, Loader2, Pencil, Redo2, Save, Undo2 } from "lucide-react";
+import { ArrowLeft, Check, FolderOpen, Loader2, Pencil, Redo2, Save, Trash2, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { stringify } from "yaml";
 import { canConnectResources, layoutOverlappingGraphNodes, type AwsService, type GraphDefinition } from "@cloudcanvas/graph-contract";
 import { importGraph, validateGraphYaml } from "@/lib/graph";
 import { RESOURCE_STATUS_POLL_INTERVAL_MS } from "@/lib/config";
-import { createSketchEdge, createSketchNode, deleteSketchEdge, deleteSketchNode, getSketch, refreshSketchResources, renameSketch, updateSketchNode, updateSketchNodePosition, type AwsResourceSnapshot, type Sketch, type SketchEdge, type SketchNode } from "@/lib/sketches";
+import { createSketchEdge, createSketchNode, deleteAllSketchResources, deleteSketchEdge, deleteSketchNode, deleteSketchResource, getSketch, refreshSketchResources, renameSketch, updateSketchNode, updateSketchNodePosition, type AwsResourceSnapshot, type Sketch, type SketchEdge, type SketchNode } from "@/lib/sketches";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useCanvasHistory } from "@/hooks/useCanvasHistory";
 import { diffCanvas } from "@/lib/canvasState";
@@ -95,12 +95,16 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
     const [nameToConfirm, setNameToConfirm] = useState<string | null>(null);
     const [renaming, setRenaming] = useState(false);
     const [nodeToDelete, setNodeToDelete] = useState<ResourceFlowNode | null>(null);
+    const [resourceToDelete, setResourceToDelete] = useState<AwsResourceSnapshot | null>(null);
+    const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+    const [deletingResources, setDeletingResources] = useState(false);
     const persistedCanvas = useRef<CanvasSnapshot>({ nodes: [], edges: [] });
     const currentCanvas = useRef<CanvasSnapshot>({ nodes: [], edges: [] });
     const autoSaveQueue = useRef<Promise<boolean>>(Promise.resolve(true));
     const { canRedo, canUndo, record: recordHistory, redo: redoHistory, reset: resetHistory, undo: undoHistory } = useCanvasHistory<CanvasSnapshot>();
 
     const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
+    const hasActiveResources = Object.values(resourcesByNodeId).some((resource) => resource.status !== "TERMINATED");
     const selectedBindings = selectedNode?.data.service === "EC2_INSTANCE" ? {
         keyPair: edges.map((edge) => edge.target === selectedNode.id ? nodes.find((node) => node.id === edge.source) : undefined).find((node) => node?.data.service === "KEY_PAIR"),
         securityGroups: edges.map((edge) => edge.target === selectedNode.id ? nodes.find((node) => node.id === edge.source) : undefined).filter((node): node is ResourceFlowNode => node?.data.service === "SECURITY_GROUP"),
@@ -368,6 +372,39 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
         setNodeToDelete(null);
     };
 
+    const requestResourceDeletion = (resource: AwsResourceSnapshot) => {
+        setSelectedNodeId(null);
+        setResourceToDelete(resource);
+    };
+
+    const deleteResource = async () => {
+        if (!accessToken || !resourceToDelete) return;
+        setDeletingResources(true);
+        try {
+            await deleteSketchResource(accessToken, sketchId, resourceToDelete.id);
+            setResourceToDelete(null);
+            await reloadSketch();
+        } catch {
+            // The shared API interceptor displays the AWS deletion error.
+        } finally {
+            setDeletingResources(false);
+        }
+    };
+
+    const deleteAllResources = async () => {
+        if (!accessToken) return;
+        setDeletingResources(true);
+        try {
+            await deleteAllSketchResources(accessToken, sketchId);
+            setDeleteAllOpen(false);
+            await reloadSketch();
+        } catch {
+            // The shared API interceptor displays the AWS deletion error.
+        } finally {
+            setDeletingResources(false);
+        }
+    };
+
     const canvasReady = !loading && !loadError;
 
     return <><div className="grid h-full min-h-0 flex-1 grid-cols-[13rem_minmax(0,1fr)] bg-[var(--primary-bg-color)] text-(--primary-text-color) xl:grid-cols-[15rem_minmax(0,1fr)]">
@@ -380,6 +417,7 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
                 <div className="flex items-center border border-white/10 bg-black/10"><button aria-label="Undo" className="grid h-9 w-9 place-items-center text-(--secondary-text-color) transition hover:bg-white/7 hover:text-(--primary-text-color) disabled:opacity-30" disabled={!canUndo} onClick={undo} title="Undo (Ctrl+Z)" type="button"><Undo2 className="h-4 w-4" /></button><button aria-label="Redo" className="grid h-9 w-9 place-items-center border-l border-white/10 text-(--secondary-text-color) transition hover:bg-white/7 hover:text-(--primary-text-color) disabled:opacity-30" disabled={!canRedo} onClick={redo} title="Redo (Ctrl+Y)" type="button"><Redo2 className="h-4 w-4" /></button></div>
                 {autoSaving ? <span className="hidden items-center gap-1.5 text-[11px] text-(--secondary-text-color) xl:inline-flex"><Loader2 className="h-3 w-3 animate-spin" />Autosaving</span> : null}
                 <Link className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/10 px-3 py-2 text-sm text-(--secondary-text-color) transition hover:border-white/20 hover:bg-white/6 hover:text-(--primary-text-color)" href="/dashboard"><FolderOpen className="h-4 w-4" />Sketches</Link>
+                {hasActiveResources ? <button aria-label="Delete all deployed resources" className="inline-flex items-center gap-2 border border-(--danger-color)/35 px-3 py-2 text-sm text-(--danger-color) transition hover:bg-(--danger-color)/10" onClick={() => setDeleteAllOpen(true)} title="Delete all deployed resources" type="button"><Trash2 className="h-4 w-4" /><span className="hidden xl:inline">Delete resources</span></button> : null}
                 {canvasReady ? <PublishSketchButton connectionId={sketchConnectionId} onBeforePublish={flushCanvasPersistence} onPublished={async (connectionId) => { setSketchConnectionId(connectionId); await reloadSketch(); }} sketchId={sketchId} /> : null}
                 <button className="inline-flex items-center gap-2 rounded-md bg-(--primary-color) px-3 py-2 text-sm font-medium text-(--primary-bg-color) shadow-lg shadow-(--primary-color)/15 transition hover:brightness-110 disabled:opacity-60" disabled={!canvasReady || saving || nodes.length === 0} onClick={() => void saveGraph()} type="button">{saving ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}Save</button>
             </div>
@@ -387,5 +425,5 @@ export default function GraphEditor({ sketchId, onOpenAwsSettings }: { sketchId:
             {loadError ? <div className="grid h-full place-items-center px-4 pt-16 text-sm text-(--secondary-text-color)"><div className="rounded-md border border-white/10 bg-[var(--surface-color)] px-5 py-4 text-center shadow-xl"><p>{loadError}</p><Link className="mt-3 inline-flex items-center gap-2 text-(--secondary-color) hover:text-(--primary-text-color)" href="/dashboard"><ArrowLeft className="h-4 w-4" />Back to sketches</Link></div></div> : null}
             {canvasReady ? <><ReactFlow className="dashboard-enter" edges={edges} fitView nodes={nodes} nodeTypes={nodeTypeMap} isValidConnection={isValidConnection} onConnect={onConnect} onEdgesChange={handleEdgesChange} onNodeClick={(_, node) => setSelectedNodeId(node.id)} onNodesChange={handleNodesChange} proOptions={{ hideAttribution: true }}><Background color="#343946" gap={18} size={1} /><Controls showInteractive={false} /></ReactFlow><AiComposer onApplyBlueprint={applyBlueprint} sketchId={sketchId} /></> : null}
         </div>
-    </div>{canvasReady && selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={requestNodeDeletion} onOpenAwsSettings={onOpenAwsSettings} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}<ConfirmModal confirmLabel="Rename sketch" confirming={renaming} description={`Rename this sketch to ${nameToConfirm ?? "the new name"}.`} onClose={() => { setNameToConfirm(null); setName(persistedName); }} onConfirm={() => void rename()} open={Boolean(nameToConfirm)} title="Rename sketch?" /><ConfirmModal confirmLabel="Delete node" description={`Delete ${nodeToDelete?.data.label ?? "this node"} from the sketch. This change is saved automatically.`} onClose={() => setNodeToDelete(null)} onConfirm={deleteNode} open={Boolean(nodeToDelete)} title="Delete node?" variant="danger" /></>;
+    </div>{canvasReady && selectedNode ? <Modal onClose={() => setSelectedNodeId(null)} open title={`Configure ${selectedNode.data.label}`}><ResourceInspector bindings={selectedBindings ? { keyPair: selectedBindings.keyPair ? `${selectedBindings.keyPair.data.label} (${String(selectedBindings.keyPair.data.config.keyName ?? "Configure key pair")})` : undefined, securityGroups: selectedBindings.securityGroups.map((node) => `${node.data.label} (${String(node.data.config.groupName ?? node.data.config.groupId ?? "Configure security group")})`) } : undefined} connectionId={sketchConnectionId} key={`${selectedNode.id}-${sketchConnectionId ?? "default"}`} node={selectedNode} onChange={updateSelectedResource} onDelete={requestNodeDeletion} onDeleteResource={() => { const resource = resourcesByNodeId[selectedNode.id]; if (resource) requestResourceDeletion(resource); }} onOpenAwsSettings={onOpenAwsSettings} resource={resourcesByNodeId[selectedNode.id]} /></Modal> : null}<ConfirmModal confirmLabel="Rename sketch" confirming={renaming} description={`Rename this sketch to ${nameToConfirm ?? "the new name"}.`} onClose={() => { setNameToConfirm(null); setName(persistedName); }} onConfirm={() => void rename()} open={Boolean(nameToConfirm)} title="Rename sketch?" /><ConfirmModal confirmLabel="Delete node" description={`Delete ${nodeToDelete?.data.label ?? "this node"} from the sketch. This change is saved automatically.`} onClose={() => setNodeToDelete(null)} onConfirm={deleteNode} open={Boolean(nodeToDelete)} title="Delete node?" variant="danger" /><ConfirmModal confirmLabel={resourceToDelete?.managed ? "Delete resource" : "Detach resource"} confirming={deletingResources} description={resourceToDelete?.managed ? `Delete ${resourceToDelete.service} ${resourceToDelete.externalId ?? "resource"} from AWS? The canvas node will remain.` : `Detach ${resourceToDelete?.service ?? "this resource"} from the sketch? The existing AWS resource will not be deleted.`} onClose={() => setResourceToDelete(null)} onConfirm={() => void deleteResource()} open={Boolean(resourceToDelete)} title={resourceToDelete?.managed ? "Delete AWS resource?" : "Detach existing resource?"} variant="danger" /><ConfirmModal confirmLabel="Delete all resources" confirming={deletingResources} description="Delete every CloudCanvas-managed AWS resource in this sketch. Adopted resources such as existing key pairs and security groups will only be detached. Canvas nodes will remain." onClose={() => setDeleteAllOpen(false)} onConfirm={() => void deleteAllResources()} open={deleteAllOpen} title="Delete all deployed resources?" variant="danger" /></>;
 }
