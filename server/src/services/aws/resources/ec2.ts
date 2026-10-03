@@ -51,7 +51,7 @@ export function ec2InstanceDetails(instance: Instance, region: string, externalI
 export class Ec2Service {
     constructor(private readonly send: Ec2CommandSender, private readonly region: string) {}
 
-    async createInstance(request: Ec2InstanceRequest): Promise<Ec2InstanceResult> {
+    async createInstance(request: Ec2InstanceRequest, clientToken?: string): Promise<Ec2InstanceResult> {
         if (!request.imageId && !request.launchTemplateId) throw new Error("Choose an AMI or launch template to create an EC2 instance.");
         if (request.imageId === "ami-0123456789abcdef0") throw new Error("Choose a real AMI ID available in the selected AWS region.");
         if (request.instanceCount !== undefined && (!Number.isInteger(request.instanceCount) || request.instanceCount < 1)) {
@@ -62,6 +62,7 @@ export class Ec2Service {
         }
 
         const input: RunInstancesCommandInput = {
+            ...(clientToken && { ClientToken: clientToken }),
             ...(request.imageId && { ImageId: request.imageId }),
             ...(request.launchTemplateId && { LaunchTemplate: { LaunchTemplateId: request.launchTemplateId } }),
             InstanceType: (request.instanceType || "t3.micro") as _InstanceType,

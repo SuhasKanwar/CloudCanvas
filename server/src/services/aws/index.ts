@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { DescribeInstancesCommand, DescribeKeyPairsCommand, DescribeSecurityGroupsCommand, EC2Client } from "@aws-sdk/client-ec2";
 import { DescribeRepositoriesCommand, ECRClient, PutImageScanningConfigurationCommand, PutImageTagMutabilityCommand } from "@aws-sdk/client-ecr";
 import { GetRoleCommand, IAMClient } from "@aws-sdk/client-iam";
@@ -40,7 +41,7 @@ export class AWSResourceManager {
         return `aws-catalog:${connectionId}:${region}`;
     }
 
-    createEc2Instance(request: Ec2InstanceRequest, credentials: AwsCredentials, region = this.defaultRegion): Promise<Ec2InstanceResult> {
+    createEc2Instance(request: Ec2InstanceRequest, credentials: AwsCredentials, region = this.defaultRegion, clientToken?: string): Promise<Ec2InstanceResult> {
         const client = new EC2Client({ region, credentials });
         return new Ec2Service({
             run: (command) => client.send(command),
@@ -48,7 +49,7 @@ export class AWSResourceManager {
             modify: (command) => client.send(command),
             monitor: (command) => client.send(command),
             unmonitor: (command) => client.send(command),
-        }, region).createInstance(request);
+        }, region).createInstance(request, clientToken);
     }
 
     terminateEc2Instances(instanceIds: string[], credentials: AwsCredentials, region = this.defaultRegion): Promise<Ec2TerminationResult> {
@@ -159,7 +160,10 @@ export class AWSResourceManager {
                 if (!request.config.instanceId) throw new Error("Choose an existing EC2 instance.");
                 return { service: request.service, region, name: request.config.name ?? request.config.instanceId, externalId: request.config.instanceId, data: { instanceId: request.config.instanceId, instances: [{ instanceId: request.config.instanceId }] } };
             }
-            const data = await this.createEc2Instance(request.config, credentials, region);
+            const clientToken = callerReference
+                ? createHash("sha256").update(`${callerReference}:${JSON.stringify(request.config)}`).digest("hex")
+                : undefined;
+            const data = await this.createEc2Instance(request.config, credentials, region, clientToken);
             const externalId = data.instances[0]?.instanceId;
             if (!externalId) throw new Error("AWS did not return an EC2 instance ID.");
             return { service: request.service, region, name: request.config.name ?? externalId, externalId, data };

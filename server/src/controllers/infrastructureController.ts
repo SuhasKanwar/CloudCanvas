@@ -5,7 +5,7 @@ import type { Runtime } from "@aws-sdk/client-lambda";
 import { Prisma } from "../generated/prisma/client.js";
 import { AwsResourceStatus, DeploymentStatus, SketchStatus } from "../generated/prisma/enums.js";
 import prisma from "../lib/prisma.js";
-import { AWS_ENCRYPTION_KEY, AWS_REGION, AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY, AWS_DEPENDENCY_READY_TIMEOUT_MS, AWS_DEPENDENCY_READY_INTERVAL_MS } from "../lib/config.js";
+import { AWS_ENCRYPTION_KEY, AWS_REGION, AWS_RESOURCE_STATUS_REFRESH_CONCURRENCY, AWS_DEPENDENCY_READY_TIMEOUT_MS, AWS_DEPENDENCY_READY_INTERVAL_MS, AWS_DEPLOYMENT_STALE_AFTER_MS } from "../lib/config.js";
 import {
     awsResourceManager,
     decryptAwsSecret,
@@ -55,6 +55,35 @@ function isMissingAwsResource(error: unknown) {
 function isS3BucketNameConflict(error: unknown) {
     const message = errorMessage(error).toLowerCase();
     return message.includes("bucketalreadyexists") || message.includes("bucket name is not available") || message.includes("bucket namespace is shared");
+}
+
+async function beginDeployment(userId: string, sketchId: string, connectionId: string, request: Prisma.InputJsonValue) {
+    return prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${sketchId}))`;
+        await tx.deployment.updateMany({
+            where: {
+                sketchId,
+                status: DeploymentStatus.PENDING,
+                startedAt: { lt: new Date(Date.now() - AWS_DEPLOYMENT_STALE_AFTER_MS) },
+            },
+            data: { status: DeploymentStatus.FAILED, errorMessage: "Deployment lease expired before completion.", finishedAt: new Date() },
+        });
+        const active = await tx.deployment.findFirst({
+            where: { sketchId, status: DeploymentStatus.PENDING },
+            select: { id: true },
+        });
+        if (active) return null;
+        return tx.deployment.create({
+            data: { userId, sketchId, connectionId, request },
+        });
+    });
+}
+
+async function failDeployment(deploymentId: string, message: string) {
+    await prisma.deployment.update({
+        where: { id: deploymentId },
+        data: { status: DeploymentStatus.FAILED, errorMessage: message, finishedAt: new Date() },
+    });
 }
 
 type AwsResourceForDeletion = {
@@ -924,19 +953,29 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
         }
     }
 
-    await prisma.sketch.update({ where: { id: sketch.id }, data: { connectionId } });
-
-    const deployment = await prisma.deployment.create({
-        data: {
+    let deployment;
+    try {
+        deployment = await beginDeployment(
             userId,
             sketchId,
             connectionId,
-            request: jsonValue({ connectionId, nodeIds: graph.order, requests: graph.order.map((nodeId) => ({ nodeId, request: requests.get(nodeId) })) }),
-        },
-    });
+            jsonValue({ connectionId, nodeIds: graph.order, requests: graph.order.map((nodeId) => ({ nodeId, request: requests.get(nodeId) })) }),
+        );
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Could not reserve this sketch for deployment.", error: errorMessage(error) });
+    }
+    if (!deployment) return res.status(409).json({ success: false, message: "A deployment is already in progress for this sketch." });
+
+    try {
+        await prisma.sketch.update({ where: { id: sketch.id }, data: { connectionId } });
+    } catch (error) {
+        await failDeployment(deployment.id, errorMessage(error));
+        return res.status(500).json({ success: false, message: "Could not associate this AWS connection with the sketch." });
+    }
 
     const outcomes: Array<Record<string, unknown>> = [];
     const readyResources = new Map([...resourcesByNodeId].flatMap(([id, resource]) => resource.status === AwsResourceStatus.RUNNING && resource.externalId ? [[id, { service: resource.service, externalId: resource.externalId }] as const] : []));
+    try {
     for (const nodeId of graph.order) {
         try {
             for (const sourceId of graph.sourcesByTarget.get(nodeId) ?? []) {
@@ -965,7 +1004,11 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                 outcomes.push({ nodeId, status: "skipped", resourceId: existingResource.id, externalId: existingResource.externalId });
                 continue;
             }
-            if (!existingResource.managed) return res.status(409).json({ success: false, message: `Node ${nodeId} adopts an external resource and cannot update it.` });
+            if (!existingResource.managed) {
+                const message = `Node ${nodeId} adopts an external resource and cannot update it.`;
+                await failDeployment(deployment.id, message);
+                return res.status(409).json({ success: false, message });
+            }
             try {
                 assertDeployedResourceUpdate(existingResource.desiredConfig, resourceRequest);
                 const result = await awsResourceManager.updateResource(resourceRequest, existingResource.externalId, credentials, connection.region);
@@ -974,7 +1017,9 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
                 if (isRecord(result.data)) outputsByNode.set(nodeId, result.data);
                 outcomes.push({ nodeId, status: "updated", resourceId: updated.id, result });
             } catch (error) {
-                return res.status(409).json({ success: false, message: errorMessage(error) });
+                const message = errorMessage(error);
+                await failDeployment(deployment.id, message);
+                return res.status(409).json({ success: false, message });
             }
             continue;
         }
@@ -1058,6 +1103,11 @@ export async function deploySketch(req: Request, res: Response<ApiResponse>) {
     });
     await prisma.sketch.update({ where: { id: sketch.id }, data: { status: SketchStatus.ACTIVE } });
     return res.status(201).json({ success: true, message: "AWS resources published successfully.", data: { deploymentId: deployment.id, outcomes } });
+    } catch (error) {
+        const message = errorMessage(error);
+        await failDeployment(deployment.id, message);
+        return res.status(502).json({ success: false, message: "AWS deployment did not complete.", error: message, data: { deploymentId: deployment.id, outcomes } });
+    }
 }
 
 export async function deleteAwsResource(req: Request, res: Response<ApiResponse>) {
