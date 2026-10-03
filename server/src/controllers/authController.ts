@@ -44,7 +44,7 @@ export async function signUpHandler(req: Request, res: Response<ApiResponse>) {
         res.cookie("Authorization", authResponseData.token, {
             secure: NODE_ENV === "production",
             sameSite: "lax",
-            httpOnly: NODE_ENV === "production",
+            httpOnly: true,
         });
         return res.status(201).json({
             success: true,
@@ -52,11 +52,10 @@ export async function signUpHandler(req: Request, res: Response<ApiResponse>) {
             data: authResponseData,
         });
     } catch (error) {
-        console.error("Error during sign-up:", error);
+        console.error("Sign-up request failed:", error);
         return res.status(500).json({
             success: false,
             message: "An error occurred during sign-up.",
-            error: error instanceof Error ? error.message : String(error),
         });
     }
 }
@@ -79,7 +78,7 @@ export async function signInHandler(req: Request, res: Response<ApiResponse>) {
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid email.",
+                message: "Invalid email or password.",
             });
         }
 
@@ -108,7 +107,7 @@ export async function signInHandler(req: Request, res: Response<ApiResponse>) {
         if (!isPasswordValid) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid password.",
+                message: "Invalid email or password.",
             });
         }
         return res.status(200).json({
@@ -120,7 +119,6 @@ export async function signInHandler(req: Request, res: Response<ApiResponse>) {
         return res.status(500).json({
             success: false,
             message: "An error occurred during sign-in.",
-            error: error instanceof Error ? error.message : String(error),
         });
     }
 }
@@ -139,7 +137,6 @@ export async function signOutHandler(req: Request, res: Response<ApiResponse>) {
         return res.status(500).json({
             success: false,
             message: "An error occurred during sign-out.",
-            error: error instanceof Error ? error.message : String(error),
         });
     }
 }
@@ -198,7 +195,6 @@ export async function googleAuthHandler(req: Request, res: Response<ApiResponse>
         return res.status(500).json({
             success: false,
             message: "An error occurred while confirming Google sign-in.",
-            error: error instanceof Error ? error.message : String(error),
         });
     }
 }

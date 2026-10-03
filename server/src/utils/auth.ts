@@ -11,7 +11,7 @@ export function buildAuthResponse(user: {
     createdAt: Date;
     updatedAt: Date;
 }) {
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { algorithm: "HS256", expiresIn: "12h" });
 
     return {
         user: {

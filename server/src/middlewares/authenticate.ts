@@ -16,14 +16,16 @@ export default function authenticate(req: Request, res: Response<ApiResponse>, n
             });
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+        const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] }) as { userId?: unknown };
+        if (typeof decoded.userId !== "string" || !decoded.userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized access." });
+        }
         req.userId = decoded.userId;
         next();
     } catch (error) {
         return res.status(401).json({
             success: false,
             message: "Unauthorized access.",
-            error: error instanceof Error ? error.message : String(error),
         });
     }
 }
