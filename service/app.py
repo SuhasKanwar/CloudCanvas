@@ -1,19 +1,9 @@
 from fastapi import FastAPI
 import uvicorn
-from fastapi.middleware.cors import CORSMiddleware
-
-from config import ALLOWED_ORIGINS, HOST, PORT
+from config import HOST, PORT
 from routers import agent
 
 app = FastAPI(title="CloudCanvas AI Service")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 app.include_router(agent.router)
 
 @app.get("/", tags=["Root"])

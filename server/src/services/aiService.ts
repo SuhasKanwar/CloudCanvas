@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance } from "axios";
 
 import { microserviceApi } from "../lib/api.js";
-import { AI_SERVICE_TIMEOUT_MS } from "../lib/config.js";
+import { AI_SERVICE_API_KEY, AI_SERVICE_TIMEOUT_MS } from "../lib/config.js";
 import { isAwsService } from "../utils/aws.js";
 import { isFiniteNumber, isNullableStringField, isRecord, isString } from "../utils/validation.js";
 import { validateGraphObject } from "@cloudcanvas/graph-contract";
@@ -204,6 +204,9 @@ export class AIService {
     ) {}
 
     async query(request: AiQueryRequest): Promise<AiQuerySuccess> {
+        if (this.client === microserviceApi && !AI_SERVICE_API_KEY) {
+            throw new AIServiceError("AI service authentication is not configured.", "unavailable", 503);
+        }
         if (!isString(request.query) || !request.query.trim()) {
             throw new AIServiceError("AI query must not be empty.", "invalid_request");
         }
@@ -226,7 +229,10 @@ export class AIService {
                 session_history: request.session_history ?? [],
                 context: request.context ?? "",
                 ...(request.connection_id && request.tool_token && { connection_id: request.connection_id, tool_token: request.tool_token }),
-            }, { timeout: this.timeoutMs });
+            }, {
+                timeout: this.timeoutMs,
+                headers: AI_SERVICE_API_KEY ? { "X-CloudCanvas-Service-Key": AI_SERVICE_API_KEY } : {},
+            });
             return parseSuccessResponse(response.data);
         } catch (error) {
             if (error instanceof AIServiceError) throw error;

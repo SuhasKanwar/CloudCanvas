@@ -7,6 +7,7 @@ export const NODE_ENV: string = process.env.NODE_ENV || "development";
 export const TRUST_PROXY_HOPS: number = Math.max(0, Math.floor(Number(process.env.TRUST_PROXY_HOPS) || 0));
 export const DATABASE_URL: string = process.env.DATABASE_URL || "postgresql://postgres:dev@localhost:5432/cloudcanvas";
 export const MICROSERVICE_BASE_URL: string = process.env.MICROSERVICE_BASE_URL || "http://localhost:8000";
+export const AI_SERVICE_API_KEY: string = process.env.AI_SERVICE_API_KEY || "";
 export const AI_SERVICE_TIMEOUT_MS: number = 120000;
 export const JWT_SECRET: string = process.env.JWT_SECRET || "";
 export const AWS_REGION: string = process.env.AWS_REGION || "ap-south-1";
@@ -25,6 +26,9 @@ export function validateRuntimeConfig() {
     }
     if (NODE_ENV === "production" && JWT_SECRET.length < 32) {
         throw new Error("Production JWT_SECRET must be a random value with at least 32 characters.");
+    }
+    if (NODE_ENV === "production" && AI_SERVICE_API_KEY.length < 32) {
+        throw new Error("Production AI_SERVICE_API_KEY must be a random value with at least 32 characters.");
     }
     if (NODE_ENV === "production" && AWS_ENCRYPTION_KEY.length < 32) {
         throw new Error("Production AWS_ENCRYPTION_KEY must be a random value with at least 32 characters.");
