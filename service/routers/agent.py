@@ -1,6 +1,7 @@
 import hmac
 
 from fastapi import APIRouter, Depends, Header, HTTPException
+from starlette.concurrency import run_in_threadpool
 
 from agents.graph import agent_app
 from config.agent import AGENT_CONFIG
@@ -25,7 +26,8 @@ def require_internal_service_key(service_key: str | None = Header(default=None, 
 async def execute_query(request: QueryRequest, _: None = Depends(require_internal_service_key)) -> QueryResponse:
     try:
         with aws_tool_context(request.connection_id, request.tool_token):
-            result = agent_app.invoke(
+            result = await run_in_threadpool(
+                agent_app.invoke,
                 {
                     "query": request.query,
                     "session_history": [

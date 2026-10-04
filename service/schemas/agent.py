@@ -316,15 +316,15 @@ AgentResponse: TypeAlias = Annotated[TextResponse | BuildResponse, Field(discrim
 
 class ChatMessage(CloudCanvasModel):
     role: Literal["system", "user", "assistant", "tool"]
-    content: str
+    content: str = Field(max_length=8_000)
 
 
 class QueryRequest(CloudCanvasModel):
-    query: str = Field(min_length=1)
-    session_history: list[ChatMessage] = Field(default_factory=list)
-    context: str = ""
-    connection_id: str | None = None
-    tool_token: str | None = None
+    query: str = Field(min_length=1, max_length=8_000)
+    session_history: list[ChatMessage] = Field(default_factory=list, max_length=40)
+    context: str = Field(default="", max_length=12_000)
+    connection_id: str | None = Field(default=None, max_length=128)
+    tool_token: str | None = Field(default=None, max_length=4_096)
 
 
 class QueryResponse(CloudCanvasModel):

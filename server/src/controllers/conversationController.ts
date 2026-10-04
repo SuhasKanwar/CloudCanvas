@@ -9,6 +9,7 @@ import { awsResourceManager, decryptAwsSecret } from "../services/aws/index.js";
 import type { ApiResponse } from "../types/response.js";
 
 const MAX_MESSAGE_LENGTH = 8_000;
+const MAX_AI_HISTORY_MESSAGES = 40;
 
 function errorMessage(error: unknown) {
     return error instanceof Error ? error.message : String(error);
@@ -125,10 +126,11 @@ export async function sendSketchConversationMessage(req: Request, res: Response<
         });
         const messages = await tx.chatMessage.findMany({
             where: { conversationId: conversation.id, id: { not: userMessage.id } },
-            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            take: MAX_AI_HISTORY_MESSAGES,
             select: { role: true, content: true },
         });
-        return { conversation, history: toAiHistory(messages), userMessage };
+        return { conversation, history: toAiHistory(messages.reverse()), userMessage };
     });
 
     try {
