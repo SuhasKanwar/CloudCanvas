@@ -47,8 +47,8 @@ function AmiField({ category: initialCategory, images, value, onCategoryChange, 
     </div>;
 }
 
-function Select({ label, onChange, options, value }: { label: string; onChange: (value: string) => void; options: ReadonlyArray<ReadonlyArray<string>>; value: string }) {
-    return <label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">{label}</span><select className={inputClass} onChange={(event) => onChange(event.target.value)} value={value}>{options.map(([option = "", title = ""]) => <option className="bg-[#151821]" key={option} value={option}>{title}</option>)}</select></label>;
+function Select({ disabled, label, onChange, options, value }: { disabled?: boolean; label: string; onChange: (value: string) => void; options: ReadonlyArray<ReadonlyArray<string>>; value: string }) {
+    return <label className="block"><span className="text-xs font-medium text-(--secondary-text-color)">{label}</span><select className={inputClass} disabled={disabled} onChange={(event) => onChange(event.target.value)} value={value}>{options.map(([option = "", title = ""]) => <option className="bg-[#151821]" key={option} value={option}>{title}</option>)}</select></label>;
 }
 
 function Toggle({ checked, label, onChange }: { checked: boolean; label: string; onChange: (value: boolean) => void }) {
@@ -97,15 +97,15 @@ function Ec2Form({ bindings, catalog, config, deployed, update }: { bindings?: E
     </>;
 }
 
-function SecurityGroupForm({ catalog, config, update }: { catalog: AwsResourceCatalog | null; config: Record<string, unknown>; update: (key: string, value: unknown) => void }) {
+function SecurityGroupForm({ catalog, config, deployed, update }: { catalog: AwsResourceCatalog | null; config: Record<string, unknown>; deployed: boolean; update: (key: string, value: unknown) => void }) {
     const mode = String(config.mode ?? "create");
     if (mode === "existing") return <><Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} /><Select label="Existing security group" onChange={(value) => { const group = catalog?.securityGroups.find((entry) => entry.id === value); update("__all__", { mode: "existing", groupId: value, groupName: group?.name ?? "" }); }} options={[["", "Select security group"], ...(catalog?.securityGroups ?? []).map((group) => [group.id, `${group.name} (${group.id})`])]} value={String(config.groupId ?? "")} /></>;
     const rules = Array.isArray(config.ingressRules) ? config.ingressRules as Array<Record<string, unknown>> : [];
     const updateRule = (index: number, key: string, value: unknown) => update("ingressRules", rules.map((rule, ruleIndex) => ruleIndex === index ? { ...rule, [key]: value } : rule));
     return <>
-        <Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} />
-        <Field label="Security group name" onChange={(value) => update("groupName", value)} value={String(config.groupName ?? "")} />
-        <Field label="Description" onChange={(value) => update("description", value)} value={String(config.description ?? "")} />
+        <Select disabled={deployed} label="Resource mode" onChange={(value) => update("mode", value)} options={[["create", "Create new"], ["existing", "Use existing"]]} value={mode} />
+        <Field disabled={deployed} label="Security group name" onChange={(value) => update("groupName", value)} value={String(config.groupName ?? "")} />
+        <Field disabled={deployed} label="Description" onChange={(value) => update("description", value)} value={String(config.description ?? "")} />
         <Select label="VPC" onChange={(value) => update("vpcId", value)} options={[["", "Select VPC"], ...(catalog?.vpcs ?? []).map((vpc) => [vpc.id, `${vpc.name} (${vpc.cidrBlock})`])]} value={String(config.vpcId ?? "")} />
         <div className="border-t border-white/10 pt-4"><div className="flex items-center justify-between"><span className="text-xs text-(--secondary-text-color)">Inbound rules</span><button className="p-1 text-(--secondary-color) hover:bg-white/6" onClick={() => update("ingressRules", [...rules, { protocol: "tcp", fromPort: 443, toPort: 443, cidrIpv4: "0.0.0.0/0" }])} title="Add inbound rule" type="button"><Plus className="h-4 w-4" /></button></div>{rules.map((rule, index) => <div className="mt-3 space-y-2 border border-white/10 p-3" key={index}><Select label="Protocol" onChange={(value) => updateRule(index, "protocol", value)} options={[["tcp", "TCP"], ["udp", "UDP"], ["icmp", "ICMP"], ["-1", "All traffic"]]} value={String(rule.protocol ?? "tcp")} />{rule.protocol !== "-1" ? <div className="grid grid-cols-2 gap-2"><Field label="From" onChange={(value) => updateRule(index, "fromPort", Number(value))} type="number" value={Number(rule.fromPort ?? 0)} /><Field label="To" onChange={(value) => updateRule(index, "toPort", Number(value))} type="number" value={Number(rule.toPort ?? 0)} /></div> : null}<Field label="IPv4 CIDR" onChange={(value) => updateRule(index, "cidrIpv4", value)} value={String(rule.cidrIpv4 ?? "")} /><button className="text-xs text-(--danger-color)" onClick={() => update("ingressRules", rules.filter((_, ruleIndex) => ruleIndex !== index))} type="button">Remove rule</button></div>)}</div>
     </>;
@@ -116,18 +116,18 @@ function KeyPairForm({ catalog, config, update }: { catalog: AwsResourceCatalog 
     return <><Select label="Resource mode" onChange={(value) => update("mode", value)} options={[["existing", "Use existing"], ["import", "Import public key"]]} value={mode} />{mode === "existing" ? <Select label="Existing key pair" onChange={(value) => update("keyName", value)} options={[["", "Select key pair"], ...(catalog?.keyPairs ?? []).map((keyPair) => [keyPair.name, keyPair.name])]} value={String(config.keyName ?? "")} /> : <><Field label="Key pair name" onChange={(value) => update("keyName", value)} value={String(config.keyName ?? "")} /><label className="block"><span className="text-xs text-(--secondary-text-color)">Public key material</span><textarea className={`${inputClass} min-h-24 resize-y font-mono text-xs`} onChange={(event) => update("publicKeyMaterial", event.target.value)} value={String(config.publicKeyMaterial ?? "")} /></label></>}</>;
 }
 
-function IamForm({ config, update }: { config: Record<string, unknown>; update: (key: string, value: unknown) => void }) {
+function IamForm({ config, deployed, update }: { config: Record<string, unknown>; deployed: boolean; update: (key: string, value: unknown) => void }) {
     const updateTrustedService = (trustedService: string) => {
         const next = { ...config };
         delete next.assumeRolePolicyDocument;
         update("__all__", { ...next, trustedService });
     };
     return <>
-        <Field label="Role name" onChange={(value) => update("roleName", value)} value={String(config.roleName ?? "")} />
+        <Field disabled={deployed} label="Role name" onChange={(value) => update("roleName", value)} value={String(config.roleName ?? "")} />
         <Select label="Trusted service" onChange={updateTrustedService} options={[["ec2.amazonaws.com", "EC2"], ["lambda.amazonaws.com", "Lambda"], ["ecs-tasks.amazonaws.com", "ECS tasks"]]} value={String(config.trustedService ?? "ec2.amazonaws.com")} />
         <LineList label="Managed policy ARNs" onChange={(value) => update("managedPolicyArns", value)} value={config.managedPolicyArns} />
         <Field label="Description" onChange={(value) => update("description", value)} value={String(config.description ?? "")} />
-        <Field label="Path" onChange={(value) => update("path", value)} value={String(config.path ?? "/")} />
+        <Field disabled={deployed} label="Path" onChange={(value) => update("path", value)} value={String(config.path ?? "/")} />
         <Field label="Maximum session duration (seconds)" onChange={(value) => update("maxSessionDuration", Number(value) || 3600)} type="number" value={Number(config.maxSessionDuration ?? 3600)} />
         <Field label="Permissions boundary ARN" onChange={(value) => update("permissionsBoundaryArn", value)} value={String(config.permissionsBoundaryArn ?? "")} />
     </>;
@@ -165,7 +165,7 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
     const update = (key: string, value: unknown) => onChange(node.data.label, key === "__all__" ? value as Record<string, unknown> : { ...config, [key]: value });
     const deployed = resource?.status === "RUNNING";
     const changes = deployed && resource ? getPendingDeploymentChanges(service, config, resource.desiredConfig) : [];
-    const formLocked = deployed && !["EC2_INSTANCE", "S3_BUCKET", "LAMBDA_FUNCTION", "ECR_REPOSITORY", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC", "CLOUDFRONT_DISTRIBUTION"].includes(service);
+    const formLocked = deployed && (!resource?.managed || !["EC2_INSTANCE", "S3_BUCKET", "IAM_ROLE", "SECURITY_GROUP", "LAMBDA_FUNCTION", "ECR_REPOSITORY", "DYNAMODB_TABLE", "SQS_QUEUE", "SNS_TOPIC", "CLOUDFRONT_DISTRIBUTION"].includes(service));
 
     useEffect(() => {
         const accessToken = session?.accessToken;
@@ -188,15 +188,15 @@ export default function ResourceInspector({ bindings, connectionId, node, resour
             {catalogLoading ? <ConfigurationSkeleton /> : <>
             {catalogRequired && catalogError ? <div className="border border-(--warning-color)/35 bg-(--warning-color)/8 p-4"><div className="flex items-start gap-3"><CloudCog className="mt-0.5 h-4 w-4 shrink-0 text-(--warning-color)" /><div><p className="text-sm font-medium text-(--primary-text-color)">AWS catalog unavailable</p><p className="mt-1 text-xs leading-5 text-(--secondary-text-color)">{catalogError}</p><button className="mt-3 border border-(--warning-color)/40 px-3 py-2 text-xs font-medium text-(--warning-color) transition hover:bg-(--warning-color)/10" onClick={onOpenAwsSettings} type="button">Configure AWS connection</button></div></div></div> : null}
             {catalog?.warnings.length ? <p className="rounded-md border border-(--warning-color)/40 bg-(--warning-color)/8 p-3 text-xs leading-5 text-(--warning-color)">{catalog.warnings.join(" ")}</p> : null}
-            {formLocked ? <p className="border border-amber-300/25 bg-amber-300/8 p-3 text-xs leading-5 text-amber-100">This resource type does not support configuration updates yet. Delete and replace it to change its deployment settings.</p> : null}
+            {formLocked ? <p className="border border-amber-300/25 bg-amber-300/8 p-3 text-xs leading-5 text-amber-100">{resource && !resource.managed ? "This resource is adopted from your AWS account. CloudCanvas will not modify it; detach it or create a managed resource instead." : "This resource type does not support configuration updates yet. Delete and replace it to change its deployment settings."}</p> : null}
             {!catalogRequired || catalog ? <fieldset disabled={formLocked} className="space-y-5 disabled:opacity-55">
             {service === "EC2_INSTANCE" ? <Ec2Form bindings={bindings} catalog={catalog} config={config} deployed={deployed} update={update} /> : null}
             {service === "CLOUDFRONT_DISTRIBUTION" ? <CloudFrontForm config={config} deployed={Boolean(resource?.externalId)} update={update} /> : null}
             {service === "KEY_PAIR" ? <KeyPairForm catalog={catalog} config={config} update={update} /> : null}
-            {service === "SECURITY_GROUP" ? <SecurityGroupForm catalog={catalog} config={config} update={update} /> : null}
+            {service === "SECURITY_GROUP" ? <SecurityGroupForm catalog={catalog} config={config} deployed={deployed} update={update} /> : null}
             {service === "ECR_REPOSITORY" ? <><Field disabled={deployed} label="Repository name" onChange={(value) => update("repositoryName", value)} value={String(config.repositoryName ?? "")} /><Select label="Tag mutability" onChange={(value) => update("imageTagMutability", value)} options={[["MUTABLE", "Mutable"], ["IMMUTABLE", "Immutable"]]} value={String(config.imageTagMutability ?? "MUTABLE")} /><Toggle checked={config.scanOnPush === true} label="Scan on push" onChange={(value) => update("scanOnPush", value)} /></> : null}
             {service === "S3_BUCKET" ? <><fieldset disabled={deployed} className="disabled:opacity-55"><Field label="Bucket name" onChange={(value) => update("bucketName", value)} value={String(config.bucketName ?? "")} /><button className="mt-2 text-xs font-medium text-(--secondary-color) transition hover:brightness-125" onClick={() => update("bucketName", defaultS3BucketName())} type="button">Generate globally unique name</button><p className="mt-2 text-xs leading-5 text-(--secondary-text-color)">Custom names may already belong to another AWS account. Use the generator to avoid collisions.</p></fieldset>{deployed ? <p className="text-xs text-(--secondary-text-color)">Bucket names are fixed after creation. The remaining controls are applied on publish.</p> : null}<Select label="Encryption" onChange={(value) => update("encryption", value)} options={[["SSE-S3", "Amazon S3 managed keys"], ["SSE-KMS", "Customer managed KMS key"]]} value={String(config.encryption ?? "SSE-S3")} />{config.encryption === "SSE-KMS" ? <Field label="KMS key ARN" onChange={(value) => update("kmsKeyArn", value)} value={String(config.kmsKeyArn ?? "")} /> : null}<Toggle checked={config.versioning === true} label="Versioning" onChange={(value) => update("versioning", value)} /><Toggle checked={config.blockPublicAccess !== false} label="Block all public access" onChange={(value) => update("blockPublicAccess", value)} /><Toggle checked={config.enforceHttps !== false} label="Require HTTPS" onChange={(value) => update("enforceHttps", value)} /></> : null}
-            {service === "IAM_ROLE" ? <IamForm config={config} update={update} /> : null}
+            {service === "IAM_ROLE" ? <IamForm config={config} deployed={deployed} update={update} /> : null}
             {service === "LAMBDA_FUNCTION" ? <><Field disabled={deployed} label="Function name" onChange={(value) => update("functionName", value)} value={String(config.functionName ?? "")} /><Field label="Role ARN" onChange={(value) => update("roleArn", value)} value={String(config.roleArn ?? "")} /><Field label="Handler" onChange={(value) => update("handler", value)} value={String(config.handler ?? "")} /><Select label="Runtime" onChange={(value) => update("runtime", value)} options={[["nodejs22.x", "Node.js 22"], ["nodejs20.x", "Node.js 20"], ["python3.13", "Python 3.13"], ["python3.12", "Python 3.12"]]} value={String(config.runtime ?? "nodejs22.x")} /><LambdaCodeField value={String(config.codeZipBase64 ?? "")} onChange={(value) => update("codeZipBase64", value)} /><Field label="Description" onChange={(value) => update("description", value)} value={String(config.description ?? "")} /><Field label="Memory (MB)" onChange={(value) => update("memorySize", Number(value) || 128)} type="number" value={Number(config.memorySize ?? 128)} /><Field label="Timeout (seconds)" onChange={(value) => update("timeout", Number(value) || 1)} type="number" value={Number(config.timeout ?? 3)} /></> : null}
             {service === "DYNAMODB_TABLE" ? <DynamoDbForm deployed={deployed} config={config} update={update} /> : null}
             {service === "SQS_QUEUE" ? <><Field disabled={deployed} label="Queue name" onChange={(value) => update("queueName", value)} value={String(config.queueName ?? "")} /><Field label="Visibility timeout (seconds)" onChange={(value) => update("visibilityTimeoutSeconds", Number(value) || 0)} type="number" value={Number(config.visibilityTimeoutSeconds ?? 30)} /><Field label="Message retention (seconds)" onChange={(value) => update("messageRetentionPeriodSeconds", Number(value) || 60)} type="number" value={Number(config.messageRetentionPeriodSeconds ?? 345600)} /></> : null}

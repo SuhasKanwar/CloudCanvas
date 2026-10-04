@@ -235,6 +235,8 @@ function assertDeployedResourceUpdate(previousConfig: unknown, request: AwsResou
         DYNAMODB_TABLE: ["tableName", "keySchema", "attributeDefinitions"], SQS_QUEUE: ["queueName"],
         SNS_TOPIC: ["topicName", "fifoTopic"],
         CLOUDFRONT_DISTRIBUTION: ["bucketName"],
+        IAM_ROLE: ["roleName", "path"],
+        SECURITY_GROUP: ["mode", "groupName", "description", "vpcId"],
     };
     if (isRecord(previousConfig)) {
         const next = request.config as unknown as Record<string, unknown>;

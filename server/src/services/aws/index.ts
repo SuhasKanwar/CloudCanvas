@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { DescribeInstancesCommand, DescribeKeyPairsCommand, DescribeSecurityGroupsCommand, EC2Client } from "@aws-sdk/client-ec2";
 import { DescribeRepositoriesCommand, ECRClient, PutImageScanningConfigurationCommand, PutImageTagMutabilityCommand } from "@aws-sdk/client-ecr";
-import { GetRoleCommand, IAMClient } from "@aws-sdk/client-iam";
+import { GetRoleCommand, IAMClient, ListAttachedRolePoliciesCommand, ListRolePoliciesCommand, ListInstanceProfilesForRoleCommand } from "@aws-sdk/client-iam";
 import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import { DescribeTableCommand, DynamoDBClient, UpdateTableCommand } from "@aws-sdk/client-dynamodb";
 import { GetFunctionCommand, LambdaClient, UpdateFunctionCodeCommand, UpdateFunctionConfigurationCommand, waitUntilFunctionUpdatedV2 } from "@aws-sdk/client-lambda";
@@ -36,6 +36,26 @@ import type {
 
 export class AWSResourceManager {
     constructor(private readonly defaultRegion = AWS_REGION) {}
+
+    private iamService(client: IAMClient, region: string) {
+        return new IamService({
+            create: (command) => client.send(command), attach: (command) => client.send(command),
+            listAttached: (command) => client.send(command), detach: (command) => client.send(command),
+            delete: (command) => client.send(command), update: (command) => client.send(command),
+            updateTrust: (command) => client.send(command), putBoundary: (command) => client.send(command),
+            deleteBoundary: (command) => client.send(command),
+            listInline: (command) => client.send(command), deleteInline: (command) => client.send(command),
+            listProfiles: (command) => client.send(command),
+        }, region);
+    }
+
+    private securityGroupService(client: EC2Client, region: string) {
+        return new SecurityGroupService({
+            create: (command) => client.send(command), authorizeIngress: (command) => client.send(command),
+            delete: (command) => client.send(command), describe: (command) => client.send(command),
+            revokeIngress: (command) => client.send(command),
+        }, region);
+    }
 
     private catalogCacheKey(connectionId: string, region: string) {
         return `aws-catalog:${connectionId}:${region}`;
@@ -110,7 +130,7 @@ export class AWSResourceManager {
             const output = await new EC2Client({ region, credentials }).send(new DescribeSecurityGroupsCommand({ GroupIds: [externalId] }));
             const group = output.SecurityGroups?.[0];
             if (!group) throw new Error(`Security group ${externalId} was not found.`);
-            return { service, region, externalId, state: "available", status: "RUNNING", data: { groupId: group.GroupId, groupName: group.GroupName, description: group.Description, vpcId: group.VpcId, ownerId: group.OwnerId, ingressRuleCount: group.IpPermissions?.length ?? 0, egressRuleCount: group.IpPermissionsEgress?.length ?? 0 } };
+            return { service, region, externalId, state: "available", status: "RUNNING", data: { groupId: group.GroupId, groupName: group.GroupName, description: group.Description, vpcId: group.VpcId, ownerId: group.OwnerId, ingressRuleCount: group.IpPermissions?.length ?? 0, egressRuleCount: group.IpPermissionsEgress?.length ?? 0, ingressRules: group.IpPermissions, egressRules: group.IpPermissionsEgress } };
         }
         if (service === AwsService.ECR_REPOSITORY) {
             const output = await new ECRClient({ region, credentials }).send(new DescribeRepositoriesCommand({ repositoryNames: [externalId] }));
@@ -147,7 +167,35 @@ export class AWSResourceManager {
         const output = await new IAMClient({ region, credentials }).send(new GetRoleCommand({ RoleName: externalId }));
         const role = output.Role;
         if (!role) throw new Error(`IAM role ${externalId} was not found.`);
-        return { service, region, externalId, state: "available", status: "RUNNING", data: { roleName: role.RoleName, roleId: role.RoleId, arn: role.Arn, roleArn: role.Arn, path: role.Path, createDate: role.CreateDate?.toISOString(), maxSessionDuration: role.MaxSessionDuration, description: role.Description } };
+        const iam = new IAMClient({ region, credentials });
+        const attachedPolicies: Array<{ name?: string; arn?: string }> = [];
+        let attachedMarker: string | undefined;
+        do {
+            const page = await iam.send(new ListAttachedRolePoliciesCommand({ RoleName: externalId, Marker: attachedMarker }));
+            attachedPolicies.push(...(page.AttachedPolicies ?? []).map((policy) => ({
+                ...(policy.PolicyName && { name: policy.PolicyName }),
+                ...(policy.PolicyArn && { arn: policy.PolicyArn }),
+            })));
+            attachedMarker = page.IsTruncated ? page.Marker : undefined;
+        } while (attachedMarker);
+        const inlinePolicies: string[] = [];
+        let inlineMarker: string | undefined;
+        do {
+            const page = await iam.send(new ListRolePoliciesCommand({ RoleName: externalId, Marker: inlineMarker }));
+            inlinePolicies.push(...(page.PolicyNames ?? []));
+            inlineMarker = page.IsTruncated ? page.Marker : undefined;
+        } while (inlineMarker);
+        const instanceProfiles: Array<{ name?: string; arn?: string }> = [];
+        let profileMarker: string | undefined;
+        do {
+            const page = await iam.send(new ListInstanceProfilesForRoleCommand({ RoleName: externalId, Marker: profileMarker }));
+            instanceProfiles.push(...(page.InstanceProfiles ?? []).map((profile) => ({
+                ...(profile.InstanceProfileName && { name: profile.InstanceProfileName }),
+                ...(profile.Arn && { arn: profile.Arn }),
+            })));
+            profileMarker = page.IsTruncated ? page.Marker : undefined;
+        } while (profileMarker);
+        return { service, region, externalId, state: "available", status: "RUNNING", data: { roleName: role.RoleName, roleId: role.RoleId, arn: role.Arn, roleArn: role.Arn, path: role.Path, createDate: role.CreateDate?.toISOString(), maxSessionDuration: role.MaxSessionDuration, description: role.Description, assumeRolePolicyDocument: role.AssumeRolePolicyDocument, permissionsBoundaryArn: role.PermissionsBoundary?.PermissionsBoundaryArn, attachedPolicies, inlinePolicies, instanceProfiles } };
     }
 
     async createResource(request: AwsResourceCreateRequest, credentials: AwsCredentials, region = this.defaultRegion, onCreated: (details: AwsResourceDetails) => Promise<void> = async () => {}, callerReference?: string): Promise<AwsResourceResult> {
@@ -175,11 +223,7 @@ export class AWSResourceManager {
         }
         if (request.service === AwsService.SECURITY_GROUP) {
             const client = new EC2Client({ region, credentials });
-            const data = await new SecurityGroupService({
-                create: (command) => client.send(command),
-                authorizeIngress: (command) => client.send(command),
-                delete: (command) => client.send(command),
-            }, region).create(request.config);
+            const data = await this.securityGroupService(client, region).create(request.config);
             return { service: request.service, region, name: data.groupName, externalId: data.securityGroupId, data };
         }
         if (request.service === AwsService.ECR_REPOSITORY) {
@@ -239,13 +283,7 @@ export class AWSResourceManager {
             return { service: request.service, region, name: data.topicName, externalId: data.topicArn, data };
         }
         const client = new IAMClient({ region, credentials });
-        const data = await new IamService({
-            create: (command) => client.send(command),
-            attach: (command) => client.send(command),
-            listAttached: (command) => client.send(command),
-            detach: (command) => client.send(command),
-            delete: (command) => client.send(command),
-        }, region).createRole(request.config);
+        const data = await this.iamService(client, region).createRole(request.config);
         return { service: request.service, region, name: data.roleName, externalId: data.roleName, data };
     }
 
@@ -262,6 +300,19 @@ export class AWSResourceManager {
             }
             const details = await this.getResourceDetails(request.service, externalId, credentials, region);
             return { service: request.service, region, name: request.config.topicName, externalId, data: details.data };
+        }
+        if (request.service === AwsService.IAM_ROLE) {
+            const client = new IAMClient({ region, credentials });
+            await this.iamService(client, region).updateRole(request.config, externalId);
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: externalId, externalId, data: details.data };
+        }
+        if (request.service === AwsService.SECURITY_GROUP) {
+            if (request.config.mode === "existing") throw new Error("An adopted security group cannot be modified by CloudCanvas.");
+            const client = new EC2Client({ region, credentials });
+            const data = await this.securityGroupService(client, region).updateIngress(externalId, request.config.ingressRules ?? []);
+            const details = await this.getResourceDetails(request.service, externalId, credentials, region);
+            return { service: request.service, region, name: request.config.groupName, externalId, data: details.data };
         }
         if (request.service === AwsService.LAMBDA_FUNCTION) {
             const client = new LambdaClient({ region, credentials });
@@ -352,11 +403,7 @@ export class AWSResourceManager {
         }
         if (service === AwsService.SECURITY_GROUP) {
             const client = new EC2Client({ region, credentials });
-            const data = await new SecurityGroupService({
-                create: (command) => client.send(command),
-                authorizeIngress: (command) => client.send(command),
-                delete: (command) => client.send(command),
-            }, region).delete(externalId);
+            const data = await this.securityGroupService(client, region).delete(externalId);
             return { service, region, externalId, data };
         }
         if (service === AwsService.ECR_REPOSITORY) {
@@ -416,13 +463,7 @@ export class AWSResourceManager {
             return { service, region, externalId, data };
         }
         const client = new IAMClient({ region, credentials });
-        const data = await new IamService({
-            create: (command) => client.send(command),
-            attach: (command) => client.send(command),
-            listAttached: (command) => client.send(command),
-            detach: (command) => client.send(command),
-            delete: (command) => client.send(command),
-        }, region).deleteRole(externalId);
+        const data = await this.iamService(client, region).deleteRole(externalId);
         return { service, region, externalId, data };
     }
 }

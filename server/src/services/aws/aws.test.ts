@@ -331,6 +331,13 @@ test("maps IAM role creation, policy attachment, and deletion", async () => {
             commands.push(command.input.RoleName ?? "");
             return { $metadata: {} };
         },
+        update: async () => ({ $metadata: {} }),
+        updateTrust: async () => ({ $metadata: {} }),
+        putBoundary: async () => ({ $metadata: {} }),
+        deleteBoundary: async () => ({ $metadata: {} }),
+        listInline: async () => ({ $metadata: {}, PolicyNames: [] }),
+        deleteInline: async () => ({ $metadata: {} }),
+        listProfiles: async () => ({ $metadata: {}, InstanceProfiles: [] }),
     }, "us-east-1");
 
     assert.equal((await service.createRole({ roleName: "cloudcanvas-role", trustedService: "ec2.amazonaws.com", managedPolicyArns: ["arn:aws:iam::aws:policy/ReadOnlyAccess"] })).roleId, "role-id");
@@ -473,6 +480,8 @@ test("creates a security group with an inbound rule or adopts an existing group"
         create: async (command) => { createdGroupName = command.input.GroupName ?? ""; return { $metadata: {}, GroupId: "sg-new" }; },
         authorizeIngress: async (command) => { ingressGroupId = command.input.GroupId ?? ""; return { $metadata: {} }; },
         delete: async () => ({ $metadata: {} }),
+        describe: async () => ({ $metadata: {}, SecurityGroups: [] }),
+        revokeIngress: async () => ({ $metadata: {} }),
     }, "ap-south-1");
     const created = await service.create({ groupName: "web", description: "web", vpcId: "vpc-1", ingressRules: [{ protocol: "tcp", fromPort: 443, toPort: 443, cidrIpv4: "0.0.0.0/0" }] });
     const existing = await service.create({ mode: "existing", groupId: "sg-existing", groupName: "existing" });

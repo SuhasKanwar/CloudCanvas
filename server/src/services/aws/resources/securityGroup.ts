@@ -2,9 +2,13 @@ import {
     AuthorizeSecurityGroupIngressCommand,
     CreateSecurityGroupCommand,
     DeleteSecurityGroupCommand,
+    DescribeSecurityGroupsCommand,
+    RevokeSecurityGroupIngressCommand,
     type AuthorizeSecurityGroupIngressCommandOutput,
     type CreateSecurityGroupCommandOutput,
     type DeleteSecurityGroupCommandOutput,
+    type DescribeSecurityGroupsCommandOutput,
+    type RevokeSecurityGroupIngressCommandOutput,
 } from "@aws-sdk/client-ec2";
 
 export type SecurityGroupIngressRule = { protocol: "tcp" | "udp" | "icmp" | "-1"; fromPort?: number; toPort?: number; cidrIpv4: string; description?: string };
@@ -17,6 +21,8 @@ export type SecurityGroupSender = {
     create: (command: CreateSecurityGroupCommand) => Promise<CreateSecurityGroupCommandOutput>;
     authorizeIngress: (command: AuthorizeSecurityGroupIngressCommand) => Promise<AuthorizeSecurityGroupIngressCommandOutput>;
     delete: (command: DeleteSecurityGroupCommand) => Promise<DeleteSecurityGroupCommandOutput>;
+    describe: (command: DescribeSecurityGroupsCommand) => Promise<DescribeSecurityGroupsCommandOutput>;
+    revokeIngress: (command: RevokeSecurityGroupIngressCommand) => Promise<RevokeSecurityGroupIngressCommandOutput>;
 };
 
 export class SecurityGroupService {
@@ -38,5 +44,39 @@ export class SecurityGroupService {
     async delete(groupId: string): Promise<{ region: string; securityGroupId: string }> {
         await this.send.delete(new DeleteSecurityGroupCommand({ GroupId: groupId }));
         return { region: this.region, securityGroupId: groupId };
+    }
+
+    async updateIngress(groupId: string, desiredRules: SecurityGroupIngressRule[]) {
+        const response = await this.send.describe(new DescribeSecurityGroupsCommand({ GroupIds: [groupId] }));
+        const current = response.SecurityGroups?.[0];
+        if (!current) throw new Error(`Security group ${groupId} was not found.`);
+        const permission = (rule: SecurityGroupIngressRule) => ({
+            IpProtocol: rule.protocol,
+            ...(rule.protocol !== "-1" && { FromPort: rule.fromPort, ToPort: rule.toPort }),
+            IpRanges: [{ CidrIp: rule.cidrIpv4, ...(rule.description && { Description: rule.description }) }],
+        });
+        const key = (rule: SecurityGroupIngressRule) => JSON.stringify([rule.protocol, rule.fromPort ?? null, rule.toPort ?? null, rule.cidrIpv4, rule.description ?? ""]);
+        const desired = new Map(desiredRules.map((rule) => [key(rule), rule]));
+        const actual = new Map<string, SecurityGroupIngressRule>();
+        for (const entry of current.IpPermissions ?? []) {
+            for (const range of entry.IpRanges ?? []) {
+                if (!range.CidrIp || !entry.IpProtocol) continue;
+                const protocol = entry.IpProtocol as SecurityGroupIngressRule["protocol"];
+                if (!["tcp", "udp", "icmp", "-1"].includes(protocol)) continue;
+                const rule: SecurityGroupIngressRule = {
+                    protocol,
+                    ...(entry.FromPort !== undefined && { fromPort: entry.FromPort }),
+                    ...(entry.ToPort !== undefined && { toPort: entry.ToPort }),
+                    cidrIpv4: range.CidrIp,
+                    ...(range.Description !== undefined && { description: range.Description }),
+                };
+                actual.set(key(rule), rule);
+            }
+        }
+        const revoke = [...actual].filter(([id]) => !desired.has(id)).map(([, rule]) => permission(rule));
+        const authorize = [...desired].filter(([id]) => !actual.has(id)).map(([, rule]) => permission(rule));
+        if (revoke.length) await this.send.revokeIngress(new RevokeSecurityGroupIngressCommand({ GroupId: groupId, IpPermissions: revoke }));
+        if (authorize.length) await this.send.authorizeIngress(new AuthorizeSecurityGroupIngressCommand({ GroupId: groupId, IpPermissions: authorize }));
+        return { region: this.region, securityGroupId: groupId, ingressRules: desiredRules };
     }
 }
