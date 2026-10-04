@@ -26,6 +26,12 @@ const mutableFields: Partial<Record<AwsService, ChangeField[]>> = {
         { key: "kmsKeyArn", label: "KMS key" },
         { key: "enforceHttps", label: "Require HTTPS" },
     ],
+    IAM_ROLE: [
+        { key: "trustedService", label: "Trusted service" }, { key: "assumeRolePolicyDocument", label: "Trust policy" },
+        { key: "managedPolicyArns", label: "Managed policies" }, { key: "description", label: "Description" },
+        { key: "maxSessionDuration", label: "Maximum session duration" }, { key: "permissionsBoundaryArn", label: "Permissions boundary" },
+    ],
+    SECURITY_GROUP: [{ key: "ingressRules", label: "Inbound rules" }],
 };
 
 function valuesMatch(currentValue: unknown, deployedValue: unknown) {
