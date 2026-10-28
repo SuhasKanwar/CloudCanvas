@@ -1,23 +1,27 @@
-FROM oven/bun:1 AS dependencies
-WORKDIR /app
-COPY client/package.json client/bun.lock ./
-RUN bun install --frozen-lockfile
+# syntax=docker/dockerfile:1
+FROM node:24-bookworm-slim AS build
 
-FROM oven/bun:1 AS build
-WORKDIR /app
-COPY --from=dependencies /app/node_modules ./node_modules
+WORKDIR /app/contracts
+COPY contracts/ ./
+RUN npm ci --ignore-scripts && npm run build
+
+WORKDIR /app/client
+COPY client/package.json client/package-lock.json ./
+RUN npm ci
 COPY client/ ./
-ARG NEXT_PUBLIC_HTTP_SERVER_BASE_URL=http://localhost:9000
-ENV NEXT_PUBLIC_HTTP_SERVER_BASE_URL=${NEXT_PUBLIC_HTTP_SERVER_BASE_URL}
-RUN bun run build
+# Next.js embeds NEXT_PUBLIC_* values at build time; never copy the env file into a layer.
+RUN --mount=type=secret,id=client_env,target=/app/client/.env npm run build
+RUN npm prune --omit=dev --ignore-scripts \
+    && npm prune --prefix /app/contracts --omit=dev --ignore-scripts
 
-FROM oven/bun:1 AS runtime
-WORKDIR /app
+FROM node:24-bookworm-slim AS runtime
+WORKDIR /app/client
 ENV NODE_ENV=production HOSTNAME=0.0.0.0 PORT=3000
-COPY client/package.json client/bun.lock ./
-RUN bun install --production --frozen-lockfile
-COPY client/next.config.ts ./next.config.ts
-COPY client/public ./public
-COPY --from=build /app/.next ./.next
+COPY --from=build /app/contracts /app/contracts
+COPY --from=build /app/client/package.json ./package.json
+COPY --from=build /app/client/node_modules ./node_modules
+COPY --from=build /app/client/next.config.ts ./next.config.ts
+COPY --from=build /app/client/public ./public
+COPY --from=build /app/client/.next ./.next
 EXPOSE 3000
-CMD ["bun", "run", "start"]
+CMD ["npm", "run", "start"]

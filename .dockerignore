@@ -1,0 +1,12 @@
+.git
+**/node_modules
+**/.next
+**/dist
+**/.env
+**/.env.*
+**/logs
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/*.tsbuildinfo
+server/src/generated
