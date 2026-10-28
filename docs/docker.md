@@ -22,9 +22,10 @@ and model-provider keys in the AI service file.
 
 The client file also supplies build-time public settings through a temporary
 BuildKit secret mount. `NEXT_PUBLIC_HTTP_SERVER_BASE_URL` must be reachable from
-the user's browser, normally `http://localhost:9000`. Rebuild the client after
-changing `NEXT_PUBLIC_*` settings; changing the runtime env alone cannot update
-the compiled browser bundle. The env file itself is excluded from image layers.
+the user's browser, normally `http://localhost:9000`. After changing `NEXT_PUBLIC_*`
+settings, run `docker compose build --no-cache client` and recreate the client.
+BuildKit secret contents do not invalidate the build cache, and runtime env alone
+cannot update the compiled browser bundle. The env file itself is excluded from image layers.
 See [Next.js environment variables](https://nextjs.org/docs/app/guides/environment-variables)
 and [Docker build secrets](https://docs.docker.com/build/building/secrets/).
 
