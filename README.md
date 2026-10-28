@@ -83,6 +83,14 @@ flowchart LR
     AI --> Tools[AWS catalog and web-search tools]
 ```
 
+Detailed implementation diagrams and repository analysis are in the
+[documentation index](docs/README.md):
+
+- [System architecture and persistence](docs/system-architecture.md)
+- [User flow](docs/user-flow.md)
+- [Deployment, readiness, and cleanup lifecycle](docs/deployment-lifecycle.md)
+- [AI routing, tools, and blueprint flow](docs/ai-request-flow.md)
+
 The `contracts` package is shared by the client and server. It defines the AWS
 service union, graph schema, dependency rules, YAML parsing, configuration
 references, and graph layout rules. This prevents the UI, API, and AI service
