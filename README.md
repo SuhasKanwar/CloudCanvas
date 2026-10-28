@@ -122,6 +122,8 @@ policies, service quotas, or regional availability.
 
 ## Local Development
 
+For the containerized stack, see [Docker Compose setup](docs/docker.md).
+
 Prerequisites: Node.js, npm, PostgreSQL, Python 3.12+, and Conda. The project
 uses the `cloudcanvas-venv` Conda environment for the AI service.
 

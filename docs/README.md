@@ -15,6 +15,7 @@ shared code or optional context, with the meaning labeled in each diagram.
 | [Deployment lifecycle](deployment-lifecycle.md) | Validation, dependency ordering, readiness, refresh, and deletion |
 | [AI request flow](ai-request-flow.md) | Conversation persistence, routing, tools, and blueprint application |
 | [CloudFront notes](cloudfront.md) | Existing integration details, permissions, and supported settings |
+| [Docker Compose setup](docker.md) | Image builds, per-service env files, networking, PostgreSQL, and startup |
 
 Deployment and AI get separate diagrams because their branching and failure paths
 would make the two overview diagrams difficult to read.
@@ -41,9 +42,11 @@ would make the two overview diagrams difficult to read.
 | Tests and build configuration | Contract tests; server AWS/graph/AI adapter tests; Python agent/schema tests; client canvas diff tests and lint/build scripts |
 
 The repository contains three application processes plus PostgreSQL. `contracts`
-is a library built for client/server use, not a fourth HTTP service. No checked-in
-Docker Compose, Kubernetes deployment, background job worker, queue, WebSocket,
-or CI workflow was found in this review. The application's AWS resources are
+is a library built for client/server use, not a fourth HTTP service. The root
+Docker Compose file runs those processes and PostgreSQL; see the Docker setup
+document for its container-specific networking. No Kubernetes deployment,
+background job worker, queue, WebSocket, or CI workflow was found in this review.
+The application's AWS resources are
 deployment targets; they do not establish where CloudCanvas itself is hosted.
 
 ## Findings that affect the diagrams
