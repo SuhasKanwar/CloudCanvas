@@ -1,0 +1,282 @@
+[
+  {
+    "id": "06",
+    "title": "IaC-Eval: A Code Generation Benchmark for Cloud Infrastructure-as-Code Programs",
+    "authors": [
+      "Patrick Tser Jern Kon",
+      "Jiachen Liu",
+      "Yiming Qiu",
+      "Weijun Fan",
+      "Ting He",
+      "Lei Lin",
+      "Haoran Zhang",
+      "Owen M. Park",
+      "George S. Elengikal",
+      "Yuxin Kang",
+      "Ang Chen",
+      "Mosharaf Chowdhury",
+      "Myungjin Lee",
+      "Xinyu Wang"
+    ],
+    "year": 2024,
+    "publication_status": "Peer-reviewed conference paper",
+    "venue": "NeurIPS 2024 Datasets and Benchmarks Track; Advances in Neural Information Processing Systems 37",
+    "doi": null,
+    "arxiv_id": null,
+    "version": "Official NeurIPS 2024 proceedings PDF",
+    "landing_url": "https://papers.nips.cc/paper_files/paper/2024/hash/f26b29298ae8acd94bd7e839688e329b-Abstract-Datasets_and_Benchmarks_Track.html",
+    "pdf_url": "https://papers.nips.cc/paper_files/paper/2024/file/f26b29298ae8acd94bd7e839688e329b-Paper-Datasets_and_Benchmarks_Track.pdf",
+    "local_pdf": "06-iac-eval.pdf",
+    "license": "Paper redistribution license not established from inspected source",
+    "license_url": null,
+    "evidence": [
+      {
+        "pdf_pages": [
+          3,
+          4
+        ],
+        "finding": "458 human-curated AWS/Terraform tasks; terraform plan then OPA/Rego checks of user intent, without requiring deployment."
+      },
+      {
+        "pdf_pages": [
+          6
+        ],
+        "finding": "Table1 GPT-4 pass@1=19.36% on historical benchmark configuration."
+      },
+      {
+        "pdf_pages": [
+          8,
+          9
+        ],
+        "finding": "AWS/Terraform scope and no HCL function-generation coverage; broader metrics and frameworks are future work."
+      }
+    ],
+    "sha256": "708a71ac8498cdfa36d50d73aa1fb95c2b58b96576c8ee894b8ce90597cee9df",
+    "bytes": 1716903,
+    "pages": 19,
+    "retrieved_date": "2026-10-29",
+    "pdf_title_authors_verified": true,
+    "license_note": "Original PDF retained without modification; source availability is not a blanket permission to redistribute commercially or publicly. Preserve attribution and verify reuse rights."
+  },
+  {
+    "id": "07",
+    "title": "Multi-IaC-Eval: Benchmarking Cloud Infrastructure as Code Across Multiple Formats",
+    "authors": [
+      "Sam Davidson",
+      "Li Sun",
+      "Bhavana Bhasker",
+      "Laurent Callot",
+      "Anoop Deoras"
+    ],
+    "year": 2025,
+    "publication_status": "arXiv preprint; no peer-reviewed venue verified",
+    "venue": "arXiv cs.DC",
+    "doi": "10.48550/arXiv.2509.05303",
+    "arxiv_id": "2509.05303",
+    "version": "v1, 2025-08-21",
+    "landing_url": "https://arxiv.org/abs/2509.05303",
+    "pdf_url": "https://arxiv.org/pdf/2509.05303v1",
+    "local_pdf": "07-multi-iac-eval.pdf",
+    "license": "CC BY-NC-ND 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+    "evidence": [
+      {
+        "pdf_pages": [
+          3,
+          4,
+          6
+        ],
+        "finding": "Mutation triplets of initial IaC, natural-language change, expected IaC; static validation and LLM judge plus60 human-reviewed samples."
+      },
+      {
+        "pdf_pages": [
+          7,
+          8
+        ],
+        "finding": "337 CloudFormation,171 Terraform,191 CDK templates evaluated; retry-loop ablations improve lint/Checkov rates. CDK converted through CloudFormation."
+      },
+      {
+        "pdf_pages": [
+          9
+        ],
+        "finding": "No actual deployment testing; enterprise complexity and native CDK behavior are limitations."
+      }
+    ],
+    "sha256": "cff039c866fc2db8252a957c863563ebc3c5086b039ed2a4fce71e1b2fcadb24",
+    "bytes": 327424,
+    "pages": 28,
+    "retrieved_date": "2026-10-29",
+    "pdf_title_authors_verified": true,
+    "license_note": "Original PDF retained without modification; source availability is not a blanket permission to redistribute commercially or publicly. Preserve attribution and verify reuse rights."
+  },
+  {
+    "id": "08",
+    "title": "TerraFormer: Automated Infrastructure-as-Code with LLMs Fine-Tuned via Policy-Guided Verifier Feedback",
+    "authors": [
+      "Prithwish Jana",
+      "Sam Davidson",
+      "Bhavana Bhasker",
+      "Andrey Kan",
+      "Anoop Deoras",
+      "Laurent Callot"
+    ],
+    "year": 2026,
+    "publication_status": "Peer-reviewed conference paper; downloaded arXiv author version",
+    "venue": "ICSE 2026 Software Engineering in Practice (SEIP)",
+    "doi": "10.1145/3786583.3786898",
+    "arxiv_id": "2601.08734",
+    "version": "v1, 2026-01-13",
+    "landing_url": "https://arxiv.org/abs/2601.08734",
+    "pdf_url": "https://arxiv.org/pdf/2601.08734v1",
+    "local_pdf": "08-terraformer.pdf",
+    "license": "CC BY-NC-ND 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+    "venue_url": "https://conf.researchr.org/details/icse-2026/icse-2026-software-engineering-in-practice/43/TerraFormer-Automated-Infrastructure-as-Code-with-LLMs-Fine-Tuned-via-Policy-Guided-",
+    "evidence": [
+      {
+        "pdf_pages": [
+          3,
+          4,
+          5,
+          6
+        ],
+        "finding": "terraform validate, terraform plan and OPA/Rego verifier feedback drives dataset curation and SFT+RL;152475 generation and52516 mutation instances."
+      },
+      {
+        "pdf_pages": [
+          7
+        ],
+        "finding": "Table2:14B SFT+RL achieves31.44% IaC-Eval correctness vs15.50% Qwen2.5-Coder-14B base, an absolute15.94 percentage-point gain; all pass@1."
+      },
+      {
+        "pdf_pages": [
+          7,
+          9
+        ],
+        "finding": "Correctness is policy-relative; security compliance averages passed Checkov checks per instance, not percent wholly secure deployments."
+      }
+    ],
+    "sha256": "704e94c0df21a4637c15cb2a8a93c57ded703dad32bf163975dd4e98f44ed2b5",
+    "bytes": 4081876,
+    "pages": 12,
+    "retrieved_date": "2026-10-29",
+    "pdf_title_authors_verified": true,
+    "license_note": "Original PDF retained without modification; source availability is not a blanket permission to redistribute commercially or publicly. Preserve attribution and verify reuse rights."
+  },
+  {
+    "id": "09",
+    "title": "Deployability-Centric Infrastructure-as-Code Generation: Fail, Learn, Refine, and Succeed through LLM-Empowered DevOps Simulation",
+    "authors": [
+      "Tianyi Zhang",
+      "Shidong Pan",
+      "Zejun Zhang",
+      "Zhenchang Xing",
+      "Xiaoyu Sun"
+    ],
+    "year": 2026,
+    "first_preprint_year": 2025,
+    "publication_status": "Accepted peer-reviewed FSE 2026 research paper; downloaded arXiv author version",
+    "venue": "FSE 2026 Research Papers",
+    "doi": "10.48550/arXiv.2506.05623",
+    "arxiv_id": "2506.05623",
+    "version": "v3, 2026-01-11",
+    "landing_url": "https://arxiv.org/abs/2506.05623",
+    "pdf_url": "https://arxiv.org/pdf/2506.05623v3",
+    "local_pdf": "09-deployability-centric-iac.pdf",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "venue_url": "https://conf.researchr.org/details/fse-2026/fse-2026-research-papers/43/Deployability-Centric-Infrastructure-as-Code-Generation-Fail-Learn-Refine-and-Suc",
+    "evidence": [
+      {
+        "pdf_pages": [
+          4,
+          6,
+          7,
+          8,
+          9
+        ],
+        "finding": "DPIaC-Eval153 AWS CloudFormation scenarios across58 services; IaCGen uses formatting, syntax and live deployment feedback."
+      },
+      {
+        "pdf_pages": [
+          11
+        ],
+        "finding": "Table2: six evaluated models first-attempt deployability20.8–30.2%;10-iteration passItr54.6–91.6%. Distinguish iterative success from pass@1."
+      },
+      {
+        "pdf_pages": [
+          15,
+          16
+        ],
+        "finding": "Intent evaluation samples51 benchmark instances; across models25.2% satisfy both resources and attributes.8.4% filtered full-template security compliance excludes templates with no applicable Checkov policies."
+      },
+      {
+        "pdf_pages": [
+          18
+        ],
+        "finding": "Historical model selection, specialized configurations, subjective difficulty and cross-IaC generalization are threats to validity."
+      }
+    ],
+    "sha256": "d3aab982bf0ff195197ae28cdf933e2ac541c3a711b20c3bf6d113732a277900",
+    "bytes": 1552624,
+    "pages": 23,
+    "retrieved_date": "2026-10-29",
+    "pdf_title_authors_verified": true,
+    "license_note": "Original PDF retained without modification; source availability is not a blanket permission to redistribute commercially or publicly. Preserve attribution and verify reuse rights."
+  },
+  {
+    "id": "10",
+    "title": "Cloud Infrastructure Management in the Age of AI Agents",
+    "authors": [
+      "Zhenning Yang",
+      "Archit Bhatnagar",
+      "Yiming Qiu",
+      "Tongyuan Miao",
+      "Patrick Tser Jern Kon",
+      "Yunming Xiao",
+      "Yibo Huang",
+      "Martin Casado",
+      "Ang Chen"
+    ],
+    "year": 2025,
+    "publication_status": "arXiv position/preliminary-study preprint; no peer-reviewed venue verified",
+    "venue": "arXiv cs.AI",
+    "doi": "10.48550/arXiv.2506.12270",
+    "arxiv_id": "2506.12270",
+    "version": "v1, 2025-06-13",
+    "landing_url": "https://arxiv.org/abs/2506.12270",
+    "pdf_url": "https://arxiv.org/pdf/2506.12270v1",
+    "local_pdf": "10-cloud-infrastructure-ai-agents.pdf",
+    "license": "arXiv non-exclusive distribution license; not a general third-party redistribution grant",
+    "license_url": "https://arxiv.org/licenses/nonexclusive-distrib/1.0/",
+    "evidence": [
+      {
+        "pdf_pages": [
+          2,
+          3,
+          4
+        ],
+        "finding": "Preliminary Azure VM study compares SDK,CLI,Terraform and web agents for provisioning,updates,monitoring; different underlying models limit comparability."
+      },
+      {
+        "pdf_pages": [
+          3
+        ],
+        "finding": "Provisioning uses three VM tasks with eight trials per task; step counts are agent actions, not elapsed time."
+      },
+      {
+        "pdf_pages": [
+          5,
+          6
+        ],
+        "finding": "Proposed architecture separates user-agent and agent-cloud interfaces; recommends unified state,locking,policy checks,audit trails,rollback and human supervision."
+      }
+    ],
+    "sha256": "ba80e42d961ba40f4242b9b6db417e4fcae59bf92266cc397b6a097a14c3eda4",
+    "bytes": 1555893,
+    "pages": 8,
+    "retrieved_date": "2026-10-29",
+    "pdf_title_authors_verified": true,
+    "license_note": "Original PDF retained without modification; source availability is not a blanket permission to redistribute commercially or publicly. Preserve attribution and verify reuse rights."
+  }
+]

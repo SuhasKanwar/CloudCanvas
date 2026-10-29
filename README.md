@@ -90,6 +90,7 @@ Detailed implementation diagrams and repository analysis are in the
 - [User flow](docs/user-flow.md)
 - [Deployment, readiness, and cleanup lifecycle](docs/deployment-lifecycle.md)
 - [AI routing, tools, and blueprint flow](docs/ai-request-flow.md)
+- [Research library and comparative analysis](docs/research/README.md)
 
 The `contracts` package is shared by the client and server. It defines the AWS
 service union, graph schema, dependency rules, YAML parsing, configuration

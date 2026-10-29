@@ -16,6 +16,7 @@ shared code or optional context, with the meaning labeled in each diagram.
 | [AI request flow](ai-request-flow.md) | Conversation persistence, routing, tools, and blueprint application |
 | [CloudFront notes](cloudfront.md) | Existing integration details, permissions, and supported settings |
 | [Docker Compose setup](docker.md) | Image builds, per-service env files, networking, PostgreSQL, and startup |
+| [Research library and comparison](research/README.md) | Ten papers/PDFs, implemented scope, differentiation, company comparisons, and learnings |
 
 Deployment and AI get separate diagrams because their branching and failure paths
 would make the two overview diagrams difficult to read.
