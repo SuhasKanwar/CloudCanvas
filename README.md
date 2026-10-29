@@ -84,7 +84,7 @@ flowchart LR
 ```
 
 Detailed implementation diagrams and repository analysis are in the
-[documentation index](docs/README.md):
+[complete project guide](docs/README.md):
 
 - [System architecture and persistence](docs/system-architecture.md)
 - [User flow](docs/user-flow.md)

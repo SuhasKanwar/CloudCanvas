@@ -6,7 +6,7 @@ The selection spans visual cloud modeling and execution (01–05) and AI-assiste
 
 ## Reading and provenance
 
-Page references in the report are physical PDF pages. Papers 01 and 02 include a repository cover sheet. Detailed download URLs, versions, byte sizes, SHA-256 checksums, page counts, licenses and evidence locations are in the [cloud-paper metadata](research_notes/CloudCanvas%20research%20comparison/cloud-papers.json) and [AI-paper metadata](research_notes/CloudCanvas%20research%20comparison/ai-papers.json). Supporting notes retain the [paper analysis](research_notes/CloudCanvas%20research%20comparison/cloud-papers.md), [AI analysis](research_notes/CloudCanvas%20research%20comparison/ai-papers.md), and [implementation/company evidence](research_notes/CloudCanvas%20research%20comparison/implementation-companies.md).
+Page references in the report are physical PDF pages. Papers 01 and 02 include a repository cover sheet. Full bibliography, source/download links, versions and rights notes are listed below. Detailed checksums, sizes, verification results and evidence locations are preserved in the [collective project README](../README.md#paper-provenance).
 
 Public access is not the same as unrestricted republication permission. Preserve author attribution and original notices. The collection does not establish commercial/public redistribution clearance for every PDF; use original source links when sharing if reuse rights are uncertain. In particular, an arXiv non-exclusive distribution grant is not a blanket downstream reuse license, and a dataset license does not automatically cover its paper.
 
