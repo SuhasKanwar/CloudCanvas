@@ -1,0 +1,19 @@
+\section{Background / Problem Formulation}
+A sketch is a directed attributed graph $G=(V,E,\tau,c,p)$, where $V$ contains resource nodes, $E\subseteq V\times V$ contains dependency edges, $\tau$ maps nodes to supported resource types, $c$ stores configuration objects, and $p$ stores canvas positions. An edge $(u,v)$ means that $u$ supplies a supported provisioning dependency to $v$; it does not denote arbitrary network communication. The implemented relation set contains key-pair-to-EC2, security-group-to-EC2, IAM-role-to-Lambda, and S3-to-CloudFront attachments. A node may also be independent. A configuration reference names a source node and one output field, using the exact form \texttt{\$\{source.field\}}.
+
+The input is either a manually assembled graph or a structured AI proposal. The immediate output is an accepted, normalized draft or a diagnostic explaining rejection. A later publish request supplies an owned AWS connection and attempts supported operations. These are different outputs: acceptance into the workspace is not certification that execution will succeed. JSON Schema supplies the document-shape vocabulary~\cite{jsonschema2022}, and Ajv executes those checks with the application's defaults and validation settings~\cite{ajv}. Separate graph rules express constraints that document shape alone cannot capture.
+
+Let $S(G)$ denote schema validity, $T(G)$ denote node/edge and topology validity, and $R(G)$ denote configuration-reference syntax and direct-source binding. The shared acceptance condition is
+\begin{equation}
+ A(G)=S(G)\land T(G)\land R(G).
+ \label{eq:accept}
+\end{equation}
+For every recognized reference $r=(u,k)$ in node $v$, the reference layer requires
+\begin{equation}
+ u\in\operatorname{Pred}_{G}(v),\qquad
+ \operatorname{Pred}_{G}(v)=\{w:(w,v)\in E\}.
+ \label{eq:reference}
+\end{equation}
+Here $k$ is a syntactically permitted output token. Equation~\ref{eq:reference} does not establish that the runtime output actually contains $k$; resolution checks that later. This distinction is deliberately exercised by a boundary control.
+
+The formulation assumes authenticated application access for protected operations and a supported resource subset. It excludes arbitrary AWS coverage, multi-cloud translation, formal security proofs, workload health, model training, and production governance. Configuration may remain incomplete in a draft because users must sometimes choose account-specific values after generation. The engineering problem is therefore to preserve a consistent, inspectable draft representation while keeping later deployment preconditions explicit. The experimental problem is narrower still: measure acceptance decisions against declared structural expectations, without converting those expectations into claims about intent or provider execution.

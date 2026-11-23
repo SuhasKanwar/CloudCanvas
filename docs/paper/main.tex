@@ -1,0 +1,48 @@
+\RequirePackage[T1]{fontenc}
+\documentclass[12pt,a4paper,onecolumn,draftclsnofoot]{IEEEtran}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{times,graphicx,amsmath,booktabs,cite,url}
+\usepackage[ruled,linesnumbered]{algorithm2e}
+\usepackage{tabularx,array,hyperref}
+\hypersetup{hidelinks,pdftitle={CloudCanvas: A Shared Graph Contract for Reviewed AI-Assisted AWS Infrastructure Deployment},pdfauthor={Suhas Kanwar; Suryansh Mahajan; Yaksh Rohilla}}
+\setlength{\emergencystretch}{2em}
+\graphicspath{{figures/}}
+\newcommand{\OverleafProjectLink}{\url{https://www.overleaf.com/project/PLACEHOLDER}}
+\newcommand{\CodeRepository}{\url{https://github.com/SuhasKanwar/CloudCanvas}}
+\begin{document}
+\title{CloudCanvas: A Shared Graph Contract for Reviewed AI-Assisted AWS Infrastructure Deployment}
+\author{Group CSE3\_G7: Suhas Kanwar (230603), Suryansh Mahajan (230627),\\
+Yaksh Rohilla (230605)\\
+School of Engineering \& Technology, BML Munjal University\\
+\texttt{suhas.kanwar.23cse@bmu.edu.in}\\
+\texttt{suryansh.mahajan.23cse@bmu.edu.in}\\
+\texttt{yaksh.23cse@bmu.edu.in}}
+\maketitle
+\begin{abstract}
+Cloud infrastructure design requires users to coordinate service configuration, dependency relationships, deployment order, and resource lifecycle state. Visual editors and language-model assistants can reduce the amount of configuration users write, but a well-formed generated artifact does not necessarily encode a supported or executable architecture. This paper presents CloudCanvas, an AWS-focused prototype that connects a visual workspace and AI-generated drafts through a shared graph contract. The application validates resource structure, permitted attachments, and configuration-reference bindings before a user applies a blueprint; a separate publish action invokes dependency-aware AWS SDK operations and records desired and observed state. The contribution is an implemented integration with an explicit validation boundary, rather than a new language model or a claim of general infrastructure correctness. We evaluate that boundary using 72 deterministic synthetic graph instances, covering 24 valid cases and 48 invalid cases, in three independent Node.js processes. The full contract classifies all 72 cases correctly, compared with 55.56\% for schema-only validation and 77.78\% when reference validation is removed. Mean clone-plus-validation time is 72.9 microseconds per graph, with a sample standard deviation of 14.1 microseconds across processes. Six additional boundary controls remain accepted, illustrating that graph acceptance does not establish output availability, deployment completeness, security, or user intent. These results support layered structural validation on the tested fixtures while motivating separate policy, intent, live-deployment, and human-review evaluations.
+\end{abstract}
+\begin{IEEEkeywords}
+AI-assisted infrastructure, cloud deployment, graph validation, human review, infrastructure as code, visual modeling.
+\end{IEEEkeywords}
+\noindent\textbf{Overleaf Project Link:} \OverleafProjectLink
+
+\noindent\textbf{Code Repository:} \CodeRepository
+
+\input{sections/introduction}
+\input{sections/related-work}
+\input{sections/background}
+\input{sections/methodology}
+\input{sections/experimental-setup}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\section*{AI-Use Declaration}
+This author-review draft contains AI-assisted manuscript drafting, literature synthesis, experiment-script development, and figure preparation. The recorded experimental values were produced by the supplied executable scripts; they are not invented model outputs. The named authors must verify the sources, reproduce the experiments, revise the text, and approve the final submission. No similarity or AI-content percentage is certified by this manuscript, and the institution's required reports have not been produced.
+
+\section*{Author Contributions}
+The following manuscript responsibilities are assigned for team confirmation; they do not independently establish historical implementation ownership. Suhas Kanwar: system architecture, software-description verification, and manuscript integration. Suryansh Mahajan: related-work synthesis, reference verification, and technical editing. Yaksh Rohilla: experimental reproduction, result and figure verification, and final consistency review. All three authors are responsible for approving the final claims and the submitted version.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+\end{document}

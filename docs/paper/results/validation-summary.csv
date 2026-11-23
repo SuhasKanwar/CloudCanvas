@@ -1,0 +1,4 @@
+validator,accuracy_mean,accuracy_sd,false_accepted_mean,false_accepted_sd,false_rejected_mean,ms_per_graph_mean,ms_per_graph_sd
+schema-only,0.5555555555555556,0,32,0,0,0.041279161388888895,0.008949815286999722
+schema-topology,0.7777777777777778,0,16,0,0,0.057579653333333335,0.02600133465235008
+full-contract,1,0,0,0,0,0.07293195916666667,0.014148230434161623

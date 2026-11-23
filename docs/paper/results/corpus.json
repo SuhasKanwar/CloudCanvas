@@ -1,0 +1,2481 @@
+{
+  "description": "Synthetic conformance fixtures, not model-generated or deployment-qualified data",
+  "cases": [
+    {
+      "id": "valid-0-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-0-0",
+        "nodes": [
+          {
+            "id": "s3",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-assets"
+            },
+            "positionX": 0,
+            "positionY": 0
+          },
+          {
+            "id": "db",
+            "type": "DYNAMODB_TABLE",
+            "config": {
+              "tableName": "paper-table",
+              "keySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "attributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                }
+              ]
+            },
+            "positionX": 0,
+            "positionY": 0
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-0-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-0-1",
+        "nodes": [
+          {
+            "id": "s3",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-assets"
+            },
+            "positionX": 100,
+            "positionY": 0
+          },
+          {
+            "id": "db",
+            "type": "DYNAMODB_TABLE",
+            "config": {
+              "tableName": "paper-table",
+              "keySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "attributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                }
+              ]
+            },
+            "positionX": 100,
+            "positionY": 0
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-0-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-0-2",
+        "nodes": [
+          {
+            "id": "s3",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-assets"
+            },
+            "positionX": 200,
+            "positionY": 0
+          },
+          {
+            "id": "db",
+            "type": "DYNAMODB_TABLE",
+            "config": {
+              "tableName": "paper-table",
+              "keySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "attributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                }
+              ]
+            },
+            "positionX": 200,
+            "positionY": 0
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-1-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-1-0",
+        "nodes": [
+          {
+            "id": "ecr",
+            "type": "ECR_REPOSITORY",
+            "config": {
+              "repositoryName": "paper-repository"
+            },
+            "positionX": 0,
+            "positionY": 50
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-1-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-1-1",
+        "nodes": [
+          {
+            "id": "ecr",
+            "type": "ECR_REPOSITORY",
+            "config": {
+              "repositoryName": "paper-repository"
+            },
+            "positionX": 100,
+            "positionY": 50
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-1-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-1-2",
+        "nodes": [
+          {
+            "id": "ecr",
+            "type": "ECR_REPOSITORY",
+            "config": {
+              "repositoryName": "paper-repository"
+            },
+            "positionX": 200,
+            "positionY": 50
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-2-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-2-0",
+        "nodes": [
+          {
+            "id": "queue",
+            "type": "SQS_QUEUE",
+            "config": {
+              "queueName": "paper-queue"
+            },
+            "positionX": 0,
+            "positionY": 100
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-2-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-2-1",
+        "nodes": [
+          {
+            "id": "queue",
+            "type": "SQS_QUEUE",
+            "config": {
+              "queueName": "paper-queue"
+            },
+            "positionX": 100,
+            "positionY": 100
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-2-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-2-2",
+        "nodes": [
+          {
+            "id": "queue",
+            "type": "SQS_QUEUE",
+            "config": {
+              "queueName": "paper-queue"
+            },
+            "positionX": 200,
+            "positionY": 100
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-3-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-3-0",
+        "nodes": [
+          {
+            "id": "topic",
+            "type": "SNS_TOPIC",
+            "config": {
+              "topicName": "paper-topic"
+            },
+            "positionX": 0,
+            "positionY": 150
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-3-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-3-1",
+        "nodes": [
+          {
+            "id": "topic",
+            "type": "SNS_TOPIC",
+            "config": {
+              "topicName": "paper-topic"
+            },
+            "positionX": 100,
+            "positionY": 150
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-3-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-3-2",
+        "nodes": [
+          {
+            "id": "topic",
+            "type": "SNS_TOPIC",
+            "config": {
+              "topicName": "paper-topic"
+            },
+            "positionX": 200,
+            "positionY": 150
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "valid-4-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-4-0",
+        "nodes": [
+          {
+            "id": "key",
+            "type": "KEY_PAIR",
+            "config": {
+              "keyName": "paper-key",
+              "mode": "existing"
+            },
+            "positionX": 0,
+            "positionY": 200
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "keyName": "${key.keyName}"
+            },
+            "positionX": 0,
+            "positionY": 200
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "key",
+            "targetNodeId": "vm"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-4-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-4-1",
+        "nodes": [
+          {
+            "id": "key",
+            "type": "KEY_PAIR",
+            "config": {
+              "keyName": "paper-key",
+              "mode": "existing"
+            },
+            "positionX": 100,
+            "positionY": 200
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "keyName": "${key.keyName}"
+            },
+            "positionX": 100,
+            "positionY": 200
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "key",
+            "targetNodeId": "vm"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-4-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-4-2",
+        "nodes": [
+          {
+            "id": "key",
+            "type": "KEY_PAIR",
+            "config": {
+              "keyName": "paper-key",
+              "mode": "existing"
+            },
+            "positionX": 200,
+            "positionY": 200
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "keyName": "${key.keyName}"
+            },
+            "positionX": 200,
+            "positionY": 200
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "key",
+            "targetNodeId": "vm"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-5-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-5-0",
+        "nodes": [
+          {
+            "id": "sg",
+            "type": "SECURITY_GROUP",
+            "config": {
+              "mode": "existing",
+              "groupId": "sg-example"
+            },
+            "positionX": 0,
+            "positionY": 250
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "securityGroupIds": [
+                "${sg.securityGroupId}"
+              ]
+            },
+            "positionX": 0,
+            "positionY": 250
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "sg",
+            "targetNodeId": "vm"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-5-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-5-1",
+        "nodes": [
+          {
+            "id": "sg",
+            "type": "SECURITY_GROUP",
+            "config": {
+              "mode": "existing",
+              "groupId": "sg-example"
+            },
+            "positionX": 100,
+            "positionY": 250
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "securityGroupIds": [
+                "${sg.securityGroupId}"
+              ]
+            },
+            "positionX": 100,
+            "positionY": 250
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "sg",
+            "targetNodeId": "vm"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-5-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-5-2",
+        "nodes": [
+          {
+            "id": "sg",
+            "type": "SECURITY_GROUP",
+            "config": {
+              "mode": "existing",
+              "groupId": "sg-example"
+            },
+            "positionX": 200,
+            "positionY": 250
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "securityGroupIds": [
+                "${sg.securityGroupId}"
+              ]
+            },
+            "positionX": 200,
+            "positionY": 250
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "sg",
+            "targetNodeId": "vm"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-6-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-6-0",
+        "nodes": [
+          {
+            "id": "role",
+            "type": "IAM_ROLE",
+            "config": {
+              "roleName": "paper-role",
+              "trustedService": "lambda.amazonaws.com"
+            },
+            "positionX": 0,
+            "positionY": 300
+          },
+          {
+            "id": "fn",
+            "type": "LAMBDA_FUNCTION",
+            "config": {
+              "roleArn": "${role.roleArn}"
+            },
+            "positionX": 0,
+            "positionY": 300
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "role",
+            "targetNodeId": "fn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-6-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-6-1",
+        "nodes": [
+          {
+            "id": "role",
+            "type": "IAM_ROLE",
+            "config": {
+              "roleName": "paper-role",
+              "trustedService": "lambda.amazonaws.com"
+            },
+            "positionX": 100,
+            "positionY": 300
+          },
+          {
+            "id": "fn",
+            "type": "LAMBDA_FUNCTION",
+            "config": {
+              "roleArn": "${role.roleArn}"
+            },
+            "positionX": 100,
+            "positionY": 300
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "role",
+            "targetNodeId": "fn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-6-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-6-2",
+        "nodes": [
+          {
+            "id": "role",
+            "type": "IAM_ROLE",
+            "config": {
+              "roleName": "paper-role",
+              "trustedService": "lambda.amazonaws.com"
+            },
+            "positionX": 200,
+            "positionY": 300
+          },
+          {
+            "id": "fn",
+            "type": "LAMBDA_FUNCTION",
+            "config": {
+              "roleArn": "${role.roleArn}"
+            },
+            "positionX": 200,
+            "positionY": 300
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "role",
+            "targetNodeId": "fn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-7-0",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-7-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0,
+            "positionY": 350
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0,
+            "positionY": 350
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-7-1",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-7-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100,
+            "positionY": 350
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100,
+            "positionY": 350
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "valid-7-2",
+      "category": "valid",
+      "expectedValid": true,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture valid-7-2",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 200,
+            "positionY": 350
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 200,
+            "positionY": 350
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-version-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "name": "Offline conformance fixture missing-version-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-version-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "name": "Offline conformance fixture missing-version-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-property-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-property-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ],
+        "unrecognized": true
+      }
+    },
+    {
+      "id": "unknown-property-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-property-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ],
+        "unrecognized": true
+      }
+    },
+    {
+      "id": "empty-name-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-name-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unsupported-type-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unsupported-type-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "UNSUPPORTED_SERVICE",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unsupported-type-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unsupported-type-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "UNSUPPORTED_SERVICE",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wrong-config-type-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture wrong-config-type-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": 42
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wrong-config-type-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture wrong-config-type-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": 42
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wrong-node-container-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture wrong-node-container-0",
+        "nodes": {},
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wrong-node-container-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture wrong-node-container-1",
+        "nodes": {},
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-node-id-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture empty-node-id-0",
+        "nodes": [
+          {
+            "id": "",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "empty-node-id-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture empty-node-id-1",
+        "nodes": [
+          {
+            "id": "",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wrong-position-type-0",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture wrong-position-type-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": "left"
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wrong-position-type-1",
+      "category": "shape",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture wrong-position-type-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": "left"
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "duplicate-node-id-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture duplicate-node-id-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "duplicate-node-id-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture duplicate-node-id-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-source-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-source-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "absent",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-source-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-source-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "absent",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-target-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-target-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "absent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-target-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-target-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "absent"
+          }
+        ]
+      }
+    },
+    {
+      "id": "self-edge-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture self-edge-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "bucket"
+          }
+        ]
+      }
+    },
+    {
+      "id": "self-edge-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture self-edge-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "bucket"
+          }
+        ]
+      }
+    },
+    {
+      "id": "incompatible-edge-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture incompatible-edge-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "cdn",
+            "targetNodeId": "bucket"
+          }
+        ]
+      }
+    },
+    {
+      "id": "incompatible-edge-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture incompatible-edge-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "cdn",
+            "targetNodeId": "bucket"
+          }
+        ]
+      }
+    },
+    {
+      "id": "duplicate-edge-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture duplicate-edge-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          },
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "duplicate-edge-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture duplicate-edge-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          },
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "multiple-origins-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture multiple-origins-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "other",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-other"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          },
+          {
+            "sourceNodeId": "other",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "multiple-origins-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture multiple-origins-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "other",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-other"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          },
+          {
+            "sourceNodeId": "other",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cyclic-incompatible-edges-0",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture cyclic-incompatible-edges-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          },
+          {
+            "sourceNodeId": "cdn",
+            "targetNodeId": "bucket"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cyclic-incompatible-edges-1",
+      "category": "topology",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture cyclic-incompatible-edges-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          },
+          {
+            "sourceNodeId": "cdn",
+            "targetNodeId": "bucket"
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-direct-edge-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture missing-direct-edge-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "missing-direct-edge-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture missing-direct-edge-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "unknown-reference-source-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-reference-source-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${absent.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unknown-reference-source-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unknown-reference-source-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${absent.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "interpolated-reference-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture interpolated-reference-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "prefix-${bucket.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "interpolated-reference-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture interpolated-reference-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "prefix-${bucket.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unterminated-reference-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unterminated-reference-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unterminated-reference-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture unterminated-reference-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "self-reference-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture self-reference-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${cdn.bucketName}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "self-reference-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture self-reference-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${cdn.bucketName}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "invalid-output-token-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture invalid-output-token-0",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 0
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.1bad}"
+            },
+            "positionX": 0
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "invalid-output-token-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture invalid-output-token-1",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            },
+            "positionX": 100
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.1bad}"
+            },
+            "positionX": 100
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "array-without-source-edge-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "sg",
+            "type": "SECURITY_GROUP",
+            "config": {
+              "mode": "existing",
+              "groupId": "sg-example"
+            }
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "securityGroupIds": [
+                "${sg.securityGroupId}"
+              ]
+            }
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "array-without-source-edge-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "sg",
+            "type": "SECURITY_GROUP",
+            "config": {
+              "mode": "existing",
+              "groupId": "sg-example"
+            }
+          },
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "securityGroupIds": [
+                "${sg.securityGroupId}"
+              ]
+            }
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "nested-unbound-reference-0",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "sg",
+            "type": "SECURITY_GROUP",
+            "config": {
+              "groupName": "paper",
+              "description": "fixture",
+              "vpcId": "vpc-example",
+              "ingressRules": [
+                {
+                  "protocol": "tcp",
+                  "cidrIpv4": "10.0.0.0/8",
+                  "fromPort": 443,
+                  "toPort": 443,
+                  "description": "${absent.label}"
+                }
+              ]
+            }
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "nested-unbound-reference-1",
+      "category": "references",
+      "expectedValid": false,
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "sg",
+            "type": "SECURITY_GROUP",
+            "config": {
+              "groupName": "paper",
+              "description": "fixture",
+              "vpcId": "vpc-example",
+              "ingressRules": [
+                {
+                  "protocol": "tcp",
+                  "cidrIpv4": "10.0.0.0/8",
+                  "fromPort": 443,
+                  "toPort": 443,
+                  "description": "${absent.label}"
+                }
+              ]
+            }
+          }
+        ],
+        "edges": []
+      }
+    }
+  ],
+  "boundaryControls": [
+    {
+      "id": "unknown-output-name",
+      "reason": "Output-field existence is checked during runtime reference resolution.",
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets"
+            }
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.nonexistentOutput}"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "incomplete-lambda-draft",
+      "reason": "Incomplete Lambda drafts are allowed by the graph schema; publish requires deployment fields.",
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "fn",
+            "type": "LAMBDA_FUNCTION",
+            "config": {}
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "cloudfront-public-origin",
+      "reason": "A connected public-origin setting passes graph validation but publish preflight rejects it.",
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "bucket",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-fixture-assets",
+              "blockPublicAccess": false
+            }
+          },
+          {
+            "id": "cdn",
+            "type": "CLOUDFRONT_DISTRIBUTION",
+            "config": {
+              "bucketName": "${bucket.bucketName}"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "bucket",
+            "targetNodeId": "cdn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lambda-wrong-trusted-service",
+      "reason": "Type-compatible role attachment alone does not establish execution-role trust.",
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "role",
+            "type": "IAM_ROLE",
+            "config": {
+              "roleName": "paper-role",
+              "trustedService": "ec2.amazonaws.com"
+            }
+          },
+          {
+            "id": "fn",
+            "type": "LAMBDA_FUNCTION",
+            "config": {
+              "roleArn": "${role.roleArn}"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "sourceNodeId": "role",
+            "targetNodeId": "fn"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nonexistent-ami-string",
+      "reason": "A literal identifier does not establish regional AWS availability.",
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "vm",
+            "type": "EC2_INSTANCE",
+            "config": {
+              "imageId": "ami-offline-example"
+            }
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "id": "unmet-requested-service",
+      "reason": "An external requirement for SNS is unmet by a structurally valid S3 graph.",
+      "input": {
+        "schemaVersion": 1,
+        "name": "Offline conformance fixture",
+        "nodes": [
+          {
+            "id": "s3",
+            "type": "S3_BUCKET",
+            "config": {
+              "bucketName": "paper-assets"
+            }
+          }
+        ],
+        "edges": []
+      }
+    }
+  ]
+}

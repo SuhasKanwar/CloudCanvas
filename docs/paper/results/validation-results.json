@@ -1,0 +1,4166 @@
+{
+  "generatedAt": "2026-11-23T20:29:47.714Z",
+  "sourceCommit": "5bc92e96aa17a5329b2158e0dee15cc6950ead2d",
+  "contractSha256": "328518495df28049e8346603e78eb578717b79928817574528f6144069bc3362",
+  "schemaSha256": "29421344a5e2c3523b937807ab8c821d3466a4d7c307240c45b692c11ec0ab90",
+  "environment": {
+    "node": "v22.23.1",
+    "platform": "linux",
+    "kernel": "7.1.5-arch1-2",
+    "arch": "x64",
+    "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+    "logicalCpus": 8,
+    "memoryGiB": 31.082672119140625,
+    "ajv": "8.20.0",
+    "yaml": "2.9.0"
+  },
+  "settings": {
+    "independentProcesses": 3,
+    "warmupPasses": 20,
+    "timedPasses": 50,
+    "cases": 72,
+    "positive": 24,
+    "invalid": 48,
+    "casesPerFaultClass": 16,
+    "boundaryControls": 6,
+    "randomSeed": "not applicable: deterministic fixtures"
+  },
+  "summary": [
+    {
+      "validator": "schema-only",
+      "accuracyMean": 0.5555555555555556,
+      "accuracySd": 0,
+      "falseAcceptedMean": 32,
+      "falseAcceptedSd": 0,
+      "falseRejectedMean": 0,
+      "meanMsPerGraph": 0.041279161388888895,
+      "sdMsPerGraph": 0.008949815286999722
+    },
+    {
+      "validator": "schema-topology",
+      "accuracyMean": 0.7777777777777778,
+      "accuracySd": 0,
+      "falseAcceptedMean": 16,
+      "falseAcceptedSd": 0,
+      "falseRejectedMean": 0,
+      "meanMsPerGraph": 0.057579653333333335,
+      "sdMsPerGraph": 0.02600133465235008
+    },
+    {
+      "validator": "full-contract",
+      "accuracyMean": 1,
+      "accuracySd": 0,
+      "falseAcceptedMean": 0,
+      "falseAcceptedSd": 0,
+      "falseRejectedMean": 0,
+      "meanMsPerGraph": 0.07293195916666667,
+      "sdMsPerGraph": 0.014148230434161623
+    }
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "order": [
+        "schema-only",
+        "schema-topology",
+        "full-contract"
+      ],
+      "measurements": [
+        {
+          "validator": "schema-only",
+          "correct": 40,
+          "accuracy": 0.5555555555555556,
+          "falseAccepted": 32,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.0514737225,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            }
+          ]
+        },
+        {
+          "validator": "schema-topology",
+          "correct": 56,
+          "accuracy": 0.7777777777777778,
+          "falseAccepted": 16,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.06005771333333333,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            }
+          ]
+        },
+        {
+          "validator": "full-contract",
+          "correct": 72,
+          "accuracy": 1,
+          "falseAccepted": 0,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.07456018805555556,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            }
+          ]
+        }
+      ],
+      "boundaryControls": [
+        {
+          "id": "unknown-output-name",
+          "reason": "Output-field existence is checked during runtime reference resolution.",
+          "accepted": true
+        },
+        {
+          "id": "incomplete-lambda-draft",
+          "reason": "Incomplete Lambda drafts are allowed by the graph schema; publish requires deployment fields.",
+          "accepted": true
+        },
+        {
+          "id": "cloudfront-public-origin",
+          "reason": "A connected public-origin setting passes graph validation but publish preflight rejects it.",
+          "accepted": true
+        },
+        {
+          "id": "lambda-wrong-trusted-service",
+          "reason": "Type-compatible role attachment alone does not establish execution-role trust.",
+          "accepted": true
+        },
+        {
+          "id": "nonexistent-ami-string",
+          "reason": "A literal identifier does not establish regional AWS availability.",
+          "accepted": true
+        },
+        {
+          "id": "unmet-requested-service",
+          "reason": "An external requirement for SNS is unmet by a structurally valid S3 graph.",
+          "accepted": true
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "order": [
+        "schema-topology",
+        "full-contract",
+        "schema-only"
+      ],
+      "measurements": [
+        {
+          "validator": "schema-topology",
+          "correct": 56,
+          "accuracy": 0.7777777777777778,
+          "falseAccepted": 16,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.08225324222222222,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            }
+          ]
+        },
+        {
+          "validator": "full-contract",
+          "correct": 72,
+          "accuracy": 1,
+          "falseAccepted": 0,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.0861956313888889,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            }
+          ]
+        },
+        {
+          "validator": "schema-only",
+          "correct": 40,
+          "accuracy": 0.5555555555555556,
+          "falseAccepted": 32,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.037648982222222224,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            }
+          ]
+        }
+      ],
+      "boundaryControls": [
+        {
+          "id": "unknown-output-name",
+          "reason": "Output-field existence is checked during runtime reference resolution.",
+          "accepted": true
+        },
+        {
+          "id": "incomplete-lambda-draft",
+          "reason": "Incomplete Lambda drafts are allowed by the graph schema; publish requires deployment fields.",
+          "accepted": true
+        },
+        {
+          "id": "cloudfront-public-origin",
+          "reason": "A connected public-origin setting passes graph validation but publish preflight rejects it.",
+          "accepted": true
+        },
+        {
+          "id": "lambda-wrong-trusted-service",
+          "reason": "Type-compatible role attachment alone does not establish execution-role trust.",
+          "accepted": true
+        },
+        {
+          "id": "nonexistent-ami-string",
+          "reason": "A literal identifier does not establish regional AWS availability.",
+          "accepted": true
+        },
+        {
+          "id": "unmet-requested-service",
+          "reason": "An external requirement for SNS is unmet by a structurally valid S3 graph.",
+          "accepted": true
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "order": [
+        "full-contract",
+        "schema-only",
+        "schema-topology"
+      ],
+      "measurements": [
+        {
+          "validator": "full-contract",
+          "correct": 72,
+          "accuracy": 1,
+          "falseAccepted": 0,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.05804005805555556,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": false
+            }
+          ]
+        },
+        {
+          "validator": "schema-only",
+          "correct": 40,
+          "accuracy": 0.5555555555555556,
+          "falseAccepted": 32,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.03471477944444445,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            }
+          ]
+        },
+        {
+          "validator": "schema-topology",
+          "correct": 56,
+          "accuracy": 0.7777777777777778,
+          "falseAccepted": 16,
+          "falseRejected": 0,
+          "meanMsPerGraph": 0.030428004444444445,
+          "decisions": [
+            {
+              "id": "valid-0-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-0-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-1-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-2-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-3-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-4-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-5-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-6-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-0",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-1",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "valid-7-2",
+              "category": "valid",
+              "expectedValid": true,
+              "accepted": true
+            },
+            {
+              "id": "missing-version-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-version-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-property-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-name-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unsupported-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-config-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-node-container-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "empty-node-id-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-0",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "wrong-position-type-1",
+              "category": "shape",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-node-id-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-source-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "unknown-target-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "self-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "incompatible-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "duplicate-edge-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "multiple-origins-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-0",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "cyclic-incompatible-edges-1",
+              "category": "topology",
+              "expectedValid": false,
+              "accepted": false
+            },
+            {
+              "id": "missing-direct-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "missing-direct-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unknown-reference-source-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "interpolated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "unterminated-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "self-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "invalid-output-token-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "array-without-source-edge-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-0",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            },
+            {
+              "id": "nested-unbound-reference-1",
+              "category": "references",
+              "expectedValid": false,
+              "accepted": true
+            }
+          ]
+        }
+      ],
+      "boundaryControls": [
+        {
+          "id": "unknown-output-name",
+          "reason": "Output-field existence is checked during runtime reference resolution.",
+          "accepted": true
+        },
+        {
+          "id": "incomplete-lambda-draft",
+          "reason": "Incomplete Lambda drafts are allowed by the graph schema; publish requires deployment fields.",
+          "accepted": true
+        },
+        {
+          "id": "cloudfront-public-origin",
+          "reason": "A connected public-origin setting passes graph validation but publish preflight rejects it.",
+          "accepted": true
+        },
+        {
+          "id": "lambda-wrong-trusted-service",
+          "reason": "Type-compatible role attachment alone does not establish execution-role trust.",
+          "accepted": true
+        },
+        {
+          "id": "nonexistent-ami-string",
+          "reason": "A literal identifier does not establish regional AWS availability.",
+          "accepted": true
+        },
+        {
+          "id": "unmet-requested-service",
+          "reason": "An external requirement for SNS is unmet by a structurally valid S3 graph.",
+          "accepted": true
+        }
+      ]
+    }
+  ]
+}

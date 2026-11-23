@@ -1,0 +1,41 @@
+\section{Experimental Setup}
+\subsection{Corpus and Compared Pipelines}
+The experiment uses synthetic conformance fixtures stored with the paper, rather than model outputs, production architectures, or an existing benchmark's task corpus. Eight base patterns cover all eleven supported node types and the four permitted attachment pairings. Three naming/position variants produce 24 valid instances. Eight shape mutations, eight topology mutations, and eight reference mutations are each instantiated twice, producing 48 invalid instances. The resulting 72-instance corpus has 16 examples per fault category. Repeated variants are closely related, so the instance count must not be interpreted as 72 independently sampled architecture tasks.
+
+The schema-only baseline runs Ajv with the application's schema and options. The schema-plus-topology ablation adds the exported graph planner but omits reference traversal. The full-contract condition invokes the actual exported validator. All conditions receive fresh cloned inputs, preventing defaults or earlier normalization from affecting later decisions. Fault expectations are specified when constructing fixtures, and assertions verify that the intended corpus and supported-type coverage are present. Six separate boundary controls test accepted drafts with issues beyond this structural predicate; they are not counted as structural false accepts.
+
+\subsection{Execution Environment and Parameters}
+Three fresh Node.js processes execute the same corpus. The pipeline order rotates deterministically across processes, and every condition receives 20 warm-up passes before 50 timed passes. Timing includes input cloning, validation, and error handling, but excludes module import and schema compilation. It therefore measures steady-state local gate processing rather than startup or deployment latency. The raw JSON records environment information, decisions, run order, corpus settings, source digests, and individual measurements.
+
+Table~\ref{tab:parameters} lists the measured environment and fixed settings. No model is trained or queried, so training splits, generation temperatures, and random seeds are inapplicable to this experiment. Application model settings remain source-inspectable but do not explain the measured validation outcomes.
+\begin{table}[t]
+\caption{Recorded offline experiment parameters.}
+\label{tab:parameters}
+\centering\small
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+Parameter & Value \\
+\midrule
+Platform & Linux, x86-64; kernel 7.1.5-arch1-2 \\
+Processor / memory & Intel Core i5-1135G7, 8 logical CPUs; 31.08 GiB RAM \\
+Runtime / validator & Node.js 22.23.1; Ajv 8.20.0; YAML 2.9.0 \\
+Independent runs & 3 fresh processes; rotated pipeline order \\
+Corpus & 24 valid + 48 invalid instances; 6 separate boundary controls \\
+Warm-up / measurement & 20 / 50 complete corpus passes per pipeline and process \\
+Timing unit & Microseconds per graph, including cloning and exceptions \\
+Randomness / provider access & Deterministic fixtures; no seed, model calls, or AWS requests \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Metrics and Reproduction}
+For $N$ labeled structural cases, classification accuracy and invalid false-acceptance rate are
+\begin{equation}
+ \operatorname{Acc}=\frac{\mathrm{TP}+\mathrm{TN}}{N},\qquad
+ \operatorname{FAR}=\frac{\mathrm{FP}}{N_{\mathrm{invalid}}}.
+ \label{eq:metrics}
+\end{equation}
+Here TP denotes accepted valid cases, TN rejected invalid cases, and FP accepted invalid cases. False rejections are reported separately because stricter validation must not silently discard supported drafts. Mean latency and sample standard deviation use the three per-process measurements, with denominator $n-1$ for variance and $n=3$. Correctness is expected to be deterministic; timing variability reflects the shared workstation. The repository supplies the corpus generator, raw decisions, summary CSV, figure generator, and commands for reproduction~\cite{cloudcanvas}.
+
+
+Before timing, the runner checks that each valid fixture is accepted and each structurally invalid fixture is rejected by the full contract. These assertions detect drift between the declared test cases and the studied version. They also constrain the interpretation of the perfect full-contract result: fixture construction targets known contract behavior. The reduced pipelines receive the same cases and options, so the experiment tests whether suppressing a validation layer changes which errors cross that boundary. Reproduction should compare case-level decisions first and treat the recorded time values as machine-specific observations.
